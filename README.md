@@ -1,4 +1,4 @@
-# 📧 Agente de Prioridad de Correos (Smart Email Dashboard)
+# 📧 Agente de Prioridad de Correos (DOG Dashboard)
 
 Un agente de Inteligencia Artificial diseñado para profesionales corporativos y ejecutivos con alto volumen de correos. Este sistema extrae mensajes directamente desde Gmail, analiza su contenido con LLMs y genera un dashboard estructurado con la prioridad, un resumen rápido y la acción recomendada, optimizando el tiempo de gestión de la bandeja de entrada.
 
