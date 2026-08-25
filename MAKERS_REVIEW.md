@@ -2,38 +2,36 @@
 
 ## Que encontramos
 
-- El proyecto ataca un problema claro: priorizar correos y resumir acciones para usuarios con bandeja saturada.
-- El notebook ya usa Pydantic para validar la forma del output.
-- El flujo menciona human-in-the-loop, pero los evals no dejan evidencia versionada en el repo.
-- El mayor riesgo no es solo clasificar mal; es sugerir o afirmar acciones externas sin aprobacion humana.
-- Hay credenciales y conexion IMAP, asi que las pruebas deben poder hacerse tambien con correos sinteticos.
+- El proyecto evoluciono de Dog Dashboard a Weveh, un asistente automotriz preventivo.
+- El nuevo README define mejor problema, flujo de IA, output estructurado y regla de seguridad.
+- El notebook principal ahora es `Sesion_8_Use_case_WEVEH.ipynb`.
+- El riesgo principal cambio: ya no es triage de correo, sino recomendacion mecanica que puede subestimar fallas criticas.
+- Falta dejar evidencia reproducible de que el agente respeta las reglas de seguridad del dominio.
 
 ## Mejora aplicada
 
-Agregue `evals/eval_cases.json` con 5 casos de evaluacion para triage de correo:
+Actualice el review para que corresponda al proyecto real actual y agregue evals enfocados en el mecanico IA:
 
-- deadline claro;
-- input incompleto;
-- asunto ambiguo con "URGENTE";
-- prompt injection;
-- solicitud de accion externa sensible.
-
-Tambien agregue `evals/results.md` para registrar baseline y decisiones de diseno.
+- sintomas criticos de frenos;
+- testigo rojo de aceite;
+- informacion incompleta del vehiculo;
+- costo incierto que no debe inventarse;
+- prompt injection pidiendo bajar la gravedad.
 
 ## Por que importa
 
-Un agente que lee correos procesa texto externo y no confiable. La validacion de JSON confirma estructura, pero no confirma criterio. Estos evals obligan a revisar si el agente entiende prioridad, no inventa urgencia y mantiene aprobacion humana cuando hay acciones sensibles.
+En un asistente automotriz, el modelo puede ayudar a interpretar lenguaje informal, pero la seguridad no debe depender solo del prompt. El sistema necesita casos de evaluacion que demuestren que no minimiza riesgos, no inventa costos y escala a revision humana o mecanico presencial cuando hay incertidumbre.
 
 ## Como probarlo
 
-1. Abrir `demo_dashboard.ipynb`.
-2. Copiar cada `input` de `evals/eval_cases.json`.
-3. Ejecutarlo con `analizar_correo_con_ia`.
-4. Comparar la respuesta contra `expected`.
-5. Registrar pass/fail en `evals/results.md`.
+1. Abre `Sesion_8_Use_case_WEVEH.ipynb`.
+2. Ejecuta el flujo principal del mecanico IA.
+3. Copia cada caso de `evals/weveh_eval_cases.csv`.
+4. Compara la respuesta contra el criterio esperado.
+5. Registra baseline y resultado final en `evals/results.md`.
 
 ## Tu reto
 
-1. Core: completar `evals/results.md` con baseline real para los 5 casos.
-2. Intermediate: agregar un campo `requiere_revision_humana` al output y validarlo con Pydantic.
-3. Advanced: crear una funcion deterministica que marque revision humana cuando la accion implique pago, aprobacion, envio o respuesta externa.
+1. Core: completar `evals/results.md` con pass/fail real para los 5 casos de Weveh.
+2. Intermediate: implementar una funcion `validate_diagnostico_mecanico(output, input_text)` que revise gravedad permitida, costos nulos cuando falten datos y red flags de seguridad.
+3. Advanced: separar el prompt, el schema de salida y la validacion en archivos distintos para que el equipo pueda iterar sin romper todo el notebook.
