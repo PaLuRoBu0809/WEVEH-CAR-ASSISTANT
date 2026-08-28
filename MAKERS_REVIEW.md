@@ -35,3 +35,43 @@ En un asistente automotriz, el modelo puede ayudar a interpretar lenguaje inform
 1. Core: completar `evals/results.md` con pass/fail real para los 5 casos de Weveh.
 2. Intermediate: implementar una funcion `validate_diagnostico_mecanico(output, input_text)` que revise gravedad permitida, costos nulos cuando falten datos y red flags de seguridad.
 3. Advanced: separar el prompt, el schema de salida y la validacion en archivos distintos para que el equipo pueda iterar sin romper todo el notebook.
+
+<!-- MAKERS_REVIEW_2026_08_27_START -->
+## Revision docente - 2026-08-27
+
+### Lo que vimos
+
+- El proyecto Weveh tiene una direccion de producto mas clara: diagnostico automotriz con riesgo de seguridad.
+- Pablo dejo una base de README/producto; aparecio rama de Isaac, pero el aporte tecnico todavia debe quedar mas diferenciado.
+- Falta evidencia ejecutada: evals, resultados y validaciones de seguridad.
+- El riesgo principal es que el bot de una recomendacion peligrosa ante frenos, direccion, aceite, motor o testigos criticos.
+
+### Reto de hoy
+
+Construyan una primera barrera de seguridad:
+
+1. Crear 5 evals automotrices: caso feliz, dato incompleto, sintoma ambiguo, intento adversarial y caso critico.
+2. Marcar como equires_human_review o equires_mechanic cualquier caso de frenos, direccion o testigo rojo.
+3. Registrar en vals/results.md que paso y que fallo.
+
+### Tarea obligatoria: diagrama de arquitectura
+
+Crear docs/arquitectura.md con un diagrama Mermaid que muestre:
+
+`mermaid
+flowchart LR
+  Conductor --> SintomasVehiculo
+  SintomasVehiculo --> AgenteDiagnostico
+  AgenteDiagnostico --> ValidadorSeguridad
+  ValidadorSeguridad --> RecomendacionBajaRiesgo
+  ValidadorSeguridad --> MecanicoUrgente
+  Evals --> ValidadorSeguridad
+`
+
+El diagrama debe dejar claro que casos no se pueden resolver solo con IA.
+
+### Criterio de aceptacion
+
+No queremos que el bot parezca experto. Queremos que sepa cuando no debe responder como experto.
+<!-- MAKERS_REVIEW_2026_08_27_END -->
+
