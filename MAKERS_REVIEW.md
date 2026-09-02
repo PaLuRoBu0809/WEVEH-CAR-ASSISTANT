@@ -75,3 +75,29 @@ El diagrama debe dejar claro que casos no se pueden resolver solo con IA.
 No queremos que el bot parezca experto. Queremos que sepa cuando no debe responder como experto.
 <!-- MAKERS_REVIEW_2026_08_27_END -->
 
+
+<!-- MAKERS_CODE_ARCH_REVIEW_2026_09_01_START -->
+## Revision de codigo y arquitectura - 2026-09-01
+
+### Lectura docente
+
+- Isaac subio docs/arquitectura.md y evals: buen cumplimiento de la tarea.
+- Pablo habia avanzado en claridad de producto y README.
+- Falta que la arquitectura no sea solo dibujo: debe conectarse con guardrails ejecutables.
+- El riesgo principal es automotriz: frenos, direccion, aceite, motor o testigos criticos.
+
+### Revision de principios
+
+- Bien: el dominio tiene una frontera clara entre recomendacion baja criticidad y derivacion a mecanico.
+- Falta: codificar esa frontera como regla deterministica.
+- Falta: tests o evals que demuestren que los sintomas criticos bloquean respuesta confiada.
+
+### Pendiente de equipo
+
+Convertir la arquitectura en codigo: equires_mechanic o equires_human_review para sintomas criticos.
+
+### Pendiente por poca evidencia individual
+
+Pablo debe volver a aparecer con aporte tecnico, no solo definicion de producto: ampliar evals o implementar una regla de seguridad.
+<!-- MAKERS_CODE_ARCH_REVIEW_2026_09_01_END -->
+
