@@ -1,0 +1,10 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+weveh:
+  llm:
+    base-url: ${LLM_BASE_URL:https://openrouter.ai/api/v1}
+    api-key: ${LLM_API_KEY}
+    modelo: ${LLM_MODELO:meta-llama/llama-3.1-70b-instruct}
+    temperatura: ${LLM_TEMPERATURA:0}
+    timeout-ms: ${LLM_TIMEOUT_MS:15000}
