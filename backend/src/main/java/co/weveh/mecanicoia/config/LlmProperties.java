@@ -25,6 +25,12 @@ public class LlmProperties {
 
     private double temperatura;
 
+    /**
+     * Techo de tokens de la respuesta. OpenRouter reserva credito por el maximo
+     * teorico del modelo, asi que omitirlo hace fallar la peticion con 402.
+     */
+    private int maxTokens;
+
     private long timeoutMs;
 
     public String getBaseUrl() {
@@ -57,6 +63,14 @@ public class LlmProperties {
 
     public void setTemperatura(double temperatura) {
         this.temperatura = temperatura;
+    }
+
+    public int getMaxTokens() {
+        return maxTokens;
+    }
+
+    public void setMaxTokens(int maxTokens) {
+        this.maxTokens = maxTokens;
     }
 
     public long getTimeoutMs() {

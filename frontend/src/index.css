@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+
+  --color-weveh-fondo: #f4f4f2;
+  --color-weveh-carbon: #2d2d30;
+  --color-weveh-humo: #6b6b70;
+  --color-weveh-sombra: #d1d0cb;
+  --color-weveh-luz: #ffffff;
+
+  --color-gravedad-leve: #00c781;
+  --color-gravedad-moderado: #ffc800;
+  --color-gravedad-critico: #ff3b30;
+
+  /* Relieve: la superficie sobresale del tablero. */
+  --shadow-relieve: 8px 8px 16px #d1d0cb, -8px -8px 16px #ffffff;
+  --shadow-relieve-suave: 4px 4px 10px #d1d0cb, -4px -4px 10px #ffffff;
+  /* Hendidura: la superficie esta incrustada en el tablero. */
+  --shadow-hendidura: inset 4px 4px 8px #d1d0cb, inset -4px -4px 8px #ffffff;
+  --shadow-hendidura-profunda: inset 6px 6px 12px #d1d0cb, inset -6px -6px 12px #ffffff;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-weveh-fondo);
+  color: var(--color-weveh-carbon);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* El foco por teclado debe verse sobre una superficie sin bordes duros. */
+:focus-visible {
+  outline: 2px solid var(--color-weveh-carbon);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

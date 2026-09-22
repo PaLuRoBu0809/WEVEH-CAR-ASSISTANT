@@ -34,6 +34,7 @@ public class ClienteLlmOpenRouter implements ClienteLlm {
         Map<String, Object> cuerpoRequest = Map.of(
                 "model", propiedades.getModelo(),
                 "temperature", propiedades.getTemperatura(),
+                "max_tokens", propiedades.getMaxTokens(),
                 "response_format", Map.of("type", "json_object"),
                 "messages", List.of(
                         Map.of("role", "system", "content", promptSistema),
