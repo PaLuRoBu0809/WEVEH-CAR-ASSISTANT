@@ -1,0 +1,6 @@
+target/
+*.class
+.mvn/wrapper/maven-wrapper.jar
+
+# Secretos locales (API keys). Nunca se commitea.
+config/
