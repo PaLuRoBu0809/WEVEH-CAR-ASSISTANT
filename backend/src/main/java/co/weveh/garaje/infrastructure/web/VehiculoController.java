@@ -70,10 +70,10 @@ class VehiculoController {
             @NotNull Integer anioModelo, Combustible combustible, Transmision transmision, String traccion,
             String alias, String placa, LocalDate fechaMatricula, @NotNull Integer kilometraje, UsoVehiculo uso,
             Integer kmPromedioMes, Integer aceiteKm, LocalDate aceiteFecha, LocalDate soatFecha, LocalDate rtmFecha,
-            boolean rtmAunNoAplica, LocalDate seguroInicio, String seguroEntidad) {
+            Boolean rtmAunNoAplica, LocalDate seguroInicio, String seguroEntidad) {
 
         Vehiculo.DatosRegistro aDatos() {
-            var registro = new RegistroInicial(aceiteKm, aceiteFecha, soatFecha, rtmFecha, rtmAunNoAplica,
+            var registro = new RegistroInicial(aceiteKm, aceiteFecha, soatFecha, rtmFecha, Boolean.TRUE.equals(rtmAunNoAplica),
                     seguroInicio, seguroEntidad);
             return new Vehiculo.DatosRegistro(tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
                     combustible, transmision, Traccion.desdeCodigo(traccion), alias, placa, fechaMatricula,
