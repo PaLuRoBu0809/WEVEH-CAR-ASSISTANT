@@ -1,0 +1,18 @@
+* text=auto eol=lf
+
+# Scripts de Windows (mvnw.cmd) necesitan CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jar binary
+*.xlsx binary
+*.docx binary
+*.pdf binary
+*.ttf binary
+*.otf binary
