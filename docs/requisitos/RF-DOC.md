@@ -26,7 +26,11 @@ Como dueño de un vehículo nuevo quiero saber cuándo me toca la primera revisi
   Cuando registro
   Entonces la app me pide la fecha de matrícula para calcularla
 
-> Pendiente: confirmar que el Decreto 019 de 2012, art. 202 (5 años carros particulares, 2 años motos) sigue vigente antes de mostrarlo como dato legal.
+> Confirmado por el equipo (2026-10-08): Decreto 019 de 2012, art. 202 vigente. Carros particulares: primera RTM a los 5 años de la matrícula y luego cada año. Motos: primera a los 2 años y luego cada año.
+
+- Dado un carro particular cuya primera RTM fue el 2029-03-10
+  Cuando la registro
+  Entonces la siguiente vence el 2030-03-10
 
 ## RF-DOC-03 Estado de cada documento
 Como dueño quiero ver de un vistazo si mis papeles están al día.

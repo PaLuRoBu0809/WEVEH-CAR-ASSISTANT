@@ -47,7 +47,7 @@ Archivos: [RF-GAR](RF-GAR.md) · [RF-CAT](RF-CAT.md) · [RF-MAN](RF-MAN.md) · [
 
 Login y cuentas, directorio de talleres, grúas y servicios, voz, foto de testigos, push del servidor, pagos, RUNT, OBD, versión web, botón "¿El mecánico te dijo otra cosa?" (README) y agendamiento en talleres aliados.
 
-## Pendientes de decisión
+## Decisiones confirmadas
 
-- Confirmar la vigencia del Decreto 019 de 2012, art. 202, para la primera RTM (RF-DOC-02).
-- Confirmar que los avisos de RF-DOC-04 con notificaciones locales entran en el MVP (la skill fija ventanas de 30, 7 y 1 día; el alcance solo excluye el push del servidor).
+- 2026-10-08: Decreto 019 de 2012, art. 202 vigente para la primera RTM: 5 años desde la matrícula en carros particulares y 2 en motos, luego cada año (RF-DOC-02).
+- 2026-10-08: los avisos de vencimiento con notificación local entran en el MVP (RF-DOC-04).
