@@ -1,0 +1,195 @@
+{
+  "descripcion": "Vencimiento de documentos. SOAT, RTM y SEGURO_TODO_RIESGO: fechaRealizacion + 1 año. RTM con aunNoAplica: fechaMatricula + 5 años (CARRO) o + 2 años (MOTO), Decreto 019 de 2012 art. 202. Sumar años como java.time plusYears (29 de febrero pasa a 28). diasRestantes = vence - hoy. Estado: < 0 VENCIDO, <= 30 POR_VENCER, resto VIGENTE.",
+  "vectores": [
+    {
+      "caso": "SOAT de la Prado",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "SOAT",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2026-06-30",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2027-06-30",
+        "diasRestantes": 265,
+        "estado": "VIGENTE"
+      }
+    },
+    {
+      "caso": "RTM de la Prado",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "RTM",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2026-06-28",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2027-06-28",
+        "diasRestantes": 263,
+        "estado": "VIGENTE"
+      }
+    },
+    {
+      "caso": "seguro todo riesgo de la Prado",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "SEGURO_TODO_RIESGO",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2026-07-05",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2027-07-05",
+        "diasRestantes": 270,
+        "estado": "VIGENTE"
+      }
+    },
+    {
+      "caso": "faltan exactamente 30 días es POR_VENCER",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "SOAT",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2025-11-07",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2026-11-07",
+        "diasRestantes": 30,
+        "estado": "POR_VENCER"
+      }
+    },
+    {
+      "caso": "faltan 31 días es VIGENTE",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "SOAT",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2025-11-08",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2026-11-08",
+        "diasRestantes": 31,
+        "estado": "VIGENTE"
+      }
+    },
+    {
+      "caso": "vence hoy es POR_VENCER",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "SOAT",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2025-10-08",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2026-10-08",
+        "diasRestantes": 0,
+        "estado": "POR_VENCER"
+      }
+    },
+    {
+      "caso": "venció ayer",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "SOAT",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2025-10-07",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2026-10-07",
+        "diasRestantes": -1,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "29 de febrero vence el 28 de febrero",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "SOAT",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2024-02-29",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2025-02-28",
+        "diasRestantes": -587,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "primera RTM de carro a los 5 años de la matrícula",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "RTM",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": null,
+        "aunNoAplica": true,
+        "fechaMatricula": "2024-03-10"
+      },
+      "esperado": {
+        "vence": "2029-03-10",
+        "diasRestantes": 884,
+        "estado": "VIGENTE"
+      }
+    },
+    {
+      "caso": "primera RTM de moto a los 2 años de la matrícula",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "RTM",
+        "tipoVehiculo": "MOTO",
+        "fechaRealizacion": null,
+        "aunNoAplica": true,
+        "fechaMatricula": "2025-01-15"
+      },
+      "esperado": {
+        "vence": "2027-01-15",
+        "diasRestantes": 99,
+        "estado": "VIGENTE"
+      }
+    },
+    {
+      "caso": "RTM después de la primera es cada año",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "RTM",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": "2029-03-10",
+        "aunNoAplica": false,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "vence": "2030-03-10",
+        "diasRestantes": 1249,
+        "estado": "VIGENTE"
+      }
+    },
+    {
+      "caso": "RTM aún no aplica sin matrícula pide la fecha",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "tipo": "RTM",
+        "tipoVehiculo": "CARRO",
+        "fechaRealizacion": null,
+        "aunNoAplica": true,
+        "fechaMatricula": null
+      },
+      "esperado": {
+        "error": "FECHA_MATRICULA_REQUERIDA"
+      }
+    }
+  ]
+}

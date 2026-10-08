@@ -76,15 +76,16 @@ Reglas:
 ## App móvil
 
 ```
-mobile/
-├── app/                        # Expo Router: solo rutas
+mobile/src/
+├── app/                        # Expo Router: solo rutas (Expo SDK 57 las pone en src/app)
 │   ├── _layout.tsx
 │   ├── (onboarding)/           # encendido, portada, registro de vehículo, completar perfil
 │   └── (tabs)/                 # inicio, garaje, preguntar, combustible
-└── src/
-    ├── features/<feature>/{presentation,application,domain,infrastructure}
-    └── shared/{design-system,http,db,dispositivo,errores}
+├── features/<feature>/{presentation,application,domain,infrastructure}
+└── shared/{design-system,http,db,dispositivo}
 ```
+
+Fronteras con `eslint-plugin-boundaries` v7 (regla `boundaries/dependencies` en `mobile/eslint.config.js`): `app` → features y shared; una feature → sí misma y shared; shared → shared.
 
 - `presentation`: componentes puros (props → UI). `application`: hooks con TanStack Query. `domain`: funciones puras. `infrastructure`: cliente HTTP, SQLite, mapeadores DTO→dominio.
 - Una feature no importa archivos internos de otra; comparte por `src/shared` o por el `index.ts` público de la feature.

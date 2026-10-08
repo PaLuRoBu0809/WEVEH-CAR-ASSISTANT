@@ -1,0 +1,332 @@
+{
+  "descripcion": "Consumo por método de tanque lleno, entre los dos últimos llenos. kmPorGalon = (km lleno actual - km lleno anterior) / Σ galones de las tanqueadas posteriores al lleno anterior, incluido el actual; redondeo a 2 decimales. costoPorKm = Σ valorCop del mismo tramo / km (2 decimales), null si alguna no tiene valor. Referencia: referenciaKmGal o, si es null, promedio de las últimas 3 medicionesPrevias. razón = kmPorGalon / referencia: >= 0.9 NORMAL, >= 0.75 UN_POCO_ALTO, resto CONSUMO_ALTO. Menos de dos llenos: LINEA_BASE. Sin referencia ni mediciones: SIN_REFERENCIA.",
+  "vectores": [
+    {
+      "caso": "primer tanque lleno solo fija la línea base",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 190000,
+            "galones": 12.5,
+            "tanqueLleno": true,
+            "valorCop": 200000
+          }
+        ],
+        "referenciaKmGal": 26,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": null,
+        "costoPorKm": null,
+        "clasificacion": "LINEA_BASE"
+      }
+    },
+    {
+      "caso": "Prado con tanqueada parcial en el medio",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 190000,
+            "galones": 12.5,
+            "tanqueLleno": true,
+            "valorCop": 200000
+          },
+          {
+            "km": 190120,
+            "galones": 4,
+            "tanqueLleno": false,
+            "valorCop": 64000
+          },
+          {
+            "km": 190260,
+            "galones": 6,
+            "tanqueLleno": true,
+            "valorCop": 96000
+          }
+        ],
+        "referenciaKmGal": 26,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 26.0,
+        "costoPorKm": 615.38,
+        "clasificacion": "NORMAL"
+      }
+    },
+    {
+      "caso": "un poco alto",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 190000,
+            "galones": 12,
+            "tanqueLleno": true,
+            "valorCop": 190000
+          },
+          {
+            "km": 190120,
+            "galones": 4,
+            "tanqueLleno": false,
+            "valorCop": 64000
+          },
+          {
+            "km": 190260,
+            "galones": 6,
+            "tanqueLleno": true,
+            "valorCop": 96000
+          }
+        ],
+        "referenciaKmGal": 30,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 26.0,
+        "costoPorKm": 615.38,
+        "clasificacion": "UN_POCO_ALTO"
+      }
+    },
+    {
+      "caso": "consumo alto",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 190000,
+            "galones": 12,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 190120,
+            "galones": 4,
+            "tanqueLleno": false,
+            "valorCop": null
+          },
+          {
+            "km": 190260,
+            "galones": 6,
+            "tanqueLleno": true,
+            "valorCop": null
+          }
+        ],
+        "referenciaKmGal": 35,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 26.0,
+        "costoPorKm": null,
+        "clasificacion": "CONSUMO_ALTO"
+      }
+    },
+    {
+      "caso": "exactamente 90 % es NORMAL",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 100000,
+            "galones": 10,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 100270,
+            "galones": 10,
+            "tanqueLleno": true,
+            "valorCop": null
+          }
+        ],
+        "referenciaKmGal": 30,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 27.0,
+        "costoPorKm": null,
+        "clasificacion": "NORMAL"
+      }
+    },
+    {
+      "caso": "exactamente 75 % es UN_POCO_ALTO",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 100000,
+            "galones": 10,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 100225,
+            "galones": 10,
+            "tanqueLleno": true,
+            "valorCop": null
+          }
+        ],
+        "referenciaKmGal": 30,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 22.5,
+        "costoPorKm": null,
+        "clasificacion": "UN_POCO_ALTO"
+      }
+    },
+    {
+      "caso": "solo cuenta el tramo entre los dos últimos llenos",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 1000,
+            "galones": 9,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 1100,
+            "galones": 5,
+            "tanqueLleno": false,
+            "valorCop": null
+          },
+          {
+            "km": 1300,
+            "galones": 8,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 1400,
+            "galones": 3,
+            "tanqueLleno": false,
+            "valorCop": null
+          },
+          {
+            "km": 1600,
+            "galones": 7,
+            "tanqueLleno": true,
+            "valorCop": null
+          }
+        ],
+        "referenciaKmGal": 30,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 30.0,
+        "costoPorKm": null,
+        "clasificacion": "NORMAL"
+      }
+    },
+    {
+      "caso": "parcial después del último lleno no cuenta",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 1000,
+            "galones": 9,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 1300,
+            "galones": 10,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 1400,
+            "galones": 3,
+            "tanqueLleno": false,
+            "valorCop": null
+          }
+        ],
+        "referenciaKmGal": 30,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 30.0,
+        "costoPorKm": null,
+        "clasificacion": "NORMAL"
+      }
+    },
+    {
+      "caso": "sin referencia usa el promedio de las últimas 3 mediciones",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 190000,
+            "galones": 12,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 190260,
+            "galones": 10,
+            "tanqueLleno": true,
+            "valorCop": null
+          }
+        ],
+        "referenciaKmGal": null,
+        "medicionesPrevias": [
+          40,
+          30,
+          32,
+          28
+        ]
+      },
+      "esperado": {
+        "kmPorGalon": 26.0,
+        "costoPorKm": null,
+        "clasificacion": "UN_POCO_ALTO"
+      }
+    },
+    {
+      "caso": "sin referencia ni mediciones",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 190000,
+            "galones": 12,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 190260,
+            "galones": 10,
+            "tanqueLleno": true,
+            "valorCop": null
+          }
+        ],
+        "referenciaKmGal": null,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 26.0,
+        "costoPorKm": null,
+        "clasificacion": "SIN_REFERENCIA"
+      }
+    },
+    {
+      "caso": "galones con decimales",
+      "entrada": {
+        "tanqueadas": [
+          {
+            "km": 50000,
+            "galones": 8.25,
+            "tanqueLleno": true,
+            "valorCop": null
+          },
+          {
+            "km": 50310,
+            "galones": 9.75,
+            "tanqueLleno": true,
+            "valorCop": 158000
+          }
+        ],
+        "referenciaKmGal": 32,
+        "medicionesPrevias": []
+      },
+      "esperado": {
+        "kmPorGalon": 31.79,
+        "costoPorKm": 509.68,
+        "clasificacion": "NORMAL"
+      }
+    }
+  ]
+}
