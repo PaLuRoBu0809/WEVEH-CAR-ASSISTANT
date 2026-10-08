@@ -35,7 +35,7 @@ export function mensajeParaPersona(error: unknown): string {
     return 'Tuvimos un problema de nuestro lado. Inténtalo en un momento.';
   }
   if (error instanceof ErrorApi) {
-    return error.problema.title ?? 'No pudimos completar la acción.';
+    return error.problema.detail ?? error.problema.title ?? 'No pudimos completar la acción.';
   }
   return 'Algo salió mal. Inténtalo de nuevo.';
 }
