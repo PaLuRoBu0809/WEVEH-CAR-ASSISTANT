@@ -1,0 +1,14 @@
+{
+  "name": "weveh",
+  "description": "Plugins del equipo WEVEH para desarrollar el asistente vehicular con Claude Code.",
+  "owner": {
+    "name": "Isaac Cano y Pablo Rodríguez"
+  },
+  "plugins": [
+    {
+      "name": "weveh-dev",
+      "source": "./plugins/weveh-dev",
+      "description": "Skills, comando y agente revisor para construir el MVP de WEVEH con la arquitectura acordada."
+    }
+  ]
+}
