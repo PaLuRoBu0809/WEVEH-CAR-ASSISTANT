@@ -99,7 +99,7 @@ contracts/
 └── vectores-consumo.json
 ```
 
-Formato de un vector: `{"caso": "aceite vencido por km", "entrada": {...}, "esperado": {...}}`. Los mismos archivos los leen las pruebas de JUnit y de Jest.
+Formato: `{"descripcion": "regla exacta", "vectores": [{"caso": "aceite vencido por km", "entrada": {...}, "esperado": {...}}]}`. Los mismos archivos los leen las pruebas de JUnit y de Jest.
 
 ### 0.4 Backend
 
@@ -128,7 +128,7 @@ Comandos en la skill `feature-movil` ("Crear el proyecto"). Primer contenido:
 1. `src/shared/dispositivo`: genera y guarda el UUID en SecureStore.
 2. `src/shared/http`: cliente con `EXPO_PUBLIC_API_URL` y el header `X-Weveh-Dispositivo`.
 3. `src/shared/design-system/tokens.ts` con los colores de los mockups.
-4. Pantallas `(onboarding)/encendido` y `(tabs)/garaje` con estado vacío.
+4. Pantallas `src/app/(onboarding)/encendido` y `src/app/(tabs)/garaje` con estado vacío.
 5. Scripts `lint`, `test` y `typecheck` en `package.json`; `eslint-plugin-boundaries` configurado por feature.
 
 Para probar en el celular con el backend local, `EXPO_PUBLIC_API_URL` apunta a la IP de tu computador en la red (no `localhost`).
