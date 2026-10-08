@@ -20,7 +20,7 @@ public record TextoBusqueda(List<String> palabras) {
         if (texto == null || texto.isBlank()) {
             return new TextoBusqueda(List.of());
         }
-        var palabras = Arrays.stream(normalizar(texto).split("\s+"))
+        var palabras = Arrays.stream(normalizar(texto).split("\\s+"))
                 .filter(palabra -> !palabra.isBlank())
                 .limit(MAXIMO_PALABRAS)
                 .toList();
@@ -28,7 +28,7 @@ public record TextoBusqueda(List<String> palabras) {
     }
 
     public static String normalizar(String texto) {
-        var sinTildes = Normalizer.normalize(texto, Normalizer.Form.NFKD).replaceAll("\p{M}", "");
+        var sinTildes = Normalizer.normalize(texto, Normalizer.Form.NFKD).replaceAll("\\p{M}", "");
         return sinTildes.toLowerCase(Locale.ROOT).strip();
     }
 
