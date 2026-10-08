@@ -75,11 +75,10 @@ co/weveh/<modulo>/
 ## App móvil
 
 ```
-mobile/
-├── app/                    # Expo Router: (onboarding)/ y (tabs)/
-└── src/
-    ├── features/<feature>/{presentation,application,domain,infrastructure}
-    └── shared/{design-system,http,db,dispositivo,errores}
+mobile/src/
+├── app/                    # Expo Router (convención de Expo SDK 57): (onboarding)/ y (tabs)/
+├── features/<feature>/{presentation,application,domain,infrastructure}
+└── shared/{design-system,http,db,dispositivo}
 ```
 
 Lectura offline desde SQLite con TanStack Query refrescando en segundo plano; escrituras sin red en una cola con `Idempotency-Key`.

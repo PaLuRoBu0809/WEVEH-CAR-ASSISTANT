@@ -88,4 +88,4 @@ Estado: `VIGENTE` (> 30 días), `POR_VENCER` (≤ 30 días), `VENCIDO` (< 0). Ve
 
 ## 7. Vectores de prueba compartidos
 
-Toda fórmula de este archivo tiene casos en `contracts/vectores-<tema>.json` (`desgaste`, `salud`, `documentos`, `consumo`) con forma `{ "id", "entrada", "esperado" }`. Las pruebas de Java (JUnit parametrizado) y de TypeScript (Jest `test.each`) leen el mismo archivo. Si cambias una regla, cambia el vector primero.
+Toda fórmula de este archivo tiene casos en `contracts/vectores-<tema>.json` (`estado-pieza`, `salud`, `vencimientos`, `consumo`) con forma `{ "descripcion", "vectores": [{ "caso", "entrada", "esperado" }] }`. Las pruebas de Java (JUnit parametrizado) y de TypeScript (Jest `test.each`) leen el mismo archivo. Si cambias una regla, cambia el vector primero.
