@@ -1,0 +1,23 @@
+# Configuración solo por variables de entorno. Ver backend/.env.example.
+spring:
+  application:
+    name: weveh
+  datasource:
+    url: ${WEVEH_DB_URL:}
+    username: ${WEVEH_DB_USUARIO:}
+    password: ${WEVEH_DB_CLAVE:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  mvc:
+    problemdetails:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
