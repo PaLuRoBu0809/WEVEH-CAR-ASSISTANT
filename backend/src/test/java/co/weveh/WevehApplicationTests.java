@@ -39,6 +39,14 @@ class WevehApplicationTests {
     }
 
     @Test
+    void elHistorialDeFlywayQuedaConRls() {
+        var conRls = jdbc.sql("select relrowsecurity from pg_class where relname = 'flyway_schema_history'")
+                .query(Boolean.class).single();
+
+        assertThat(conRls).isTrue();
+    }
+
+    @Test
     void garajeVacioDePuntaAPunta() throws Exception {
         mockMvc.perform(get("/api/v1/vehiculos").header("X-Weveh-Dispositivo", "3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11"))
                 .andExpect(status().isOk())
