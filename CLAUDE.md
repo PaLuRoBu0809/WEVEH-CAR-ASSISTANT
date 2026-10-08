@@ -53,7 +53,7 @@ No fijes versiones de memoria: usa las que generen `start.spring.io` y `create-e
 Detalle y comandos: skill `weveh-dev:arranque`. No saltes de fase sin cerrar la anterior (pruebas y CI en verde).
 
 0. **Fundaciones**: higiene del repo, ADR del stack, esqueletos de `backend/` y `mobile/` que compilan y prueban, CI, proyecto Supabase, identidad por dispositivo de punta a punta.
-1. **Catálogo + Garaje**: importar el Excel de vehículos, CRUD de vehículos con registro básico.
+1. **Catálogo + Garaje**: cargar las tablas de base gravable del Ministerio de Transporte (ya procesadas en los archivos del proyecto, carpeta `catalogo/`), CRUD de vehículos con registro básico.
 2. **Mantenimiento + Documentos**: plan por pieza, salud, historial, kilometraje, SOAT/RTM/seguro. Reglas puras con vectores compartidos.
 3. **Mecánico IA**: diagnóstico por texto con contexto completo, validador de seguridad y evals.
 4. **Completar perfil con WEVEH**: agente con búsqueda web y entrevista.
@@ -77,7 +77,7 @@ cd mobile && npm run lint && npx tsc --noEmit && npm test
 
 Detalle, diagrama de clases y fórmulas: skill `weveh-dev:dominio-vehiculo`.
 
-- **Vehículo**: tipo (carro/moto), catálogo (marca, línea, versión, año modelo, motor, cilindrada, combustible, transmisión, tracción), alias, placa (opcional), fecha de matrícula, kilometraje actual, uso (ciudad/carretera/mixto), km promedio al mes.
+- **Vehículo**: tipo (carro/moto), catálogo (marca y línea del Ministerio de Transporte, cilindrada), año modelo, motor, combustible, transmisión y tracción (sugeridos desde el nombre de la línea o investigados por el agente), alias, placa (opcional), fecha de matrícula, kilometraje actual, uso (ciudad/carretera/mixto), km promedio al mes.
 - **Registro básico obligatorio**: catálogo + km actual + último cambio de aceite (km y fecha) + fecha de SOAT + fecha de RTM (o "aún no aplica"). Seguro todo riesgo es opcional.
 - **No preguntes el nivel de combustible en el registro**: cambia a diario y no sirve para mantenimiento. El consumo se mide desde la primera tanqueada con tanque lleno.
 - **Pieza del plan**: intervalo en km y/o meses, `esSeguridad`, último servicio (km/fecha) u `SIN_DATO`, y **origen** del intervalo (`FABRICANTE_VERIFICADO`, `IA_WEB` con URL de fuente, `USUARIO`).

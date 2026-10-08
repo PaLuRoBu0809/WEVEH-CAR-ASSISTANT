@@ -13,7 +13,7 @@ Pantalla por pasos, cada paso enciende una "luz" como en el mockup de registro.
 
 | Paso | Campos | Obligatorio |
 |---|---|---|
-| 1. Tu vehículo | tipo (carro/moto) → marca → línea → año modelo → versión/motor, filtrados en cascada desde `catalogo` | Sí. Si no aparece: texto libre con `catalogoId = null` y aviso "Lo revisaremos" |
+| 1. Tu vehículo | tipo (carro/moto) → marca → línea (búsqueda en `catalogo`, ej. "PRADO VX 5P AT · 3.400 cc") → año modelo (lista aparte) → confirmar combustible, transmisión y tracción sugeridos | Sí. Si no aparece: texto libre con `catalogoLineaId = null` y aviso "Lo revisaremos" |
 | 2. Cómo está hoy | kilometraje actual, uso (ciudad/carretera/mixto), km promedio al mes (estimado) | km sí; uso y km/mes opcionales (por defecto mixto y 1.000 km/mes) |
 | 3. Lo último que le hiciste | último cambio de aceite: km y fecha | Sí; si no sabe, "No sé" ⇒ pieza `SIN_DATO` |
 | 4. Papeles | fecha de expedición del SOAT, fecha de la última RTM o "aún no aplica", fecha de matrícula, seguro todo riesgo (fecha de inicio, aseguradora) | SOAT y RTM sí; seguro opcional; matrícula opcional (si falta, se pregunta cuando se necesite para la RTM) |

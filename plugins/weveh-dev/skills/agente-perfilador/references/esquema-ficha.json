@@ -4,7 +4,7 @@
   "additionalProperties": false,
   "required": ["clave_modelo", "sistema_distribucion", "intervalos", "consumo_referencia", "fallas_conocidas", "fuentes", "notas"],
   "properties": {
-    "clave_modelo": {"type": "string", "description": "marca|linea|anio|codigo_motor normalizado"},
+    "clave_modelo": {"type": "string", "description": "marca|linea|anio|cilindrada_cc normalizado"},
     "sistema_distribucion": {"type": "string", "enum": ["CORREA", "CADENA", "ENGRANAJES", "DESCONOCIDO"]},
     "intervalos": {
       "type": "array",

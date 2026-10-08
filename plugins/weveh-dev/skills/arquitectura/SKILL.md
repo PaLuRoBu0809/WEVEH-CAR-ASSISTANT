@@ -37,7 +37,7 @@ flowchart LR
 
 | Módulo | Responsabilidad | Publica eventos |
 |---|---|---|
-| `catalogo` | Marcas, líneas, versiones y motores de Colombia (solo lectura); fichas técnicas investigadas | — |
+| `catalogo` | Marcas y líneas de Colombia de las tablas del Ministerio de Transporte (solo lectura); fichas técnicas investigadas | — |
 | `garaje` | Vehículo: CRUD, kilometraje, datos de catálogo | `VehiculoRegistrado`, `KilometrajeActualizado`, `VehiculoEliminado` |
 | `mantenimiento` | Plan por pieza, historial de servicios, fallas, salud | `PiezaPorVencer` |
 | `documentos` | SOAT, RTM, seguro todo riesgo y su vencimiento | `DocumentoPorVencer` |
@@ -100,7 +100,7 @@ mobile/
 
 ## Supabase
 
-- Un proyecto con dos esquemas: `catalogo` (datos importados del Excel) y `public` (datos de la app).
+- Un proyecto con dos esquemas: `catalogo` (tablas del Ministerio de Transporte) y `public` (datos de la app).
 - El backend se conecta por JDBC con un usuario de servicio (variables `WEVEH_DB_URL`, `WEVEH_DB_USUARIO`, `WEVEH_DB_CLAVE`).
 - RLS activado en todas las tablas sin políticas para `anon`/`authenticated`.
 

@@ -12,7 +12,7 @@ El repo arranca solo con material de referencia (`README.md`, `WEVEH.docx`, note
 | Fase | Qué se construye | Skills | Cierra cuando |
 |---|---|---|---|
 | 0. Fundaciones | Repo, ADRs, requisitos, esqueletos, CI, Supabase, identidad por dispositivo | esta, `arquitectura` | La app en Expo Go muestra "Tu garaje está vacío" leyendo `GET /api/v1/vehiculos` con su `dispositivoId`, y la CI está en verde |
-| 1. Catálogo + Garaje | Importar el Excel; registro básico; editar y eliminar | `catalogo-vehiculos`, `dominio-vehiculo`, `feature-backend`, `feature-movil` | Se registra la Prado del ejemplo eligiendo marca → línea → año → versión |
+| 1. Catálogo + Garaje | Cargar las tablas del Ministerio; registro básico; editar y eliminar | `catalogo-vehiculos`, `dominio-vehiculo`, `feature-backend`, `feature-movil` | Se registra la Prado del ejemplo eligiendo Toyota → "PRADO VX 5P AT · 3.400 cc" → 2008 |
 | 2. Mantenimiento + Documentos | Plan genérico por pieza, estados, salud, historial, kilometraje, SOAT/RTM/seguro | `dominio-vehiculo` | Inicio muestra "Lo más urgente" correcto para la Prado y los vectores pasan en Java y TS |
 | 3. Mecánico IA | Diagnóstico por texto con contexto, validador, evals | `mecanico-ia` | Evals en verde, incluidos todos los casos críticos |
 | 4. Completar perfil | Agente con búsqueda web y entrevista | `agente-perfilador` | La Prado termina con correa, frenos y fallas confirmados o `SIN_DATO` |
@@ -54,7 +54,7 @@ datos/
 salida_catalogo/
 ```
 
-Además: `.editorconfig` (UTF-8, LF, 4 espacios en Java, 2 en TS/JSON/YAML) y `.gitattributes` con `* text=auto eol=lf`. Si el Excel del catálogo pesa más de unos MB, no va al repo.
+Además: `.editorconfig` (UTF-8, LF, 4 espacios en Java, 2 en TS/JSON/YAML) y `.gitattributes` con `* text=auto eol=lf`. Los Excel del Ministerio de Transporte no van al repo: viven en los archivos del proyecto.
 
 ### 0.2 Decisiones y requisitos (`docs/`)
 

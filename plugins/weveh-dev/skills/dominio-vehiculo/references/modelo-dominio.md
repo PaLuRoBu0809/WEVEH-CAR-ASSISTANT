@@ -11,10 +11,9 @@ classDiagram
     +VehiculoId id
     +DispositivoId dispositivo
     +TipoVehiculo tipo
-    +Long catalogoVersionId
+    +Long catalogoLineaId
     +String marca
     +String linea
-    +String version
     +int anioModelo
     +MotorInfo motor
     +String alias
@@ -139,7 +138,7 @@ classDiagram
   DocumentoLegal ..> TipoDocumento
 ```
 
-`claveModelo` = `marca|linea|anioModelo|codigoMotor` normalizado (minúsculas, sin tildes). Varias personas con el mismo modelo comparten la ficha investigada, lo que abarata la IA y es la base de los datos agregados.
+`claveModelo` = `marca|linea|anioModelo|cilindradaCc` normalizado (minúsculas, sin tildes). Varias personas con el mismo modelo comparten la ficha investigada, lo que abarata la IA y es la base de los datos agregados.
 
 ## Tablas (PostgreSQL)
 
@@ -158,10 +157,9 @@ erDiagram
     uuid id PK
     uuid dispositivo_id
     text tipo
-    bigint catalogo_version_id
+    bigint catalogo_linea_id
     text marca
     text linea
-    text version
     int anio_modelo
     jsonb motor
     text alias

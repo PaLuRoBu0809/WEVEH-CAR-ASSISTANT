@@ -1,163 +1,266 @@
 #!/usr/bin/env python3
-"""Normaliza el Excel de vehículos de Colombia y genera CSVs para catalogo.marca, catalogo.linea y catalogo.version.
+"""Convierte las tablas de base gravable del Ministerio de Transporte en CSVs para catalogo.marca y catalogo.linea.
 
 Uso:
-  python3 importar_catalogo.py --excel archivo.xlsx --hoja Hoja1 --mapeo mapeo.json --salida salida_catalogo/
+  python3 importar_catalogo.py --salida salida_catalogo/ "Tabla 1.- Automóviles.xlsx" "Tabla 2.- Camionetas y Camperos.xlsx" ...
 
-Requiere: pandas, openpyxl.
+Formato esperado de cada Excel (una hoja "Bases Gravables"):
+  fila con el título "TABLA N.- BASE GRAVABLE ... PARA EL AÑO FISCAL AAAA"
+  fila de encabezado con '#', 'CTR', 'ID', 'FECHA', 'PROYECCION', 'TIPO (1)', 'CLASE (2)', 'MARCA (3)', 'LINEA (4)',
+  'CILINDRAJE (5)', 'CAPACIDAD (6)', 'AÑO MODELO (7)'
+  fila siguiente con 'TONELAJE', 'PASAJEROS' y los años modelo (2000, 2001, ...)
+  una fila por línea con el avalúo en miles de pesos para cada año modelo.
+
+Requiere: openpyxl.
 """
 import argparse
+import csv
+import difflib
 import json
 import re
 import sys
 import unicodedata
+from collections import Counter
 from pathlib import Path
 
-import pandas as pd
+import openpyxl
 
-CAMPOS_OBLIGATORIOS = ("marca", "linea", "anio_modelo", "version")
-CAMPOS_OPCIONALES = ("cilindrada", "combustible", "tipo", "transmision", "traccion", "carroceria")
-ANIO_MINIMO = 1950
-ANIO_MAXIMO = 2030
-PALABRAS_MOTO = ("moto", "motocicleta", "cuatrimoto", "motocarro")
+FILAS_A_BUSCAR_ENCABEZADO = 15
+COLUMNAS = {
+    "codigo": "ID",
+    "tipo": "TIPO",
+    "clase": "CLASE",
+    "marca": "MARCA",
+    "linea": "LINEA",
+    "cilindraje": "CILINDRAJE",
+    "capacidad": "CAPACIDAD",
+}
+MARCADORES_LINEA_GENERICA = ("NO INCLUIDOS", "SIN LINEA")
+CILINDRADA_MINIMA_REAL_CC = 10
+SIMILITUD_MARCA_SOSPECHOSA = 0.88
+
+PATRON_DIESEL = re.compile(r"\b(DIESEL|TDI|CRDI|TD|HDI|DCI|D-4D)\b")
+PATRON_AUTOMATICA = re.compile(r"\b(AT|CVT|AUT|AUTOMATICA|AUTOMATICO|TIPTRONIC|DSG|DCT|STEPTRONIC)\b")
+PATRON_MECANICA = re.compile(r"\b(MT|MEC|MECANICA|MECANICO)\b")
+PATRON_4X4 = re.compile(r"\b(4X4|4WD)\b")
+PATRON_AWD = re.compile(r"\bAWD\b")
+PATRON_4X2 = re.compile(r"\b4X2\b")
+PATRON_PUERTAS = re.compile(r"\b([2-5])\s?P\b")
+PATRON_KW = re.compile(r"(\d+(?:[.,]\d+)?)\s*KW", re.IGNORECASE)
+PATRON_ANIO_FISCAL = re.compile(r"A[ÑN]O FISCAL (\d{4})")
+PATRON_TABLA = re.compile(r"TABLA\s+(\d+)")
 
 
-def normalizar(texto) -> str:
-    if texto is None or (isinstance(texto, float) and pd.isna(texto)):
+def sin_tildes(texto: str) -> str:
+    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
+
+
+def limpiar(valor) -> str:
+    if valor is None:
         return ""
-    sin_tildes = unicodedata.normalize("NFKD", str(texto)).encode("ascii", "ignore").decode("ascii")
-    return re.sub(r"\s+", " ", sin_tildes).strip().lower()
+    return re.sub(r"\s+", " ", str(valor)).strip()
 
 
-def limpiar_nombre(texto) -> str:
-    if texto is None or (isinstance(texto, float) and pd.isna(texto)):
-        return ""
-    return re.sub(r"\s+", " ", str(texto)).strip()
+def normalizar(valor) -> str:
+    return sin_tildes(limpiar(valor)).lower()
 
 
-def a_entero(valor):
-    if valor is None or (isinstance(valor, float) and pd.isna(valor)):
-        return None
-    coincidencia = re.search(r"\d+([.,]\d+)?", str(valor))
-    if not coincidencia:
-        return None
-    numero = float(coincidencia.group(0).replace(",", "."))
-    return int(round(numero))
+def buscar_encabezado(filas):
+    for indice, fila in enumerate(filas[:FILAS_A_BUSCAR_ENCABEZADO]):
+        celdas = [normalizar(c).upper() for c in fila]
+        if any(c.startswith("MARCA") for c in celdas) and any(c.startswith("LINEA") for c in celdas):
+            return indice
+    sys.exit("No encontré la fila de encabezado (MARCA / LINEA) en las primeras filas.")
 
 
-def a_cilindrada_cc(valor):
-    """Acepta '3400', '3.400 cc' o '3.4' (litros) y devuelve centímetros cúbicos."""
-    if valor is None or (isinstance(valor, float) and pd.isna(valor)):
-        return None
-    coincidencia = re.search(r"\d+([.,]\d+)?", str(valor))
-    if not coincidencia:
-        return None
-    texto_numero = coincidencia.group(0)
-    if re.fullmatch(r"\d{1,2}[.,]\d{3}", texto_numero):   # separador de miles: 3.400
-        return int(texto_numero.replace(".", "").replace(",", ""))
-    numero = float(texto_numero.replace(",", "."))
-    return int(round(numero * 1000)) if numero < 10 else int(round(numero))
-
-
-def clasificar_tipo(valor) -> str:
-    texto = normalizar(valor)
-    if not texto:
-        return "CARRO"
-    return "MOTO" if any(palabra in texto for palabra in PALABRAS_MOTO) else "CARRO"
-
-
-def leer_mapeo(ruta: Path) -> dict:
-    mapeo = json.loads(ruta.read_text(encoding="utf-8"))
-    faltantes = [campo for campo in CAMPOS_OBLIGATORIOS if not mapeo.get(campo)]
+def ubicar_columnas(encabezado):
+    posiciones = {}
+    celdas = [normalizar(c).upper() for c in encabezado]
+    for campo, prefijo in COLUMNAS.items():
+        for indice, celda in enumerate(celdas):
+            if celda.startswith(prefijo):
+                posiciones[campo] = indice
+                break
+    faltantes = [campo for campo in ("marca", "linea", "cilindraje") if campo not in posiciones]
     if faltantes:
-        sys.exit(f"El mapeo no define columnas obligatorias: {faltantes}")
-    return mapeo
+        sys.exit(f"Faltan columnas en el encabezado: {faltantes}")
+    return posiciones
 
 
-def valor(fila, mapeo, campo):
-    columna = mapeo.get(campo)
-    if not columna:
-        return None
-    return fila.get(columna)
+def ubicar_anios(fila_anios):
+    return {indice: int(valor) for indice, valor in enumerate(fila_anios) if isinstance(valor, (int, float)) and 1900 < valor < 2100}
+
+
+def leer_cilindraje(valor):
+    """Devuelve (cilindrada_cc, potencia_kw). Los eléctricos traen '1,2 KW'; las filas genéricas traen 1."""
+    if valor is None:
+        return None, None
+    if isinstance(valor, (int, float)):
+        return (int(valor), None) if valor >= CILINDRADA_MINIMA_REAL_CC else (None, None)
+    texto = limpiar(valor)
+    coincidencia_kw = PATRON_KW.search(texto)
+    if coincidencia_kw:
+        return None, float(coincidencia_kw.group(1).replace(",", "."))
+    coincidencia = re.search(r"\d+", texto)
+    if coincidencia and int(coincidencia.group(0)) >= CILINDRADA_MINIMA_REAL_CC:
+        return int(coincidencia.group(0)), None
+    return None, None
+
+
+def inferir_combustible(linea_mayus, clase_mayus, numero_tabla, potencia_kw):
+    if potencia_kw is not None or "ELECTRIC" in clase_mayus or "ELECTRICA" in linea_mayus:
+        return "ELECTRICO"
+    if numero_tabla == 9:
+        return "HIBRIDO"
+    if PATRON_DIESEL.search(linea_mayus):
+        return "DIESEL"
+    return None
+
+
+def inferir_transmision(linea_mayus):
+    if PATRON_AUTOMATICA.search(linea_mayus):
+        return "AUTOMATICA"
+    if PATRON_MECANICA.search(linea_mayus):
+        return "MECANICA"
+    return None
+
+
+def inferir_traccion(linea_mayus):
+    if PATRON_AWD.search(linea_mayus):
+        return "AWD"
+    if PATRON_4X4.search(linea_mayus):
+        return "4X4"
+    if PATRON_4X2.search(linea_mayus):
+        return "4X2"
+    return None
+
+
+def entero_o_nulo(valor):
+    if isinstance(valor, (int, float)) and valor > 0:
+        return int(valor)
+    return None
+
+
+def leer_tabla(ruta: Path):
+    hoja = openpyxl.load_workbook(ruta, read_only=True, data_only=True).worksheets[0]
+    filas = list(hoja.iter_rows(values_only=True))
+    titulo = next((limpiar(c) for fila in filas[:FILAS_A_BUSCAR_ENCABEZADO] for c in fila if "TABLA" in limpiar(c).upper()), "")
+    numero_tabla = int(PATRON_TABLA.search(titulo.upper()).group(1)) if PATRON_TABLA.search(titulo.upper()) else None
+    anio_fiscal = int(PATRON_ANIO_FISCAL.search(titulo.upper()).group(1)) if PATRON_ANIO_FISCAL.search(titulo.upper()) else None
+    indice_encabezado = buscar_encabezado(filas)
+    columnas = ubicar_columnas(filas[indice_encabezado])
+    anios = ubicar_anios(filas[indice_encabezado + 1])
+    indice_capacidad = columnas.get("capacidad")
+    for fila in filas[indice_encabezado + 2:]:
+        if not limpiar(fila[columnas["marca"]]) or not limpiar(fila[columnas["linea"]]):
+            continue
+        yield {
+            "archivo": ruta.name,
+            "numero_tabla": numero_tabla,
+            "anio_fiscal": anio_fiscal,
+            "fila": fila,
+            "columnas": columnas,
+            "anios": anios,
+            "tonelaje": fila[indice_capacidad] if indice_capacidad is not None else None,
+            "pasajeros": fila[indice_capacidad + 1] if indice_capacidad is not None else None,
+        }
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--excel", required=True, type=Path)
-    parser.add_argument("--hoja", default=0)
-    parser.add_argument("--mapeo", required=True, type=Path)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("excel", nargs="+", type=Path)
     parser.add_argument("--salida", required=True, type=Path)
     args = parser.parse_args()
 
-    mapeo = leer_mapeo(args.mapeo)
-    datos = pd.read_excel(args.excel, sheet_name=args.hoja, dtype=object)
-    columnas_faltantes = [c for c in mapeo.values() if c and c not in datos.columns]
-    if columnas_faltantes:
-        sys.exit(f"Columnas del mapeo que no existen en el Excel: {columnas_faltantes}\nColumnas reales: {list(datos.columns)}")
+    marcas, lineas = {}, {}
+    duplicadas, duplicadas_con_avaluo_distinto = 0, []
+    filas_leidas = Counter()
 
-    marcas, lineas, versiones = {}, {}, {}
-    descartes = {"sin_marca_linea_version": 0, "anio_invalido": 0, "duplicada": 0}
+    for ruta in args.excel:
+        for registro in leer_tabla(ruta):
+            filas_leidas[ruta.name] += 1
+            fila, columnas = registro["fila"], registro["columnas"]
+            marca, linea = limpiar(fila[columnas["marca"]]).upper(), limpiar(fila[columnas["linea"]])
+            tipo_tabla = normalizar(fila[columnas["tipo"]]).upper() if "tipo" in columnas else ""
+            clase = sin_tildes(limpiar(fila[columnas["clase"]])).upper() if "clase" in columnas else ""
+            tipo_vehiculo = "MOTO" if "MOTO" in tipo_tabla else "CARRO"
+            cilindrada_cc, potencia_kw = leer_cilindraje(fila[columnas["cilindraje"]])
+            linea_mayus = sin_tildes(linea).upper()
 
-    for _, fila in datos.iterrows():
-        marca = limpiar_nombre(valor(fila, mapeo, "marca"))
-        linea = limpiar_nombre(valor(fila, mapeo, "linea"))
-        version = limpiar_nombre(valor(fila, mapeo, "version"))
-        if not (marca and linea and version):
-            descartes["sin_marca_linea_version"] += 1
-            continue
-        anio = a_entero(valor(fila, mapeo, "anio_modelo"))
-        if anio is None or not ANIO_MINIMO <= anio <= ANIO_MAXIMO:
-            descartes["anio_invalido"] += 1
-            continue
+            clave_marca = normalizar(marca)
+            if clave_marca not in marcas:
+                marcas[clave_marca] = {"id": len(marcas) + 1, "nombre": marca, "nombre_normalizado": clave_marca, "tipo": tipo_vehiculo}
+            elif marcas[clave_marca]["tipo"] != tipo_vehiculo:
+                marcas[clave_marca]["tipo"] = "AMBOS"
+            marca_id = marcas[clave_marca]["id"]
 
-        tipo = clasificar_tipo(valor(fila, mapeo, "tipo"))
-        clave_marca = normalizar(marca)
-        if clave_marca not in marcas:
-            marcas[clave_marca] = {"id": len(marcas) + 1, "nombre": marca, "nombre_normalizado": clave_marca, "tipo": tipo}
-        elif marcas[clave_marca]["tipo"] != tipo:
-            marcas[clave_marca]["tipo"] = "AMBOS"
-        marca_id = marcas[clave_marca]["id"]
+            avaluos = {str(anio): int(fila[indice]) for indice, anio in registro["anios"].items()
+                       if indice < len(fila) and isinstance(fila[indice], (int, float)) and fila[indice] > 0}
+            clave_linea = (marca_id, normalizar(linea), cilindrada_cc, potencia_kw, clase)
+            if clave_linea in lineas:
+                duplicadas += 1
+                if lineas[clave_linea]["avaluos_miles"] != json.dumps(avaluos):
+                    duplicadas_con_avaluo_distinto.append(f"{marca} {linea} ({cilindrada_cc or potencia_kw}) en {registro['archivo']}")
+                continue
 
-        clave_linea = (marca_id, normalizar(linea))
-        if clave_linea not in lineas:
-            lineas[clave_linea] = {"id": len(lineas) + 1, "marca_id": marca_id, "nombre": linea, "nombre_normalizado": clave_linea[1]}
-        linea_id = lineas[clave_linea]["id"]
-
-        clave_version = (linea_id, anio, normalizar(version))
-        if clave_version in versiones:
-            descartes["duplicada"] += 1
-            continue
-        originales = {str(k): (None if pd.isna(v) else str(v)) for k, v in fila.items()}
-        versiones[clave_version] = {
-            "id": len(versiones) + 1,
-            "linea_id": linea_id,
-            "anio_modelo": anio,
-            "nombre": version,
-            "cilindrada_cc": a_cilindrada_cc(valor(fila, mapeo, "cilindrada")),
-            "combustible": limpiar_nombre(valor(fila, mapeo, "combustible")) or None,
-            "transmision": limpiar_nombre(valor(fila, mapeo, "transmision")) or None,
-            "traccion": limpiar_nombre(valor(fila, mapeo, "traccion")) or None,
-            "carroceria": limpiar_nombre(valor(fila, mapeo, "carroceria")) or None,
-            "datos_originales": json.dumps(originales, ensure_ascii=False),
-        }
+            codigo = fila[columnas["codigo"]] if "codigo" in columnas else None
+            lineas[clave_linea] = {
+                "id": len(lineas) + 1,
+                "marca_id": marca_id,
+                "nombre": linea,
+                "nombre_normalizado": normalizar(linea),
+                "clase": clase,
+                "tipo_vehiculo": tipo_vehiculo,
+                "tabla_origen": registro["numero_tabla"],
+                "cilindrada_cc": cilindrada_cc,
+                "potencia_kw": potencia_kw,
+                "combustible": inferir_combustible(linea_mayus, clase, registro["numero_tabla"], potencia_kw),
+                "transmision": inferir_transmision(linea_mayus),
+                "traccion": inferir_traccion(linea_mayus),
+                "puertas": int(PATRON_PUERTAS.search(linea_mayus).group(1)) if PATRON_PUERTAS.search(linea_mayus) else None,
+                "pasajeros": entero_o_nulo(registro["pasajeros"]),
+                "tonelaje": entero_o_nulo(registro["tonelaje"]),
+                "es_generica": any(marcador in linea_mayus for marcador in MARCADORES_LINEA_GENERICA),
+                "codigo_mintransporte": int(codigo) if isinstance(codigo, (int, float)) else None,
+                "anio_fiscal": registro["anio_fiscal"],
+                "avaluos_miles": json.dumps(avaluos),
+            }
 
     args.salida.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(marcas.values()).to_csv(args.salida / "marca.csv", index=False)
-    pd.DataFrame(lineas.values()).to_csv(args.salida / "linea.csv", index=False)
-    tabla_versiones = pd.DataFrame(versiones.values())
-    tabla_versiones["cilindrada_cc"] = tabla_versiones["cilindrada_cc"].astype("Int64")
-    tabla_versiones.to_csv(args.salida / "version.csv", index=False)
+    escribir_csv(args.salida / "marca.csv", list(marcas.values()))
+    escribir_csv(args.salida / "linea.csv", list(lineas.values()))
 
-    print(f"Filas leídas: {len(datos)}")
-    print(f"Marcas: {len(marcas)} · Líneas: {len(lineas)} · Versiones: {len(versiones)}")
-    print(f"Descartes: {descartes}")
-    print("\nCarga en Supabase (en orden):")
+    nombres = sorted(marcas)
+    sospechosas = sorted({tuple(sorted((a, b))) for a in nombres for b in difflib.get_close_matches(a, nombres, n=3, cutoff=SIMILITUD_MARCA_SOSPECHOSA) if a != b})
+    genericas = sum(1 for linea in lineas.values() if linea["es_generica"])
+    resumen = {
+        "filas_leidas": dict(filas_leidas),
+        "marcas": len(marcas),
+        "lineas": len(lineas),
+        "lineas_genericas": genericas,
+        "duplicadas_descartadas": duplicadas,
+        "duplicadas_con_avaluo_distinto": duplicadas_con_avaluo_distinto,
+        "marcas_parecidas_para_revisar": [" / ".join(par) for par in sospechosas],
+        "lineas_por_tipo": dict(Counter(linea["tipo_vehiculo"] for linea in lineas.values())),
+        "combustible_inferido": dict(Counter(linea["combustible"] or "SIN_DATO" for linea in lineas.values())),
+        "transmision_inferida": dict(Counter(linea["transmision"] or "SIN_DATO" for linea in lineas.values())),
+    }
+    (args.salida / "resumen.json").write_text(json.dumps(resumen, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(resumen, ensure_ascii=False, indent=2))
+
+    columnas_linea = ",".join(next(iter(lineas.values())).keys())
+    print("\nCarga en Supabase (en orden, después de la migración del esquema catalogo):")
     print(f"  psql \"$WEVEH_DB_URL\" -c \"\\copy catalogo.marca(id,nombre,nombre_normalizado,tipo) from '{args.salida}/marca.csv' csv header\"")
-    print(f"  psql \"$WEVEH_DB_URL\" -c \"\\copy catalogo.linea(id,marca_id,nombre,nombre_normalizado) from '{args.salida}/linea.csv' csv header\"")
-    print(f"  psql \"$WEVEH_DB_URL\" -c \"\\copy catalogo.version(id,linea_id,anio_modelo,nombre,cilindrada_cc,combustible,transmision,traccion,carroceria,datos_originales) from '{args.salida}/version.csv' csv header\"")
+    print(f"  psql \"$WEVEH_DB_URL\" -c \"\\copy catalogo.linea({columnas_linea}) from '{args.salida}/linea.csv' csv header\"")
     print("  psql \"$WEVEH_DB_URL\" -c \"select setval('catalogo.marca_id_seq', (select max(id) from catalogo.marca)); "
-          "select setval('catalogo.linea_id_seq', (select max(id) from catalogo.linea)); "
-          "select setval('catalogo.version_id_seq', (select max(id) from catalogo.version));\"")
+          "select setval('catalogo.linea_id_seq', (select max(id) from catalogo.linea));\"")
+
+
+def escribir_csv(ruta: Path, filas: list) -> None:
+    with ruta.open("w", newline="", encoding="utf-8") as archivo:
+        escritor = csv.DictWriter(archivo, fieldnames=list(filas[0].keys()))
+        escritor.writeheader()
+        escritor.writerows(filas)
 
 
 if __name__ == "__main__":
