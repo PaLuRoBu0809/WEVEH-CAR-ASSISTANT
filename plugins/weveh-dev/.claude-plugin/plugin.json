@@ -1,0 +1,12 @@
+{
+  "name": "weveh-dev",
+  "displayName": "WEVEH Dev",
+  "version": "0.1.0",
+  "description": "Instrucciones y skills para construir el MVP de WEVEH: arquitectura modular hexagonal, dominio vehicular, agentes IA (perfilador con búsqueda web y Mecánico IA), catálogo de vehículos de Colombia y recetas de features para Spring Boot y Expo.",
+  "author": {
+    "name": "Isaac Cano y Pablo Rodríguez"
+  },
+  "repository": "https://github.com/PaLuRoBu0809/WEVEH-CAR-ASSISTANT",
+  "license": "UNLICENSED",
+  "keywords": ["weveh", "spring-boot", "expo", "react-native", "supabase", "agentes-ia"]
+}

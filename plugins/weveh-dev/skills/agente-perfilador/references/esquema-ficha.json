@@ -1,0 +1,52 @@
+{
+  "$comment": "Entrada de la herramienta guardar_ficha_tecnica (strict: true). Valores desconocidos van en null; nunca se inventan.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["clave_modelo", "sistema_distribucion", "intervalos", "consumo_referencia", "fallas_conocidas", "fuentes", "notas"],
+  "properties": {
+    "clave_modelo": {"type": "string", "description": "marca|linea|anio|codigo_motor normalizado"},
+    "sistema_distribucion": {"type": "string", "enum": ["CORREA", "CADENA", "ENGRANAJES", "DESCONOCIDO"]},
+    "intervalos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pieza", "intervalo_km", "intervalo_meses", "es_seguridad", "fuente_url", "nota"],
+        "properties": {
+          "pieza": {"type": "string", "description": "identificador snake_case, ej. aceite_motor, correa_distribucion, liquido_frenos"},
+          "intervalo_km": {"type": ["integer", "null"]},
+          "intervalo_meses": {"type": ["integer", "null"]},
+          "es_seguridad": {"type": "boolean"},
+          "fuente_url": {"type": ["string", "null"]},
+          "nota": {"type": ["string", "null"], "description": "condiciones severas, discrepancias entre fuentes"}
+        }
+      }
+    },
+    "consumo_referencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ciudad_km_gal", "carretera_km_gal", "mixto_km_gal", "fuente_url"],
+      "properties": {
+        "ciudad_km_gal": {"type": ["number", "null"]},
+        "carretera_km_gal": {"type": ["number", "null"]},
+        "mixto_km_gal": {"type": ["number", "null"]},
+        "fuente_url": {"type": ["string", "null"]}
+      }
+    },
+    "fallas_conocidas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["descripcion", "km_tipico", "fuente_url"],
+        "properties": {
+          "descripcion": {"type": "string"},
+          "km_tipico": {"type": ["integer", "null"]},
+          "fuente_url": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "fuentes": {"type": "array", "items": {"type": "string"}},
+    "notas": {"type": ["string", "null"]}
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$comment": "Salida estructurada de cada turno de la entrevista (Fase B).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["registros", "siguiente_pregunta", "progreso", "sintoma_critico_detectado"],
+  "properties": {
+    "registros": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tipo", "pieza", "km", "fecha", "descripcion", "certeza"],
+        "properties": {
+          "tipo": {"type": "string", "enum": ["SERVICIO", "FALLA", "SIN_DATO", "SINTOMA_ACTUAL"]},
+          "pieza": {"type": ["string", "null"]},
+          "km": {"type": ["integer", "null"]},
+          "fecha": {"type": ["string", "null"], "description": "YYYY-MM-DD o YYYY-MM"},
+          "descripcion": {"type": ["string", "null"]},
+          "certeza": {"type": "string", "enum": ["EXACTA", "APROXIMADA", "DESCONOCIDA"]}
+        }
+      }
+    },
+    "siguiente_pregunta": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["texto", "motivo", "opciones", "permite_texto"],
+      "properties": {
+        "texto": {"type": "string"},
+        "motivo": {"type": "string"},
+        "opciones": {"type": "array", "items": {"type": "string"}},
+        "permite_texto": {"type": "boolean"}
+      }
+    },
+    "progreso": {"type": "number"},
+    "sintoma_critico_detectado": {"type": "boolean"}
+  }
+}
