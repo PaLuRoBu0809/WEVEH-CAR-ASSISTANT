@@ -29,6 +29,8 @@
 	<properties>
 		<java.version>25</java.version>
 		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<!-- Los evals llaman al modelo real: se corren aparte con -Dgroups=evals -DexcludedGroups=none -->
+		<excludedGroups>evals</excludedGroups>
 	</properties>
 	<dependencies>
 		<dependency>
