@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { StyleSheet, TextInput, View, type TextInputProps, type TextStyle } from 'react-native';
 
 import { Texto } from './Texto';
 import { useTema } from './tema';
@@ -9,10 +9,11 @@ type Props = Omit<TextInputProps, 'style'> & {
   etiqueta: string;
   ayuda?: string;
   error?: string | null;
+  estiloEntrada?: TextStyle;
 };
 
 /** ".field" del mockup Portada: etiqueta, campo de 52 pt y ayuda o error debajo. */
-export function Campo({ etiqueta, ayuda, error, ...props }: Props) {
+export function Campo({ etiqueta, ayuda, error, estiloEntrada, ...props }: Props) {
   const tema = useTema();
   const [enfocado, setEnfocado] = useState(false);
   const colorBorde = error ? tema.error : enfocado ? tema.primario : tema.campo;
@@ -38,6 +39,7 @@ export function Campo({ etiqueta, ayuda, error, ...props }: Props) {
           estilos.entrada,
           { borderColor: colorBorde, color: tema.texto, backgroundColor: tema.fondo },
           enfocado && !error ? { borderWidth: 2 } : null,
+          estiloEntrada,
         ]}
       />
       {error ? (
