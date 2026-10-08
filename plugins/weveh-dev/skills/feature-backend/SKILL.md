@@ -30,7 +30,7 @@ Ejemplo guía: "Registrar tanqueada" en el módulo `combustible`.
     - Unitarias de dominio (JUnit 5 + AssertJ) parametrizadas con los vectores.
     - Servicio con dobles de los puertos (Mockito).
     - Controlador con `@WebMvcTest` (validación, 404 para vehículo de otro dispositivo, Problem Details).
-11. `mvn -B test` en verde. Actualiza el contrato OpenAPI si existe.
+11. `./mvnw -B verify` en verde (incluye `ModularidadTest`). Actualiza `contracts/openapi.yaml`.
 
 ## Endpoints del MVP (referencia)
 

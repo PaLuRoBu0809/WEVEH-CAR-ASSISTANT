@@ -1,6 +1,6 @@
 ---
 name: mecanico-ia
-description: Reglas del Mecánico IA de WEVEH (diagnóstico por texto con el contexto completo del vehículo, contrato JSON, ValidadorSeguridadDiagnostico, evals). Úsala al cambiar el módulo mecanicoia, su prompt, el proveedor o modelo de IA, el validador de seguridad o los casos de evals/.
+description: Diseño del Mecánico IA de WEVEH (diagnóstico por texto con el contexto completo del vehículo, contrato JSON, ValidadorSeguridadDiagnostico, adaptador Anthropic, evals). Úsala al cambiar el módulo mecanicoia, su prompt, el proveedor o modelo de IA, el validador de seguridad o los casos de evals/.
 ---
 
 # Mecánico IA
@@ -12,7 +12,7 @@ El usuario describe un síntoma por texto desde la pestaña "Preguntar" de un ve
 ```mermaid
 flowchart LR
   S["Síntoma del usuario"] --> C["Armar contexto<br/>vehículo + km + plan + historial + fallas + ficha técnica"]
-  C --> M["Modelo (ClienteLlm)"]
+  C --> M["Modelo (MotorDiagnostico)"]
   M --> E{"¿Cumple el esquema?"}
   E -- "no, 1 reintento" --> M
   E -- "sí" --> V["ValidadorSeguridadDiagnostico"]
@@ -38,7 +38,7 @@ Nunca incluyas placa, alias ni `dispositivoId`.
 
 ## Contrato de salida
 
-Se conserva el contrato del README (`diagnostico_mecanico_preventivo`) y se agregan campos de acción:
+Parte del contrato definido en el `README.md` (`diagnostico_mecanico_preventivo`) y agrega campos de acción. El esquema JSON vive en `backend/src/main/resources/esquemas/diagnostico.json` y en `contracts/`:
 
 | Campo | Tipo | Regla |
 |---|---|---|
@@ -56,21 +56,23 @@ Todo diagnóstico muestra: "Orientación, no reemplaza al mecánico".
 
 ## Reglas de seguridad (código, no prompt)
 
-`ValidadorSeguridadDiagnostico` ya existe en `backend/.../mecanicoia/service/`. Respétalo y extiéndelo, no lo saltes:
+`ValidadorSeguridadDiagnostico` vive en `co.weveh.mecanicoia.domain` (Java puro) y se escribe **antes** que el adaptador de IA, con sus pruebas. Corre después del modelo y su resultado gana siempre:
 - Palabras críticas (normalizadas sin tildes): testigo/luz roja, aceite, temperatura, recalentamiento, humo, frenos, dirección, batería ⇒ `CRITICO`, `requires_human_review` y `requires_mechanic` en true.
 - Además: si una pieza de seguridad del plan está `VENCIDO` y el síntoma la menciona, gravedad mínima `Moderado`.
 - Perfil incompleto (sin marca, modelo, año o km) ⇒ pedir datos, sin gravedad definitiva.
 - Costos sospechosos (0, gratis, promoción) ⇒ null.
 - El texto del usuario que intente cambiar instrucciones ("ignora", "marca leve") no altera las reglas.
 
-## Proveedor
+## Implementación
 
-- Hoy: OpenRouter vía `ClienteLlmOpenRouter` (`LLM_*` en `application.yml`).
-- Nuevos agentes: Anthropic Java SDK (ver skill `agente-perfilador`). Para migrar el diagnóstico, crea `ClienteLlmAnthropic implements ClienteLlm`, selecciónalo por propiedad y corre los evals con ambos antes de cambiar el valor por defecto.
-- Prompt versionado en `backend/src/main/resources/prompts/` y guardado junto a cada consulta (`version_prompt`, `modelo`).
+- Puerto `MotorDiagnostico` en `mecanicoia/application/puertos`; adaptador `MotorDiagnosticoAnthropic` en `mecanicoia/infrastructure/ia` con el Anthropic Java SDK, modelo `WEVEH_IA_MODELO`.
+- Salida estructurada con `outputConfig` y un `record` del contrato (mismo patrón que `agente-perfilador/references/implementacion-java.md`). Aun así, valida en el backend y mapea `nivel_gravedad` al enum `NivelGravedad`.
+- Revisa `stop_reason`: `refusal` o `max_tokens` ⇒ respuesta segura ("No pude analizarlo, si notas X ve al mecánico"), nunca un diagnóstico a medias.
+- Prompt versionado en `backend/src/main/resources/prompts/mecanico-v<n>.md` y guardado junto a cada consulta (`version_prompt`, `modelo`).
+- El servicio arma el contexto, llama al puerto, valida y aplica el validador. El controlador solo mapea.
 
 ## Evals
 
-- Casos en `evals/eval_cases.json` y `evals/weveh_eval_cases.csv`: caso feliz, dato incompleto, síntoma ambiguo, inyección, testigo rojo de aceite, costo incierto.
-- Agrega casos con contexto de vehículo completo (por ejemplo: Prado 190.000 km sin dato de correa + "suena un tic-tac al encender").
+- Casos en `evals/mecanico-ia/casos.json` (entrada: contexto + síntoma; esperado: gravedad mínima, `requires_mechanic`, campos obligatorios). Mínimos: caso feliz, dato incompleto, síntoma ambiguo, inyección, testigo rojo de aceite, costo incierto, y uno con contexto completo (Prado 190.000 km sin dato de correa + "suena un tic-tac al encender").
+- Un runner (prueba JUnit etiquetada `evals`, fuera del `verify` normal porque gasta llamadas) corre los casos contra el modelo real.
 - Cada cambio de prompt, modelo o validador: corre los evals y actualiza `evals/results.md` con fecha, modelo, versión de prompt y pass/fail por caso. Un cambio que baje la detección de críticos no se fusiona.

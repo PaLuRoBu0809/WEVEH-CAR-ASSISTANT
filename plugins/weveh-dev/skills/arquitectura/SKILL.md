@@ -57,11 +57,11 @@ co/weveh/<modulo>/
 ├── application/
 │   ├── <CasoDeUso>.java        # interfaz (puerto de entrada)
 │   ├── <CasoDeUso>Servicio.java
-│   └── puertos/                # interfaces de salida: repositorios, ClienteLlm, BuscadorWeb...
+│   └── puertos/                # interfaces de salida: repositorios, MotorDiagnostico, InvestigadorFichaTecnica...
 └── infrastructure/
     ├── web/                    # @RestController + DTOs (records) + mapeadores
     ├── persistencia/           # entidades JPA + adaptadores de repositorio
-    └── ia/                     # adaptadores del SDK de Anthropic / OpenRouter
+    └── ia/                     # adaptadores del SDK de Anthropic (único lugar donde aparece)
 ```
 
 Reglas:
@@ -70,7 +70,8 @@ Reglas:
 - Entidad JPA ≠ entidad de dominio. Mapea en el adaptador.
 - Cada caso de uso recibe `DispositivoId` y filtra por él. Un recurso de otro dispositivo responde **404**, no 403.
 - Migraciones de esquema solo con Flyway en `backend/src/main/resources/db/migration` (`V<n>__descripcion.sql`). Nunca cambios manuales en Supabase.
-- Si agregas Spring Modulith, usa la versión compatible con el Spring Boot del `pom.xml` y añade la prueba `ApplicationModules.of(...).verify()`.
+- Spring Modulith viene desde la fase 0 (versión gestionada por el BOM que trae start.spring.io). La prueba `ModularidadTest` con `ApplicationModules.of(WevehApplication.class).verify()` es obligatoria y corre en CI.
+- Los eventos entre módulos (`VehiculoRegistrado`, `KilometrajeActualizado`...) se publican con `ApplicationEventPublisher` y se escuchan con `@ApplicationModuleListener`.
 
 ## App móvil
 

@@ -25,6 +25,8 @@ Revisa, en este orden:
    - Un módulo que importa `domain`, `application` o `infrastructure` de otro en vez de su `<Modulo>Api`.
    - Lógica de negocio en controladores, entidades JPA, rutas de Expo o componentes.
    - Cambios de esquema fuera de Flyway; tablas nuevas sin RLS.
+   - Código traído del prototipo de las ramas `dev/*` o `makers/*` sin adaptarlo a estas reglas.
+   - Trabajo de una fase posterior mezclado en el PR (ver skill `arranque`).
 4. **Dominio**
    - Fórmulas que no coinciden con `dominio-vehiculo` (estados, umbral 85 %, bandas de salud, método de tanque lleno, vencimientos).
    - Kilometraje que puede decrecer.
@@ -34,7 +36,7 @@ Revisa, en este orden:
    - Nombres ambiguos o mezcla de idiomas dentro de un mismo concepto.
    - Textos de UI con jerga mecánica.
 
-Puedes correr comandos de solo lectura y las pruebas (`mvn -B test`, `npm test`, `npx tsc --noEmit`) para confirmar un hallazgo.
+Puedes correr comandos de solo lectura y las pruebas (`./mvnw -B verify`, `npm test`, `npx tsc --noEmit`) para confirmar un hallazgo.
 
 Formato de salida:
 
