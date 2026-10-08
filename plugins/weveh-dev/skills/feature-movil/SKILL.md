@@ -23,7 +23,7 @@ Usa la versión de SDK que instale `create-expo-app` y no mezcles versiones a ma
 2. **Infraestructura** `infrastructure/`: `apiCombustible.ts` (llamadas con el cliente de `shared/http`, que agrega `X-Weveh-Dispositivo`), `repositorioLocal.ts` (SQLite) y mapeadores DTO → dominio.
 3. **Aplicación** `application/`: hooks `useTanqueadas(vehiculoId)` y `useRegistrarTanqueada()` con TanStack Query; actualización optimista y cola offline.
 4. **Presentación** `presentation/`: componentes puros (`TarjetaConsumo`, `FormularioTanqueada`). El formulario usa React Hook Form + Zod con mensajes en español claro.
-5. **Ruta** `app/(tabs)/combustible.tsx`: solo compone la pantalla.
+5. **Ruta** `src/app/(tabs)/combustible.tsx`: solo compone la pantalla.
 6. **Pruebas**: dominio con Jest; un componente clave con Testing Library.
 7. `npm run lint`, `npx tsc --noEmit`, `npm test` en verde y prueba manual en Expo Go.
 
