@@ -4,6 +4,7 @@ import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.DatoInvalidoException;
 import co.weveh.shared.domain.DispositivoInvalidoException;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
+import co.weveh.shared.domain.ServicioNoDisponibleException;
 import java.net.URI;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,11 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConflictoException.class)
     ProblemDetail conflicto(ConflictoException excepcion) {
         return problema(HttpStatus.CONFLICT, "conflicto", "Los datos cambiaron", excepcion.getMessage());
+    }
+
+    @ExceptionHandler(ServicioNoDisponibleException.class)
+    ProblemDetail noDisponible(ServicioNoDisponibleException excepcion) {
+        return problema(HttpStatus.SERVICE_UNAVAILABLE, "no-disponible", "Servicio no disponible", excepcion.getMessage());
     }
 
     @Override

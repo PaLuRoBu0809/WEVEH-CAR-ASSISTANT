@@ -20,6 +20,11 @@ spring:
       enabled: true
 
 weveh:
+  ia:
+    # Modelo de OpenRouter, por ejemplo anthropic/claude-sonnet-4.5 (docs/adr/0004)
+    modelo: ${WEVEH_IA_MODELO:}
+    openrouter:
+      llave: ${OPENROUTER_API_KEY:}
   cors:
     # Solo para probar la app en el navegador del PC (ej. http://localhost:8081). Vacío en producción.
     origenes: ${WEVEH_CORS_ORIGENES:}
