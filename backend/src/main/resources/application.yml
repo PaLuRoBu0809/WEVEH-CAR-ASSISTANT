@@ -2,6 +2,9 @@
 spring:
   application:
     name: weveh
+  config:
+    # En local lee backend/.env (no se versiona); en la nube se usan variables de entorno
+    import: optional:file:.env[.properties]
   datasource:
     url: ${WEVEH_DB_URL:}
     username: ${WEVEH_DB_USUARIO:}
