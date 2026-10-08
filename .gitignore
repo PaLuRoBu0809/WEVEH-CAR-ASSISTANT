@@ -1,0 +1,26 @@
+# Dependencias y builds
+node_modules/
+target/
+dist/
+build/
+.expo/
+.gradle/
+*.apk
+*.aab
+*.ipa
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Editor y sistema
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Datos de entrada que no se versionan
+datos/
+salida_catalogo/
+__pycache__/
