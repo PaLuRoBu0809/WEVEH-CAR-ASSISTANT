@@ -1,0 +1,251 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>WEVEH Portada</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Concepto: la portada usa el arte de WEVEH tal cual y lo hace trabajar. El encendido es el punto ámbar prendiéndose; la portada es la carretera con el sol al fondo; al iniciar sesión, el dial de la marca se llena mientras completas los datos; al registrarte, cada dato que completas enciende una W de la trama. Las escenas son siempre oscuras (son la marca); solo la hoja de formulario cambia entre claro y oscuro. */
+:root{
+  --stage:#0A1413; --stageText:#EAF3F1; --stageText2:#A9BEBA; --stageLine:#22403C; --stageCard:#112220; --stageAccent:#6FE5D2;
+  --bg:#FFFFFF; --surface:#F3F6F5; --line:#DCE5E3;
+  --text:#0E1F1D; --text2:#41554F; --text3:#5A6E6A;
+  --primary:#005F54; --primaryPressed:#004A42; --onPrimary:#FFFFFF; --primaryTint:#E2F1EE; --primaryInk:#005F54;
+  --err:#C9302C; --errTint:#FCE9E7; --errInk:#A5231F;
+  --ok:#1E7A46; --okInk:#17693A;
+  --field:#7F9591; --sun:#FFB000; --mint:#3DBBA9;
+  --toastBg:#0E1F1D; --toastInk:#EAF3F1;
+  --bezel:#101A19; --shadow:rgba(0,12,10,.28);
+  --font:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+.device[data-mode="dark"]{
+  --bg:#0B1514; --surface:#112220; --line:#22403C;
+  --text:#EAF3F1; --text2:#B3C7C3; --text3:#93A9A5;
+  --primary:#3CCFB6; --primaryPressed:#2AB29B; --onPrimary:#03211D; --primaryTint:#12403A; --primaryInk:#5FDCC8;
+  --err:#FF7A72; --errTint:#451A18; --errInk:#FF9A93;
+  --ok:#4CD07D; --okInk:#6FE29B; --field:#6A8984; --bezel:#1B2B29; --toastBg:#EAF3F1; --toastInk:#0B1514; color-scheme:dark}
+.device{color-scheme:light;color:var(--text)}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--stage);color:var(--stageText);font-family:var(--font);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.stagewrap{max-width:900px;margin-inline:auto;display:grid;grid-template-columns:392px minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:860px){.stagewrap{grid-template-columns:minmax(0,1fr);justify-items:center}.side{width:100%;max-width:392px}}
+.side{display:grid;gap:18px;min-width:0}
+.side h1{font-size:26px;line-height:1.15;margin:0;font-weight:800;text-wrap:balance}
+.side p{margin:0;color:var(--stageText2);font-size:14px}
+.grp{display:grid;gap:8px}
+.grp h3{margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--stageText2);font-weight:700}
+.jumps{display:flex;flex-wrap:wrap;gap:8px}
+.jump,.sbtn{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--stageLine);background:transparent;color:var(--stageText);font-weight:600;font-size:14px}
+.sbtn{border-radius:12px;background:var(--stageCard)}
+.jump[aria-pressed="true"]{background:var(--stageAccent);color:#06201C;border-color:var(--stageAccent)}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.note{background:var(--stageCard);border:1px solid var(--stageLine);border-radius:16px;padding:16px;display:grid;gap:8px}
+.note h2{margin:0;font-size:16px}
+.note ul{margin:0;padding-left:18px;display:grid;gap:6px;color:var(--stageText2);font-size:14px}
+/* teléfono */
+.device{width:100%;max-width:392px;height:800px;background:var(--bg);border:10px solid var(--bezel);border-radius:52px;overflow:hidden;position:relative;box-shadow:0 0 0 1px #1d302d}
+@media (max-height:860px){.device{height:calc(100svh - 40px);min-height:700px}}
+.status{position:absolute;top:0;left:0;right:0;z-index:7;display:flex;justify-content:space-between;align-items:center;padding:14px 26px 6px;font-weight:700;font-size:14px;color:#fff;pointer-events:none}
+.bat{display:flex;gap:3px;align-items:center}.bat i{width:8px;height:12px;background:#fff;border-radius:2px}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.scr svg{display:block}
+.back{position:absolute;top:44px;left:12px;z-index:6;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;display:grid;place-items:center}
+/* encendido */
+.enc{background:radial-gradient(circle at 50% 44%,#007A6C 0,#005F54 55%,#00332E 100%);align-items:center;justify-content:center;color:#fff}
+.enc .wm{font-weight:800;font-size:44px;letter-spacing:-.02em;line-height:1;margin-top:8px}
+.enc .tg{margin-top:10px;font-size:14px;color:#BFE7E0}
+.enc .glow{transform-origin:32px 18px}
+@media (prefers-reduced-motion:no-preference){
+ @keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+ @keyframes ign{0%{opacity:0;transform:scale(.2)}60%{opacity:1;transform:scale(1.5)}100%{opacity:1;transform:scale(1)}}
+ @keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+ @keyframes breathe{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.18)}}
+ .enc .wpath{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1s .9s cubic-bezier(.5,0,.2,1) forwards}
+ .enc .wdot{transform-origin:32px 18px;animation:ign .9s .1s cubic-bezier(.2,.7,.2,1) both}
+ .enc .glow{animation:breathe 2.4s 1s ease-in-out infinite}
+ .enc .wm,.enc .tg{animation:fadeup .7s 1.7s both}
+ @keyframes sunrise{from{transform:translateY(44px);opacity:.1}to{transform:none;opacity:1}}
+ @keyframes run{0%,100%{filter:none}14%{filter:brightness(1.9)}30%{filter:none}}
+ .por .sun{animation:sunrise 1.6s cubic-bezier(.2,.7,.2,1)}
+ .por .dash{animation:run 2.6s infinite;animation-delay:calc(var(--i)*.2s)}
+ .por .up{animation:fadeup .8s both}
+ .por .up1{animation-delay:.5s}.por .up2{animation-delay:.7s}.por .up3{animation-delay:.9s}
+ .tk{transition:stroke .25s}.gl{transition:opacity .4s}
+ .lit-g{transition:opacity .4s}
+}
+.enc .wpath{stroke-dasharray:1}
+/* portada */
+.por{background:#00120F;color:#fff}
+.por .scene{position:absolute;inset:0}
+.por .brand{position:absolute;left:24px;top:52px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:24px;letter-spacing:-.02em}
+.por .copy{position:absolute;left:24px;right:24px;top:122px}
+.por h1{margin:0;font-size:32px;line-height:1.1;font-weight:800;letter-spacing:-.02em;text-wrap:balance;text-shadow:0 2px 14px rgba(0,0,0,.35)}
+.por .lead{margin:12px 0 0;font-size:15px;line-height:1.45;color:rgba(255,255,255,.86);max-width:290px;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.por .actions{position:absolute;left:20px;right:20px;bottom:26px;display:grid;gap:10px}
+.por .scrim{position:absolute;left:0;right:0;bottom:0;height:260px;background:linear-gradient(to top,rgba(0,12,10,.92),rgba(0,12,10,0))}
+.legal{margin:4px 4px 0;text-align:center;font-size:13px;color:rgba(255,255,255,.72);line-height:1.4}
+.btn{min-height:52px;border-radius:16px;border:0;background:var(--primary);color:var(--onPrimary);font-weight:800;font-size:16px;width:100%;padding:0 18px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{background:var(--primaryPressed)}
+.btn[disabled]{background:var(--surface);color:var(--text3);border:1.5px dashed var(--field);cursor:not-allowed}
+.btn.mint{background:#3CCFB6;color:#03211D}
+.btn.mint:active{background:#2AB29B}
+.btn.ghost{background:rgba(0,18,15,.4);color:#fff;border:1.5px solid rgba(255,255,255,.75)}
+.btn2{min-height:52px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);font-weight:700;font-size:16px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px}
+.gmark{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-weight:800;font-size:13px}
+/* formularios */
+.band{position:relative;flex:none;overflow:hidden;background:linear-gradient(to bottom,#00120F,#00403A 70%,#0A7A69)}
+.band.l{height:250px}.band.s{height:200px}
+.sheet{position:relative;z-index:2;flex:1;min-height:0;overflow-y:auto;background:var(--bg);border-radius:28px 28px 0 0;margin-top:-26px;padding:24px 20px 28px;display:grid;grid-auto-rows:max-content;gap:16px;align-content:start;box-shadow:0 -8px 24px var(--shadow)}
+.sheet h1{margin:0;font-size:26px;line-height:1.15;font-weight:800;letter-spacing:-.01em}
+.sheet .lead{margin:4px 0 0;color:var(--text2);font-size:15px}
+.stat{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--text2);margin-top:-6px}
+.stat i{width:10px;height:10px;border-radius:50%;background:var(--field);flex:none}
+.stat.done{color:var(--okInk)}.stat.done i{background:var(--sun);box-shadow:0 0 0 4px rgba(255,176,0,.25)}
+.field{display:grid;gap:6px}
+.field label{font-weight:700;font-size:14px}
+.wrap{position:relative}
+.inp{width:100%;height:52px;border-radius:14px;border:1.5px solid var(--field);background:var(--bg);color:var(--text);padding:0 14px;font-size:16px}
+.inp:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primaryTint)}
+.inp.bad{border-color:var(--err)}
+.wrap .inp{padding-right:52px}
+.eye{position:absolute;right:2px;top:4px;width:44px;height:44px;border:0;background:none;color:var(--text2);display:grid;place-items:center;border-radius:12px}
+.hint{font-size:14px;color:var(--text3)}
+.hint.good{color:var(--okInk);font-weight:600}
+.err{display:flex;gap:8px;align-items:flex-start;background:var(--errTint);color:var(--errInk);border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600}
+.err svg{flex:none;margin-top:1px}
+.chk{display:flex;gap:12px;align-items:flex-start;min-height:44px}
+.chk input{width:24px;height:24px;margin:2px 0 0;accent-color:var(--primary);flex:none}
+.chk label{font-size:14px;color:var(--text2)}
+.lnk{background:none;border:0;color:var(--primaryInk);font-weight:700;min-height:44px;padding:0 4px;text-decoration:underline;text-underline-offset:3px}
+.lnkrow{display:flex;justify-content:space-between;align-items:center;margin-top:-8px}
+.or{display:flex;align-items:center;gap:12px;color:var(--text3);font-size:14px}.or:before,.or:after{content:"";height:1px;background:var(--line);flex:1}
+.foot{text-align:center;color:var(--text2);font-size:14px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:2px}
+/* cuenta creada */
+.fin{background:radial-gradient(circle at 50% 36%,#007A6C 0,#005F54 50%,#00332E 100%);color:#fff;align-items:center}
+.fin .body{position:relative;z-index:2;display:grid;gap:12px;text-align:center;padding:0 28px;margin-top:300px}
+.fin h1{margin:0;font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.01em}
+.fin p{margin:0;color:#D5ECE7;font-size:15px}
+.fin .actions{position:absolute;left:20px;right:20px;bottom:26px;z-index:2;display:grid;gap:10px}
+.toast{position:absolute;left:14px;right:14px;bottom:20px;background:var(--toastBg);color:var(--toastInk);border-radius:16px;padding:12px 14px;z-index:9;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px}
+[hidden]{display:none!important}
+</style>
+
+<div class="stagewrap">
+  <div class="device" id="dev" data-mode="light">
+    <div class="status"><span>9:41</span><span class="bat" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <div class="scr" id="scr"></div>
+    <div class="toast" id="toast" role="status" hidden></div>
+  </div>
+  <aside class="side" aria-label="Guía">
+    <div class="grp">
+      <h1>Portada: encender, entrar, registrarse</h1>
+      <p>El arte de WEVEH solo en la entrada de la app. El resto de la app (Inicio, Garaje) queda como estaba. Toca la pantalla: todo funciona.</p>
+    </div>
+    <div class="grp"><h3>Pantalla</h3><div class="jumps" id="jumps"></div></div>
+    <div class="note" id="note" aria-live="polite"></div>
+    <div class="row"><button class="sbtn" id="mode" aria-pressed="false">Modo oscuro</button><button class="sbtn" id="replay">Repetir animación</button></div>
+  </aside>
+</div>
+
+<script>
+(function(){
+var $=function(s,r){return (r||document).querySelector(s)};
+var P={back:'<path d="M15 5l-7 7 7 7"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',eyeoff:'<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4.2-.9M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/>',check:'<path d="M20 6L9 17l-5-5"/>'};
+function ic(n,sz){sz=sz||22;return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[n]+'</svg>'}
+var WP='M17.5 27 L24.75 46 L32 33 L39.25 46 L46.5 27';
+function mark(sz,cls){return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="'+WP+'" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="18" r="5" fill="#FFB000"/></svg>'}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+var S={scr:'encendido',name:'',email:'',pw:'',ok:false,show:false,err:false},timer=null,tt=null;
+function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},2600)}
+
+/* ---------- escenas ---------- */
+function sceneRoad(){
+ var HY=400,H=780,W=372,s='<svg class="scene" viewBox="0 0 372 780" width="372" height="780" aria-hidden="true"><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00120F"/><stop offset=".62" stop-color="#00403A"/><stop offset="1" stop-color="#0A7A69"/></linearGradient><radialGradient id="ga" gradientUnits="userSpaceOnUse" cx="186" cy="'+HY+'" r="330"><stop offset="0" stop-color="#FFB000" stop-opacity=".3"/><stop offset=".4" stop-color="#FFB000" stop-opacity=".1"/><stop offset="1" stop-color="#FFB000" stop-opacity="0"/></radialGradient><radialGradient id="gb" gradientUnits="userSpaceOnUse" cx="186" cy="'+HY+'" r="130"><stop offset="0" stop-color="#FFB000" stop-opacity=".75"/><stop offset=".4" stop-color="#FFB000" stop-opacity=".28"/><stop offset="1" stop-color="#FFB000" stop-opacity="0"/></radialGradient></defs>';
+ s+='<rect width="372" height="'+HY+'" fill="url(#sk)"/><rect y="'+HY+'" width="372" height="'+(H-HY)+'" fill="#031513"/>';
+ s+='<circle cx="186" cy="'+HY+'" r="330" fill="url(#ga)"/><circle cx="186" cy="'+HY+'" r="130" fill="url(#gb)"/>';
+ s+='<g transform="translate(18.6,'+(HY-212)+') scale(5.2)" opacity=".07"><path d="'+WP+'" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>';
+ s+='<polygon points="164,'+HY+' 208,'+HY+' 366,'+H+' 6,'+H+'" fill="#0A2623"/><polyline points="164,'+HY+' 6,'+H+'" stroke="#3DBBA9" stroke-width="3" fill="none" opacity=".7"/><polyline points="208,'+HY+' 366,'+H+'" stroke="#3DBBA9" stroke-width="3" fill="none" opacity=".7"/>';
+ var ts=[.02,.07,.14,.23,.34,.47,.62,.8],dl=[.03,.04,.055,.07,.09,.115,.14,.13],sp=H-HY;
+ ts.forEach(function(t0,i){var t1=Math.min(1,t0+dl[i]),y0=HY+sp*t0,y1=HY+sp*t1,w0=1+14*t0,w1=1+14*t1;s+='<polygon class="dash" style="--i:'+i+'" points="'+(186-w0).toFixed(1)+','+y0.toFixed(1)+' '+(186+w0).toFixed(1)+','+y0.toFixed(1)+' '+(186+w1).toFixed(1)+','+y1.toFixed(1)+' '+(186-w1).toFixed(1)+','+y1.toFixed(1)+'" fill="#FFB000" opacity="'+(.35+.55*t0).toFixed(2)+'"/>'});
+ s+='<g class="sun"><circle cx="186" cy="'+HY+'" r="20" fill="#FFB000"/></g></svg>';
+ return s}
+
+/* dial: 36 marcas en 270° + arco; p = progreso 0..1 */
+function dial(sz){
+ var s='<svg id="dial" width="'+sz+'" height="'+sz+'" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="dg"><stop offset="0" stop-color="#FFB000" stop-opacity=".9"/><stop offset="1" stop-color="#FFB000" stop-opacity="0"/></radialGradient></defs>';
+ var cx=100,cy=100;
+ function pt(r,a){var t=a*Math.PI/180;return [cx+r*Math.cos(t),cy+r*Math.sin(t)]}
+ var a0=135,a1=405,p0=pt(94,a0),p1=pt(94,a1);
+ s+='<path d="M'+p0[0].toFixed(2)+' '+p0[1].toFixed(2)+' A94 94 0 1 1 '+p1[0].toFixed(2)+' '+p1[1].toFixed(2)+'" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3" stroke-linecap="round"/>';
+ s+='<path id="arc" pathLength="100" d="M'+p0[0].toFixed(2)+' '+p0[1].toFixed(2)+' A94 94 0 1 1 '+p1[0].toFixed(2)+' '+p1[1].toFixed(2)+'" fill="none" stroke="#3DBBA9" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 100"/>';
+ for(var i=0;i<36;i++){var a=a0+i*(270/35),big=i%5===0,r1=big?70:74,r2=big?86:82,A=pt(r1,a),B=pt(r2,a);
+  s+='<line class="tk" data-i="'+i+'" x1="'+A[0].toFixed(1)+'" y1="'+A[1].toFixed(1)+'" x2="'+B[0].toFixed(1)+'" y2="'+B[1].toFixed(1)+'" stroke="rgba(255,255,255,.22)" stroke-width="'+(big?3.2:2)+'" stroke-linecap="round"/>'}
+ s+='<circle class="gl" id="dg1" cx="100" cy="57" r="46" fill="url(#dg)" opacity=".15"/>';
+ s+='<g transform="translate(29.6,17.7) scale(2.2)"><path d="'+WP+'" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="18" r="5" fill="#FFB000"/></g>';
+ s+='</svg>';
+ return s}
+function setDial(p){var n=Math.round(36*p);document.querySelectorAll('#dial .tk').forEach(function(t){var on=+t.dataset.i<n;t.setAttribute('stroke',on?'#7FE6D3':'rgba(255,255,255,.22)')});
+ $('#arc').setAttribute('stroke-dasharray',(p*100).toFixed(1)+' 100');$('#dg1').setAttribute('opacity',(.15+.85*p).toFixed(2))}
+
+/* trama de W con 4 luces */
+var LIT=[[1,0],[4,0],[2,2],[5,1]];
+function lattice(h){h=h||200;
+ var s='<svg id="lat" width="372" height="'+h+'" viewBox="0 0 372 '+h+'" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="lg"><stop offset="0" stop-color="#FFB000" stop-opacity=".85"/><stop offset=".5" stop-color="#FFB000" stop-opacity=".25"/><stop offset="1" stop-color="#FFB000" stop-opacity="0"/></radialGradient></defs><rect width="372" height="'+h+'" fill="#004A42"/>';
+ var glyph=function(x,y,id){return '<g transform="translate('+(x-16).toFixed(1)+','+(y-16).toFixed(1)+') scale(.5)"><path d="'+WP+'" fill="none" stroke="#0B6A5E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="gw"'+(id!==undefined?' data-g="'+id+'"':'')+'/><circle cx="32" cy="18" r="5" fill="#0B6A5E" class="gd"'+(id!==undefined?' data-g="'+id+'"':'')+'/></g>'};
+ var k=0,pos=[];
+ var rows=Math.ceil((h-30)/44)+1;for(var r=0;r<rows;r++)for(var c=0;c<7;c++){var x=26+c*52+(r%2?26:0),y=(h>300?22:40)+r*44;if(x>360)continue;pos.push([c,r,x,y])}
+ pos.forEach(function(p){var lid;LIT.forEach(function(l,i){if(l[0]===p[0]&&l[1]===p[1])lid=i});if(lid!==undefined)s+='<circle class="lit-g" data-g="'+lid+'" cx="'+p[2]+'" cy="'+(p[3]-14)+'" r="40" fill="url(#lg)" opacity="0"/>';s+=glyph(p[2],p[3],lid)});
+ s+='</svg>';return s}
+function setLat(flags){document.querySelectorAll('#lat [data-g]').forEach(function(e){var on=flags[+e.dataset.g];
+  if(e.classList.contains('lit-g')){e.setAttribute('opacity',on?'1':'0')}
+  else if(e.classList.contains('gw')){e.setAttribute('stroke',on?'#fff':'#0B6A5E')}
+  else if(e.classList.contains('gd')){e.setAttribute('fill',on?'#FFB000':'#0B6A5E')}})}
+
+/* ---------- pantallas ---------- */
+var SC={};
+SC.encendido={lbl:'Encendido',note:{t:'Encendido (pantalla de carga)',li:['El punto ámbar se prende primero, luego se dibuja la W y aparece el nombre. Dura unos 3 segundos y pasa solo a la portada.','Fondo y resplandor del arte "encendido". Es el único lugar donde el punto lleva resplandor, como pide el logo (carga, avatar e imágenes conceptuales).','Con "reducir movimiento" activado no hay animación: se ve la marca quieta.']},
+ html:function(){return '<div class="scr enc"><svg width="150" height="150" viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><radialGradient id="eg"><stop offset="0" stop-color="#FFB000" stop-opacity=".95"/><stop offset=".5" stop-color="#FFB000" stop-opacity=".3"/><stop offset="1" stop-color="#FFB000" stop-opacity="0"/></radialGradient></defs><circle class="glow" cx="32" cy="18" r="24" fill="url(#eg)"/><path class="wpath" pathLength="1" d="'+WP+'" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle class="wdot" cx="32" cy="18" r="5" fill="#FFB000"/></svg><div class="wm">weveh</div><div class="tg">Tu vehículo al día</div></div>'},
+ mount:function(){clearTimeout(timer);timer=setTimeout(function(){if(S.scr==='encendido')go('portada')},3200)}};
+SC.portada={lbl:'Portada',note:{t:'Portada',li:['La carretera del arte con el sol al fondo: el sol sube al entrar y los trazos de la línea central se encienden uno tras otro, acercándose a ti. Es "ponerse en camino".','Dos acciones, nada más: Crear mi cuenta (principal) y Ya tengo cuenta. Sin menú ni distracciones.','Decisión de texto: usé "Tu vehículo al día, sin acordarte de nada" y no el eslogan del arte ("Tu mecánico experto en el bolsillo"), porque el asistente no reemplaza al mecánico y no da precios. Lo pueden cambiar si prefieren la promesa del arte.','Los botones usan el teal claro de la marca (#3CCFB6) porque sobre fondo oscuro el teal oscuro no contrasta.']},
+ html:function(){return '<div class="scr por">'+sceneRoad()+'<div class="scrim"></div><div class="brand up up1">'+mark(36)+'<span>weveh</span></div><div class="copy"><h1 class="up up2">Tu vehículo al día, sin acordarte de nada</h1><p class="lead up up3">Te avisamos cuándo toca cada cambio y te ayudamos cuando algo falla.</p></div><div class="actions up up3"><button class="btn mint" data-go="signup">Crear mi cuenta</button><button class="btn ghost" data-go="login">Ya tengo cuenta</button><p class="legal">Cuidamos tus datos según la Ley 1581 de 2012.</p></div></div>'}};
+SC.login={lbl:'Iniciar sesión',note:{t:'Iniciar sesión',li:['El dial del arte es el medidor del formulario: se llenan las marcas al escribir un correo válido y una contraseña. El punto ámbar brilla más a medida que avanza.','El estado nunca depende solo del dial: debajo del título hay una frase ("Completa correo y contraseña" / "Listo para entrar").','Prueba el error: entra con cualquier correo y una contraseña distinta de 12345678. Con 12345678 entra.','Falta definir: recuperar contraseña (fuera de este mockup) y si habrá entrada con huella o rostro.']},
+ html:function(){return '<div class="scr"><div class="band l"><button class="back" data-go="portada" aria-label="Volver a la portada">'+ic('back')+'</button><div style="position:absolute;left:50%;top:50px;transform:translateX(-50%)">'+dial(180)+'</div></div><div class="sheet"><div><h1>Inicia sesión</h1><p class="lead">Qué bueno verte de nuevo.</p></div><div class="stat" id="stat"><i></i><span id="stxt">Completa correo y contraseña</span></div><div class="err" id="err" role="alert" hidden>'+ic('alert',20)+'<span>Correo o contraseña incorrectos. Revisa los datos e intenta de nuevo.</span></div><div class="field"><label for="em">Correo</label><input class="inp" id="em" type="email" autocomplete="off" placeholder="laura@correo.com"></div><div class="field"><label for="pw">Contraseña</label><div class="wrap"><input class="inp" id="pw" type="password" autocomplete="off" placeholder="Tu contraseña"><button class="eye" id="eye" type="button" aria-label="Mostrar contraseña" aria-pressed="false">'+ic('eye')+'</button></div></div><div class="lnkrow"><span></span><button class="lnk" data-toast="Recuperar contraseña: fuera de este mockup">¿Olvidaste tu contraseña?</button></div><button class="btn" id="go" disabled>Entrar</button><div class="or">o</div><button class="btn2" data-toast="Google: fuera de este mockup"><span class="gmark" aria-hidden="true">G</span>Continuar con Google</button><div class="foot">¿No tienes cuenta? <button class="lnk" data-go="signup">Crear cuenta</button></div></div></div>'},
+ mount:function(){var em=$('#em'),pw=$('#pw'),go=$('#go');
+  function chk(){S.err=false;$('#err').hidden=true;em.classList.remove('bad');pw.classList.remove('bad');var e=/^\S+@\S+\.\S+$/.test(em.value),p=pw.value.length>0,pr=(e?.5:0)+(p?.5:0);setDial(pr);go.disabled=!(e&&p);
+   var st=$('#stat');st.classList.toggle('done',e&&p);$('#stxt').textContent=e&&p?'Listo para entrar':(!e&&!p?'Completa correo y contraseña':(!e?'Falta un correo válido':'Falta la contraseña'))}
+  em.addEventListener('input',chk);pw.addEventListener('input',chk);
+  $('#eye').addEventListener('click',function(){var sh=pw.type==='password';pw.type=sh?'text':'password';this.innerHTML=ic(sh?'eyeoff':'eye');this.setAttribute('aria-label',sh?'Ocultar contraseña':'Mostrar contraseña');this.setAttribute('aria-pressed',String(sh))});
+  go.addEventListener('click',function(){if(pw.value==='12345678'){toast('Entraste. Aquí sigue el Inicio de tu garaje.')}else{$('#err').hidden=false;em.classList.add('bad');pw.classList.add('bad');pw.focus()}});
+  chk()}};
+SC.signup={lbl:'Crear cuenta',note:{t:'Crear cuenta',li:['La trama de W del arte es el progreso: cada dato que completas (nombre, correo, contraseña, consentimiento) enciende una W y su punto ámbar. Son 4 luces.','También lo dice en texto: "Faltan 3 datos". El botón se activa solo con las 4 luces.','El consentimiento de datos va aparte, sin casilla premarcada (Ley 1581 de 2012; revisarlo con asesoría legal).','Al terminar, la pantalla de cuenta creada lleva al primer vehículo (mockup de cuenta nueva).']},
+ html:function(){return '<div class="scr"><div class="band s"><button class="back" data-go="portada" aria-label="Volver a la portada">'+ic('back')+'</button>'+lattice()+'</div><div class="sheet"><div><h1>Crea tu cuenta</h1><p class="lead">Tarda menos de un minuto. Cada dato enciende una luz.</p></div><div class="stat" id="stat"><i></i><span id="stxt">Faltan 4 datos</span></div><div class="field"><label for="nm">Nombre</label><input class="inp" id="nm" autocomplete="off" placeholder="Laura"></div><div class="field"><label for="em">Correo</label><input class="inp" id="em" type="email" autocomplete="off" placeholder="laura@correo.com"></div><div class="field"><label for="pw">Contraseña</label><div class="wrap"><input class="inp" id="pw" type="password" autocomplete="off" placeholder="Mínimo 8 caracteres"><button class="eye" id="eye" type="button" aria-label="Mostrar contraseña" aria-pressed="false">'+ic('eye')+'</button></div><span class="hint" id="pwh">Usa 8 caracteres o más.</span></div><div class="chk"><input type="checkbox" id="ok"><label for="ok">Acepto la política de tratamiento de datos personales. Sin esto no puedo crear la cuenta.</label></div><button class="btn" id="go" disabled>Crear cuenta</button><div class="or">o</div><button class="btn2" data-toast="Google: fuera de este mockup"><span class="gmark" aria-hidden="true">G</span>Continuar con Google</button><div class="foot">¿Ya tienes cuenta? <button class="lnk" data-go="login">Inicia sesión</button></div></div></div>'},
+ mount:function(){var nm=$('#nm'),em=$('#em'),pw=$('#pw'),ok=$('#ok'),go=$('#go');
+  function chk(){var f=[nm.value.trim().length>1,/^\S+@\S+\.\S+$/.test(em.value),pw.value.length>=8,ok.checked],n=f.filter(Boolean).length;setLat(f);go.disabled=n<4;
+   var st=$('#stat');st.classList.toggle('done',n===4);$('#stxt').textContent=n===4?'Todo listo: las 4 luces están encendidas':('Faltan '+(4-n)+(4-n===1?' dato':' datos'));
+   var h=$('#pwh');h.className='hint'+(pw.value.length>=8?' good':'');h.textContent=pw.value.length===0?'Usa 8 caracteres o más.':(pw.value.length<8?'Faltan '+(8-pw.value.length)+' caracteres.':'Contraseña válida.')}
+  [nm,em,pw].forEach(function(e){e.addEventListener('input',chk)});ok.addEventListener('change',chk);
+  $('#eye').addEventListener('click',function(){var sh=pw.type==='password';pw.type=sh?'text':'password';this.innerHTML=ic(sh?'eyeoff':'eye');this.setAttribute('aria-label',sh?'Ocultar contraseña':'Mostrar contraseña');this.setAttribute('aria-pressed',String(sh))});
+  go.addEventListener('click',function(){S.name=nm.value.trim()||'Laura';go2('creada')});chk()}};
+SC.creada={lbl:'Cuenta creada',note:{t:'Cuenta creada',li:['Cierra el registro con la trama completa encendida y un solo paso siguiente: agregar el primer vehículo.','Aquí empieza el mockup de cuenta nueva (carro o moto, tarjeta de propiedad, placa y kilometraje).']},
+ html:function(){return '<div class="scr fin"><div style="position:absolute;left:0;top:0;width:372px;height:780px;opacity:.55">'+lattice(780)+'</div><div class="body"><div style="margin:0 auto">'+mark(72)+'</div><h1>Listo, '+esc(S.name||'Laura')+'. Tu cuenta está creada.</h1><p>Ahora agrega tu primer vehículo y empezamos a avisarte a tiempo.</p></div><div class="actions"><button class="btn mint" data-toast="Sigue: tipo de vehículo (mockup de cuenta nueva)">Agregar mi vehículo</button></div></div>'},
+ mount:function(){setLat([1,1,1,1])}};
+var ORDER=['encendido','portada','login','signup','creada'];
+
+function go(n){S.scr=n;render()}
+function go2(n){S.scr=n;render()}
+function render(){clearTimeout(timer);var s=SC[S.scr];$('#scr').outerHTML=s.html().replace('<div class="scr','<div id="scr" class="scr');if(s.mount)s.mount();
+ document.querySelectorAll('.jump').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.s===S.scr))});
+ var n=s.note;$('#note').innerHTML='<h2>'+n.t+'</h2><ul>'+n.li.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>';$('#toast').hidden=true}
+$('#jumps').innerHTML=ORDER.map(function(k){return '<button class="jump" data-s="'+k+'" aria-pressed="false">'+SC[k].lbl+'</button>'}).join('');
+document.addEventListener('click',function(e){var j=e.target.closest('.jump');if(j){go(j.dataset.s);return}
+ var g=e.target.closest('[data-go]');if(g&&$('#dev').contains(g)){go(g.dataset.go);return}
+ var t=e.target.closest('[data-toast]');if(t){toast(t.dataset.toast)}});
+$('#mode').addEventListener('click',function(){var d=$('#dev'),on=d.dataset.mode!=='dark';d.dataset.mode=on?'dark':'light';this.setAttribute('aria-pressed',String(on));this.textContent=on?'Modo claro':'Modo oscuro'});
+$('#replay').addEventListener('click',function(){render()});
+render();
+})();
+</script>
+
+</body></html>

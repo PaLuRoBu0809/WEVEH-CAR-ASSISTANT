@@ -1,6 +1,6 @@
 import * as Crypto from 'expo-crypto';
 
-import { guardar, leer } from './almacen';
+import { guardar, leer } from '@/shared/almacen';
 import { esUuidV4 } from './esUuidV4';
 
 export const LLAVE_DISPOSITIVO = 'weveh.dispositivoId';
