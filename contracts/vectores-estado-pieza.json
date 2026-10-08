@@ -1,0 +1,200 @@
+{
+  "descripcion": "Consumo y estado de una pieza del plan. consumo = max(porKm, porTiempo), null si no hay ninguno. porTiempo usa mesesEntre(desde, hasta) = meses calendario completos (semántica de ChronoUnit.MONTHS) + días restantes / días del mes siguiente al ancla. Estados: < 0.85 AL_DIA, < 1 POR_VENCER, >= 1 VENCIDO. Comparar consumo con tolerancia 1e-4.",
+  "vectores": [
+    {
+      "caso": "aceite al día por km",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 5000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": 188000,
+        "ultimoServicioFecha": null
+      },
+      "esperado": {
+        "consumo": 0.4,
+        "estado": "AL_DIA"
+      }
+    },
+    {
+      "caso": "justo debajo de 85 %",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 188499,
+        "intervaloKm": 10000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": 180000,
+        "ultimoServicioFecha": null
+      },
+      "esperado": {
+        "consumo": 0.8499,
+        "estado": "AL_DIA"
+      }
+    },
+    {
+      "caso": "exactamente 85 % es POR_VENCER",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 188500,
+        "intervaloKm": 10000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": 180000,
+        "ultimoServicioFecha": null
+      },
+      "esperado": {
+        "consumo": 0.85,
+        "estado": "POR_VENCER"
+      }
+    },
+    {
+      "caso": "exactamente 100 % es VENCIDO",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 10000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": 180000,
+        "ultimoServicioFecha": null
+      },
+      "esperado": {
+        "consumo": 1.0,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "correa de distribución vencida por km",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": 80000,
+        "ultimoServicioFecha": null
+      },
+      "esperado": {
+        "consumo": 1.1,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "sin último servicio es SIN_DATO",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO"
+      }
+    },
+    {
+      "caso": "sin intervalos es SIN_DATO",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": null,
+        "intervaloMeses": null,
+        "ultimoServicioKm": 180000,
+        "ultimoServicioFecha": "2026-01-01"
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO"
+      }
+    },
+    {
+      "caso": "un año exacto con intervalo de 12 meses es VENCIDO",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 50000,
+        "intervaloKm": null,
+        "intervaloMeses": 12,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": "2025-10-08"
+      },
+      "esperado": {
+        "consumo": 1.0,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "aceite de la Prado: gana el tiempo sobre el km",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 5000,
+        "intervaloMeses": 6,
+        "ultimoServicioKm": 188000,
+        "ultimoServicioFecha": "2026-06-05"
+      },
+      "esperado": {
+        "consumo": 0.6828,
+        "estado": "AL_DIA"
+      }
+    },
+    {
+      "caso": "líquido de frenos vencido por tiempo",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": null,
+        "intervaloMeses": 24,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": "2024-06-05"
+      },
+      "esperado": {
+        "consumo": 1.1707,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "gana el km cuando es mayor que el tiempo",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 194500,
+        "intervaloKm": 5000,
+        "intervaloMeses": 6,
+        "ultimoServicioKm": 188000,
+        "ultimoServicioFecha": "2026-06-05"
+      },
+      "esperado": {
+        "consumo": 1.3,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "fin de mes: 31 de enero a 28 de febrero es un mes",
+      "entrada": {
+        "hoy": "2026-02-28",
+        "kmActual": 0,
+        "intervaloKm": null,
+        "intervaloMeses": 1,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": "2026-01-31"
+      },
+      "esperado": {
+        "consumo": 1.0,
+        "estado": "VENCIDO"
+      }
+    },
+    {
+      "caso": "fin de mes: 31 de enero a 27 de febrero aún no es un mes",
+      "entrada": {
+        "hoy": "2026-02-27",
+        "kmActual": 0,
+        "intervaloKm": null,
+        "intervaloMeses": 1,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": "2026-01-31"
+      },
+      "esperado": {
+        "consumo": 0.9643,
+        "estado": "POR_VENCER"
+      }
+    }
+  ]
+}
