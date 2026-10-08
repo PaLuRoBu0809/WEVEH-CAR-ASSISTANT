@@ -8,6 +8,15 @@ Expo SDK 57 + React Native + TypeScript. Arquitectura y reglas: `CLAUDE.md`, `do
 2. Copia `.env.example` a `.env` y pon en `EXPO_PUBLIC_API_URL` la IP de tu computador en la red (no `localhost`).
 3. `npm ci && npx expo start` y escanea el QR con Expo Go.
 
+## Probar en el navegador del PC (solo desarrollo)
+
+La versión web no es parte del MVP, pero sirve para probar sin celular.
+
+1. En `backend/.env` pon `WEVEH_CORS_ORIGENES=http://localhost:8081` y levanta el backend.
+2. `npx expo start` y abre http://localhost:8081 (o presiona `w`).
+
+En web el `dispositivoId` se guarda en `localStorage` (`src/shared/dispositivo/almacen.web.ts`), no en SecureStore.
+
 ## Verificar
 
 ```bash

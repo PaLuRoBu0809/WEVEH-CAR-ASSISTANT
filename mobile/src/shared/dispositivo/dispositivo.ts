@@ -1,6 +1,6 @@
 import * as Crypto from 'expo-crypto';
-import * as SecureStore from 'expo-secure-store';
 
+import { guardar, leer } from './almacen';
 import { esUuidV4 } from './esUuidV4';
 
 export const LLAVE_DISPOSITIVO = 'weveh.dispositivoId';
@@ -22,12 +22,12 @@ export function obtenerDispositivoId(): Promise<string> {
 }
 
 async function leerOGenerar(): Promise<string> {
-  const guardado = await SecureStore.getItemAsync(LLAVE_DISPOSITIVO);
+  const guardado = await leer(LLAVE_DISPOSITIVO);
   if (esUuidV4(guardado)) {
     return guardado.toLowerCase();
   }
   const nuevo = Crypto.randomUUID().toLowerCase();
-  await SecureStore.setItemAsync(LLAVE_DISPOSITIVO, nuevo);
+  await guardar(LLAVE_DISPOSITIVO, nuevo);
   return nuevo;
 }
 

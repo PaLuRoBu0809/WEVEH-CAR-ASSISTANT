@@ -19,6 +19,11 @@ spring:
     problemdetails:
       enabled: true
 
+weveh:
+  cors:
+    # Solo para probar la app en el navegador del PC (ej. http://localhost:8081). Vacío en producción.
+    origenes: ${WEVEH_CORS_ORIGENES:}
+
 management:
   endpoints:
     web:
