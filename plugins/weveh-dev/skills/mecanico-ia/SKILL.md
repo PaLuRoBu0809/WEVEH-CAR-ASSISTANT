@@ -38,7 +38,7 @@ Nunca incluyas placa, alias ni `dispositivoId`.
 
 ## Contrato de salida
 
-Parte del contrato definido en el `README.md` (`diagnostico_mecanico_preventivo`) y agrega campos de acción. El esquema JSON vive en `backend/src/main/resources/esquemas/diagnostico.json` y en `contracts/`:
+Parte del contrato definido en `docs/referencia/README-original.md` (`diagnostico_mecanico_preventivo`) y agrega campos de acción. El esquema JSON vive en `backend/src/main/resources/esquemas/diagnostico.json` y en `contracts/`:
 
 | Campo | Tipo | Regla |
 |---|---|---|

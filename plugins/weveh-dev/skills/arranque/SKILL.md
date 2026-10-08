@@ -5,7 +5,7 @@ description: Orden de construcción de WEVEH desde cero, con los comandos y arch
 
 # Arranque de WEVEH desde cero
 
-El repo arranca solo con material de referencia (`README.md`, `WEVEH.docx`, notebook y diagrama). El código de las ramas `dev/*` y `makers/*` fue un prototipo: no se copia.
+El repo arranca vacío; el README original con el contrato del Mecánico IA está en `docs/referencia/README-original.md` y el resto del material de referencia en la rama `main` del repo de GitHub. El código de las ramas `dev/*` y `makers/*` fue un prototipo: no se copia.
 
 ## Fases
 

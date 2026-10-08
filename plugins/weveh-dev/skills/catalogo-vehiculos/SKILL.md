@@ -17,7 +17,7 @@ Las tablas de **base gravable** que publica el Ministerio de Transporte cada añ
 | 5 | Motocicletas, motocarros, cuatrimotos, mototriciclos y eléctricas | 2.608 |
 | 9 | Híbridos | 226 |
 
-Las tablas 4, 6, 7 y 8 no se han cargado. Los Excel no van al repo; viven en los archivos del proyecto.
+Las tablas 4, 6, 7 y 8 no se han cargado. Los Excel no van al repo: se guardan en `datos/mintransporte/` y la salida del script en `datos/catalogo/` (el `.gitignore` ignora `datos/`).
 
 Formato de cada Excel: una hoja, título en la fila 2 ("TABLA N.- ... AÑO FISCAL 2025"), encabezado en la fila 4 (`ID`, `TIPO`, `CLASE`, `MARCA`, `LINEA`, `CILINDRAJE`, `CAPACIDAD`, `AÑO MODELO`), años 2000 a 2024 como columnas en la fila 5 y una fila por línea con su avalúo en cada año.
 
@@ -48,14 +48,14 @@ El avalúo no se usa en el MVP; se guarda porque viene gratis y sirve después (
 ```bash
 python3 -m pip install openpyxl
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/catalogo-vehiculos/scripts/importar_catalogo.py \
-  --salida salida_catalogo/ "Tabla 1.- Automóviles.xlsx" "Tabla 2.- Camionetas y Camperos.xlsx" ...
+  --salida datos/catalogo/ datos/mintransporte/*.xlsx
 ```
 
 El script detecta solo el encabezado y los años, normaliza nombres, descarta duplicados exactos, marca las filas genéricas, infiere los campos del punto 2 y escribe `marca.csv`, `linea.csv` y `resumen.json`. Al final imprime los `\copy` para Supabase en orden:
 
 ```bash
-psql "$WEVEH_DB_URL" -c "\copy catalogo.marca(...) from 'salida_catalogo/marca.csv' csv header"
-psql "$WEVEH_DB_URL" -c "\copy catalogo.linea(...) from 'salida_catalogo/linea.csv' csv header"
+psql "$WEVEH_DB_URL" -c "\copy catalogo.marca(...) from 'datos/catalogo/marca.csv' csv header"
+psql "$WEVEH_DB_URL" -c "\copy catalogo.linea(...) from 'datos/catalogo/linea.csv' csv header"
 # y el ajuste de secuencias
 ```
 

@@ -2,7 +2,7 @@
 
 Guía para Claude Code en este repositorio. Lo que está aquí son decisiones tomadas por el equipo (Isaac Cano y Pablo Rodríguez); si algo del código las contradice, señálalo antes de "arreglarlo" por tu cuenta.
 
-**El proyecto se construye desde cero.** En `main` solo hay material de referencia: `README.md` (problema, flujo de IA y contrato de salida del Mecánico IA), `WEVEH.docx`, `Sesion_8_Use_case_WEVEH.ipynb` y `mermaid diagram.png`. El código de las ramas `dev/*` y `makers/*` fue un prototipo: no lo copies ni lo tomes como base; si algo de ahí sirve, reescríbelo siguiendo estas reglas.
+**El proyecto se construye desde cero.** El material de referencia vive en la rama `main` del repo de GitHub `PaLuRoBu0809/WEVEH-CAR-ASSISTANT` (`WEVEH.docx`, notebook y diagrama); lo único que hace falta tener a mano es el README original, copiado en `docs/referencia/README-original.md` (problema, flujo de IA y contrato de salida del Mecánico IA). El código de las ramas `dev/*` y `makers/*` fue un prototipo: no lo copies ni lo tomes como base; si algo de ahí sirve, reescríbelo siguiendo estas reglas.
 
 El detalle operativo vive en el plugin `weveh-dev` (`plugins/weveh-dev/`). Cárgalo con:
 
@@ -53,7 +53,7 @@ No fijes versiones de memoria: usa las que generen `start.spring.io` y `create-e
 Detalle y comandos: skill `weveh-dev:arranque`. No saltes de fase sin cerrar la anterior (pruebas y CI en verde).
 
 0. **Fundaciones**: higiene del repo, ADR del stack, esqueletos de `backend/` y `mobile/` que compilan y prueban, CI, proyecto Supabase, identidad por dispositivo de punta a punta.
-1. **Catálogo + Garaje**: cargar las tablas de base gravable del Ministerio de Transporte (ya procesadas en los archivos del proyecto, carpeta `catalogo/`), CRUD de vehículos con registro básico.
+1. **Catálogo + Garaje**: cargar las tablas de base gravable del Ministerio de Transporte (los Excel van en `datos/mintransporte/`, que git ignora, y el script de la skill `catalogo-vehiculos` genera `datos/catalogo/`), CRUD de vehículos con registro básico.
 2. **Mantenimiento + Documentos**: plan por pieza, salud, historial, kilometraje, SOAT/RTM/seguro. Reglas puras con vectores compartidos.
 3. **Mecánico IA**: diagnóstico por texto con contexto completo, validador de seguridad y evals.
 4. **Completar perfil con WEVEH**: agente con búsqueda web y entrevista.
