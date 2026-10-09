@@ -17,7 +17,7 @@ WEVEH se construye desde cero (el código de `dev/*` y `makers/*` fue un prototi
 | Backend | Spring Boot, Java LTS, Maven Wrapper | Spring Boot 4.1.1, Java 25 (Temurin 25.0.4) |
 | Módulos del backend | Spring Web, Validation, Data JPA, Flyway, PostgreSQL, Actuator, Spring Modulith, Testcontainers | Gestionadas por el BOM de Spring Boot 4.1.1 |
 | Base de datos | PostgreSQL gestionado en Supabase (región São Paulo) | La que ofrezca Supabase al crear el proyecto |
-| IA | Anthropic Java SDK (`com.anthropic:anthropic-java`), modelo configurable por `WEVEH_IA_MODELO` (por defecto `claude-opus-5-5`), búsqueda web con la herramienta de servidor `web_search_20260209` | Se agrega en la fase 3 con la última versión de Maven Central |
+| IA | ~~Anthropic Java SDK~~ → reemplazado por OpenRouter con modelos gratuitos ([ADR 0004](0004-openrouter.md)) | — |
 | CI | GitHub Actions | — |
 
 Las versiones se tomaron de `start.spring.io` (valor por defecto de Boot y opción Java 25) y de `npm view` el día de esta decisión. Si al generar los proyectos cambian, se actualiza esta tabla en el mismo PR.

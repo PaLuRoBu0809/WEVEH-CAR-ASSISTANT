@@ -1,6 +1,6 @@
 ---
 name: mecanico-ia
-description: Diseño del Mecánico IA de WEVEH (diagnóstico por texto con el contexto completo del vehículo, contrato JSON, ValidadorSeguridadDiagnostico, adaptador Anthropic, evals). Úsala al cambiar el módulo mecanicoia, su prompt, el proveedor o modelo de IA, el validador de seguridad o los casos de evals/.
+description: Diseño del Mecánico IA de WEVEH (diagnóstico por texto con el contexto completo del vehículo, contrato JSON, ValidadorSeguridadDiagnostico, adaptador OpenRouter con modelos gratuitos, evals). Úsala al cambiar el módulo mecanicoia, su prompt, el proveedor o modelo de IA, el validador de seguridad o los casos de evals/.
 ---
 
 # Mecánico IA
@@ -65,9 +65,9 @@ Todo diagnóstico muestra: "Orientación, no reemplaza al mecánico".
 
 ## Implementación
 
-- Puerto `MotorDiagnostico` en `mecanicoia/application/puertos`; adaptador `MotorDiagnosticoAnthropic` en `mecanicoia/infrastructure/ia` con el Anthropic Java SDK, modelo `WEVEH_IA_MODELO`.
-- Salida estructurada con `outputConfig` y un `record` del contrato (mismo patrón que `agente-perfilador/references/implementacion-java.md`). Aun así, valida en el backend y mapea `nivel_gravedad` al enum `NivelGravedad`.
-- Revisa `stop_reason`: `refusal` o `max_tokens` ⇒ respuesta segura ("No pude analizarlo, si notas X ve al mecánico"), nunca un diagnóstico a medias.
+- Puerto `MotorDiagnostico` en `mecanicoia/application/puertos`; adaptador `MotorDiagnosticoOpenRouter` en `mecanicoia/infrastructure/ia` (ADR 0004). Solo modelos gratuitos `:free`, en la lista `WEVEH_IA_MODELO`: si uno está saturado, falla o responde algo inválido, se prueba el siguiente (máximo 45 s); una llave inválida corta.
+- Salida estructurada con `response_format: json_schema`; si el modelo no la acepta (400) se reintenta sin ella. Aun así, valida en el backend (toma solo el objeto JSON aunque venga con texto alrededor) y mapea `nivel_gravedad` al enum `NivelGravedad`.
+- Revisa `finish_reason`: distinto de `stop` (corte o filtro) ⇒ respuesta segura ("No pude analizarlo, si notas X ve al mecánico"), nunca un diagnóstico a medias.
 - Prompt versionado en `backend/src/main/resources/prompts/mecanico-v<n>.md` y guardado junto a cada consulta (`version_prompt`, `modelo`).
 - El servicio arma el contexto, llama al puerto, valida y aplica el validador. El controlador solo mapea.
 

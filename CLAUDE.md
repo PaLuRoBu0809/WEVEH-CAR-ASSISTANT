@@ -99,7 +99,7 @@ Detalle: skill `weveh-dev:arquitectura`.
 Detalle: skills `weveh-dev:mecanico-ia` y `weveh-dev:agente-perfilador`.
 
 1. Todo LLM va detrás de un puerto de `application` (`MotorDiagnostico`, `InvestigadorFichaTecnica`, `EntrevistadorPerfil`). Ningún servicio ni clase de dominio llama al SDK directamente; el SDK solo aparece en `infrastructure/ia`.
-2. Proveedor: **OpenRouter** (API compatible con OpenAI, `docs/adr/0004-openrouter.md`) desde `RestClient`, sin SDK de un proveedor. Modelo configurable por `WEVEH_IA_MODELO` con el identificador de OpenRouter; llave en `OPENROUTER_API_KEY`, solo en el backend.
+2. Proveedor: **OpenRouter, solo modelos gratuitos (`:free`)** (`docs/adr/0004-openrouter.md`), desde `RestClient`, sin SDK de un proveedor. `WEVEH_IA_MODELO` es la lista de modelos en orden de intento; llave en `OPENROUTER_API_KEY`, solo en el backend. No agregues modelos de pago sin que el equipo lo pida.
 3. Toda salida del modelo se valida contra esquema en el backend. Si falla: un reintento y luego respuesta segura.
 4. `ValidadorSeguridadDiagnostico` (código determinista, no prompt) corre **después** del modelo y gana siempre: frenos, dirección, testigo rojo, temperatura, aceite o batería ⇒ `CRITICO` + `requiresMechanic`.
 5. Los datos que el agente encuentra en la web son **propuestas**: se guardan con su URL de fuente y `origen = IA_WEB`, y el usuario los confirma antes de que alimenten el plan.
