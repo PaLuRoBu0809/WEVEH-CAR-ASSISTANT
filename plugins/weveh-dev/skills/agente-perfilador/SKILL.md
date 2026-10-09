@@ -43,7 +43,7 @@ sequenceDiagram
 
 ## Fase A: investigación (una vez por modelo)
 
-- SDK: Anthropic Java SDK. Modelo `WEVEH_IA_MODELO` (por defecto `claude-opus-5-5`), esfuerzo `medium`.
+- Proveedor: OpenRouter con modelos gratuitos `:free` (ADR 0004). Los modelos gratis no traen búsqueda web de servidor: la investigación necesita una búsqueda propia en el backend; se decide al llegar a la fase 4. Lo de abajo sobre `WebSearchTool20260209` describe el diseño original con el SDK de Anthropic.
 - Herramientas:
   - `WebSearchTool20260209` con `maxUses` 6. Puedes restringir con `allowedDomains` si el equipo define fuentes confiables.
   - Herramienta cliente `guardar_ficha_tecnica` con `strict: true` y el esquema `references/esquema-ficha.json`. El modelo debe llamarla al final; como este modelo no acepta `tool_choice` forzado, usa `auto` y pídelo en el prompt.

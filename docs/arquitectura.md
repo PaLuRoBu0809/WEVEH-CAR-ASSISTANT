@@ -10,11 +10,11 @@ flowchart LR
   APP["App WEVEH<br/>(Expo, Android/iOS)"]
   API["API WEVEH<br/>(Spring Boot)"]
   DB[("Supabase<br/>PostgreSQL")]
-  IA["Claude API<br/>+ búsqueda web"]
+  IA["OpenRouter<br/>modelos gratuitos"]
   U --> APP
   APP -- "HTTPS /api/v1<br/>X-Weveh-Dispositivo" --> API
   API -- "JDBC (usuario de servicio)" --> DB
-  API -- "Anthropic Java SDK" --> IA
+  API -- "OpenRouter (modelos :free)" --> IA
 ```
 
 - La app nunca habla con Supabase ni con la API de Claude: todo pasa por la API.
@@ -69,7 +69,7 @@ co/weveh/<modulo>/
 └── infrastructure/
     ├── web/                # controladores y DTOs
     ├── persistencia/       # JPA y adaptadores
-    └── ia/                 # SDK de Anthropic (solo mecanicoia y perfilamiento)
+    └── ia/                 # OpenRouter (solo mecanicoia y perfilamiento)
 ```
 
 ## App móvil
