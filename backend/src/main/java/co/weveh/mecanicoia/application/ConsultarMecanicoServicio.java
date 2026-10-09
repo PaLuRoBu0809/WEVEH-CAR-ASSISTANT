@@ -50,20 +50,20 @@ class ConsultarMecanicoServicio implements ConsultarMecanico {
         }
 
         var contexto = json.writeValueAsString(ContextoDiagnostico.de(vehiculo, texto));
-        var diagnostico = diagnosticarConReintento(contexto);
+        var respuesta = diagnosticarConReintento(contexto);
         // El plan por pieza llega en la fase 2; hasta entonces no hay piezas de seguridad vencidas que cruzar
-        var validado = ValidadorSeguridadDiagnostico.aplicar(texto, diagnostico, false);
-        consultas.guardar(UUID.randomUUID(), vehiculoId, texto, validado, motor.modelo(), motor.versionPrompt());
+        var validado = ValidadorSeguridadDiagnostico.aplicar(texto, respuesta.diagnostico(), false);
+        consultas.guardar(UUID.randomUUID(), vehiculoId, texto, validado, respuesta.modelo(), motor.versionPrompt());
         return validado;
     }
 
-    private Diagnostico diagnosticarConReintento(String contexto) {
+    private MotorDiagnostico.Respuesta diagnosticarConReintento(String contexto) {
         for (var intento = 0; intento < INTENTOS; intento++) {
             var respuesta = motor.diagnosticar(contexto);
             if (respuesta.isPresent()) {
                 return respuesta.get();
             }
         }
-        return Diagnostico.respuestaSegura();
+        return new MotorDiagnostico.Respuesta(Diagnostico.respuestaSegura(), motor.modelos());
     }
 }

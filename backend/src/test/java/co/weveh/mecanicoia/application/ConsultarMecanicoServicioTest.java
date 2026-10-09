@@ -49,13 +49,13 @@ class ConsultarMecanicoServicioTest {
     @BeforeEach
     void preparar() {
         when(garaje.buscar(DISPOSITIVO, VEHICULO)).thenReturn(Optional.of(PRADO));
-        when(motor.modelo()).thenReturn("modelo-prueba");
+        when(motor.modelos()).thenReturn("modelo-a,modelo-b");
         when(motor.versionPrompt()).thenReturn("mecanico-v1");
     }
 
     @Test
     void alModeloSoloVaElContextoDelVehiculoYElSintoma() {
-        when(motor.diagnosticar(anyString())).thenReturn(Optional.of(leve()));
+        when(motor.diagnosticar(anyString())).thenReturn(Optional.of(new MotorDiagnostico.Respuesta(leve(), "modelo-b")));
 
         servicio.consultar(DISPOSITIVO, VEHICULO, "las plumillas dejan rayas");
 
@@ -68,12 +68,21 @@ class ConsultarMecanicoServicioTest {
 
     @Test
     void elValidadorGanaSobreElModelo() {
-        when(motor.diagnosticar(anyString())).thenReturn(Optional.of(leve()));
+        when(motor.diagnosticar(anyString())).thenReturn(Optional.of(new MotorDiagnostico.Respuesta(leve(), "modelo-b")));
 
         var diagnostico = servicio.consultar(DISPOSITIVO, VEHICULO, "se prendió una luz roja pero anda perfecto");
 
         assertThat(diagnostico.nivelGravedad()).isEqualTo(NivelGravedad.CRITICO);
         assertThat(diagnostico.requiereMecanico()).isTrue();
+    }
+
+    @Test
+    void guardaElModeloQueRespondio() {
+        when(motor.diagnosticar(anyString())).thenReturn(Optional.of(new MotorDiagnostico.Respuesta(leve(), "modelo-b")));
+
+        var diagnostico = servicio.consultar(DISPOSITIVO, VEHICULO, "las plumillas dejan rayas");
+
+        verify(consultas).guardar(any(), eq(VEHICULO), anyString(), eq(diagnostico), eq("modelo-b"), eq("mecanico-v1"));
     }
 
     @Test
@@ -84,7 +93,7 @@ class ConsultarMecanicoServicioTest {
 
         verify(motor, times(2)).diagnosticar(anyString());
         assertThat(diagnostico.seguro()).isTrue();
-        verify(consultas).guardar(any(), eq(VEHICULO), eq("hace un ruido raro"), eq(diagnostico), eq("modelo-prueba"), eq("mecanico-v1"));
+        verify(consultas).guardar(any(), eq(VEHICULO), eq("hace un ruido raro"), eq(diagnostico), eq("modelo-a,modelo-b"), eq("mecanico-v1"));
     }
 
     @Test

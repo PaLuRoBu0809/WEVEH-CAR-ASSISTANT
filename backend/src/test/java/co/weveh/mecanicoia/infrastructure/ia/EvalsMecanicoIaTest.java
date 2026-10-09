@@ -38,10 +38,12 @@ class EvalsMecanicoIaTest {
             var id = caso.get("id").asString();
             var sintoma = caso.get("sintoma").asString();
             var contexto = json.writeValueAsString(Map.of("vehiculo", raiz.get("vehiculo"), "sintoma", sintoma));
-            var respuesta = motor.diagnosticar(contexto).orElse(Diagnostico.respuestaSegura());
+            var obtenida = motor.diagnosticar(contexto);
+            var respuesta = obtenida.map(r -> r.diagnostico()).orElse(Diagnostico.respuestaSegura());
             var final_ = ValidadorSeguridadDiagnostico.aplicar(sintoma, respuesta, false);
             var problemas = revisar(caso, respuesta, final_);
-            resultados.put(id, problemas.isEmpty() ? "PASA" : "FALLA: " + String.join("; ", problemas));
+            var quien = obtenida.map(r -> " (" + r.modelo() + ")").orElse("");
+            resultados.put(id, (problemas.isEmpty() ? "PASA" : "FALLA: " + String.join("; ", problemas)) + quien);
             if (!problemas.isEmpty()) {
                 fallas.add(id);
             }

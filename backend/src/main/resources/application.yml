@@ -21,8 +21,9 @@ spring:
 
 weveh:
   ia:
-    # Modelo de OpenRouter, por ejemplo anthropic/claude-sonnet-4.5 (docs/adr/0004)
-    modelo: ${WEVEH_IA_MODELO:}
+    # Modelos de OpenRouter en orden de preferencia, separados por coma (docs/adr/0004).
+    # Por defecto, modelos gratuitos con salida estructurada: si uno está saturado se prueba el siguiente.
+    modelo: ${WEVEH_IA_MODELO:nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free,dots-studio/dots-3-note-preview:free}
     openrouter:
       llave: ${OPENROUTER_API_KEY:}
   cors:

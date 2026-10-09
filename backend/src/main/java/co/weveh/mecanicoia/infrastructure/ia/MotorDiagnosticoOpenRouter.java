@@ -9,89 +9,151 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Adaptador de OpenRouter (API compatible con OpenAI, docs/adr/0004). Único lugar donde aparece el proveedor de IA.
- * Pide salida estructurada con el esquema del contrato y, aun así, la valida aquí.
+ *
+ * <p>Con el plan gratis los modelos ":free" se saturan o se limitan a menudo, así que WEVEH_IA_MODELO es una lista en
+ * orden de preferencia: si un modelo no responde, responde con error o devuelve algo que no cumple el contrato, se
+ * prueba el siguiente, hasta agotar la lista o el tiempo máximo. Una llave inválida corta todo: no se queman intentos.
  */
 @Component
 class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
 
     static final String VERSION_PROMPT = "mecanico-v1";
     private static final Logger LOG = LoggerFactory.getLogger(MotorDiagnosticoOpenRouter.class);
-    private static final Duration ESPERA_MAXIMA = Duration.ofSeconds(25);
+    private static final Duration ESPERA_POR_MODELO = Duration.ofSeconds(20);
+    private static final Duration ESPERA_TOTAL = Duration.ofSeconds(45);
     private static final List<String> NIVELES = List.of("Crítico", "Moderado", "Leve");
 
     private final RestClient cliente;
     private final JsonMapper json;
-    private final String modelo;
+    private final List<String> modelos;
     private final String llave;
     private final String prompt;
+    private final Clock reloj;
 
+    @Autowired
     MotorDiagnosticoOpenRouter(JsonMapper json,
-                               @Value("${weveh.ia.modelo:}") String modelo,
+                               @Value("${weveh.ia.modelo:}") String modelos,
                                @Value("${weveh.ia.openrouter.llave:}") String llave,
                                @Value("${weveh.ia.openrouter.url:https://openrouter.ai/api/v1}") String url) throws IOException {
-        this.json = json;
-        this.modelo = modelo.strip();
-        this.llave = llave.strip();
-        this.prompt = new ClassPathResource("prompts/" + VERSION_PROMPT + ".md").getContentAsString(StandardCharsets.UTF_8);
-        var fabrica = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
-        fabrica.setReadTimeout(ESPERA_MAXIMA);
-        this.cliente = RestClient.builder()
+        this(json, modelos, llave, RestClient.builder()
                 .baseUrl(url)
-                .requestFactory(fabrica)
+                .requestFactory(fabrica())
                 .defaultHeader("X-Title", "WEVEH")
-                .build();
+                .build(), Clock.systemUTC());
+    }
+
+    MotorDiagnosticoOpenRouter(JsonMapper json, String modelos, String llave, RestClient cliente, Clock reloj) throws IOException {
+        this.json = json;
+        this.modelos = Arrays.stream(modelos.split(",")).map(String::strip).filter(modelo -> !modelo.isEmpty()).toList();
+        this.llave = llave.strip();
+        this.cliente = cliente;
+        this.reloj = reloj;
+        this.prompt = new ClassPathResource("prompts/" + VERSION_PROMPT + ".md").getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    private static JdkClientHttpRequestFactory fabrica() {
+        var fabrica = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
+        fabrica.setReadTimeout(ESPERA_POR_MODELO);
+        return fabrica;
     }
 
     @Override
-    public Optional<Diagnostico> diagnosticar(String contextoJson) {
-        if (llave.isEmpty() || modelo.isEmpty()) {
+    public Optional<Respuesta> diagnosticar(String contextoJson) {
+        if (llave.isEmpty() || modelos.isEmpty()) {
             throw new ServicioNoDisponibleException("El Mecánico IA todavía no está configurado. Intenta más tarde.");
         }
+        var limite = Instant.now(reloj).plus(ESPERA_TOTAL);
+        for (var modelo : modelos) {
+            if (Instant.now(reloj).isAfter(limite)) {
+                LOG.warn("Se acabó el tiempo antes de probar {}", modelo);
+                break;
+            }
+            var diagnostico = probar(modelo, contextoJson);
+            if (diagnostico.isPresent()) {
+                return diagnostico.map(d -> new Respuesta(d, modelo));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Diagnostico> probar(String modelo, String contextoJson) {
         try {
-            var cuerpo = json.writeValueAsString(solicitud(contextoJson));
-            var texto = cliente.post()
-                    .uri("/chat/completions")
-                    .header("Authorization", "Bearer " + llave)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(cuerpo)
-                    .retrieve()
-                    .body(String.class);
-            return interpretar(texto);
+            return interpretar(llamar(modelo, contextoJson, true));
+        } catch (RestClientResponseException error) {
+            var estado = error.getStatusCode();
+            if (estado.isSameCodeAs(HttpStatus.UNAUTHORIZED) || estado.isSameCodeAs(HttpStatus.FORBIDDEN)) {
+                throw new ServicioNoDisponibleException("La llave de OpenRouter no es válida. Revisa la configuración.");
+            }
+            if (estado.isSameCodeAs(HttpStatus.BAD_REQUEST)) {
+                // Algunos modelos gratis no aceptan response_format: se reintenta el mismo modelo solo con el prompt
+                return reintentarSinEsquema(modelo, contextoJson);
+            }
+            LOG.warn("OpenRouter respondió {} con {}; se prueba el siguiente modelo", estado.value(), modelo);
+            return Optional.empty();
         } catch (RestClientException | JacksonException error) {
-            LOG.warn("OpenRouter no respondió algo utilizable: {}", error.getMessage());
+            LOG.warn("{} no respondió algo utilizable ({}); se prueba el siguiente modelo", modelo, error.getMessage());
             return Optional.empty();
         }
     }
 
-    private Map<String, Object> solicitud(String contextoJson) {
-        return Map.of(
-                "model", modelo,
-                "temperature", 0.2,
-                "max_tokens", 900,
-                "messages", List.of(
-                        Map.of("role", "system", "content", prompt),
-                        Map.of("role", "user", "content", contextoJson)),
-                "response_format", Map.of(
-                        "type", "json_schema",
-                        "json_schema", Map.of("name", "diagnostico_mecanico_preventivo", "strict", true, "schema", ESQUEMA)));
+    private Optional<Diagnostico> reintentarSinEsquema(String modelo, String contextoJson) {
+        try {
+            return interpretar(llamar(modelo, contextoJson, false));
+        } catch (RestClientException | JacksonException error) {
+            LOG.warn("{} tampoco respondió sin esquema ({})", modelo, error.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private String llamar(String modelo, String contextoJson, boolean conEsquema) {
+        return cliente.post()
+                .uri("/chat/completions")
+                .header("Authorization", "Bearer " + llave)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json.writeValueAsString(solicitud(modelo, contextoJson, conEsquema)))
+                .retrieve()
+                .body(String.class);
+    }
+
+    private Map<String, Object> solicitud(String modelo, String contextoJson, boolean conEsquema) {
+        var cuerpo = new LinkedHashMap<String, Object>();
+        cuerpo.put("model", modelo);
+        cuerpo.put("temperature", 0.2);
+        cuerpo.put("max_tokens", 1200);
+        cuerpo.put("messages", List.of(
+                Map.of("role", "system", "content", prompt),
+                Map.of("role", "user", "content", contextoJson)));
+        if (conEsquema) {
+            cuerpo.put("response_format", Map.of(
+                    "type", "json_schema",
+                    "json_schema", Map.of("name", "diagnostico_mecanico_preventivo", "strict", true, "schema", ESQUEMA)));
+        }
+        return cuerpo;
     }
 
     Optional<Diagnostico> interpretar(String respuesta) {
@@ -104,7 +166,7 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
         if (opcion.message() == null || !"stop".equals(opcion.finishReason())) {
             return Optional.empty();
         }
-        return aDiagnostico(sinCercas(opcion.message().content()));
+        return aDiagnostico(soloElObjeto(opcion.message().content()));
     }
 
     Optional<Diagnostico> aDiagnostico(String contenido) {
@@ -123,11 +185,14 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
                 salida.piezasRelacionadas(), salida.datosFaltantes(), false));
     }
 
-    private static String sinCercas(String contenido) {
+    /** Modelos sin salida estructurada a veces envuelven el JSON en markdown o texto: se toma solo el objeto. */
+    static String soloElObjeto(String contenido) {
         if (contenido == null) {
             return null;
         }
-        return contenido.strip().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "");
+        var inicio = contenido.indexOf('{');
+        var fin = contenido.lastIndexOf('}');
+        return inicio >= 0 && fin > inicio ? contenido.substring(inicio, fin + 1) : null;
     }
 
     private static boolean vacio(String texto) {
@@ -135,8 +200,8 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
     }
 
     @Override
-    public String modelo() {
-        return modelo;
+    public String modelos() {
+        return String.join(",", modelos);
     }
 
     @Override
@@ -169,7 +234,7 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
             @JsonProperty("datos_faltantes") List<String> datosFaltantes) {
     }
 
-    /** Esquema del contrato (contracts/diagnostico.schema.json). */
+    /** Esquema del contrato diagnostico_mecanico_preventivo. */
     static final Map<String, Object> ESQUEMA = Map.of(
             "type", "object",
             "additionalProperties", false,
