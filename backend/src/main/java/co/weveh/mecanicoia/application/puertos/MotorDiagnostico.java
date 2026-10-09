@@ -5,16 +5,21 @@ import java.util.Optional;
 
 /**
  * Puerto del modelo de IA (CLAUDE.md, reglas de IA 1). El adaptador valida la salida contra el contrato:
- * vacío si el modelo se negó, se cortó o devolvió algo que no cumple el esquema.
+ * vacío si ningún modelo dio una respuesta válida (se negó, se cortó, no cumplió el esquema o no respondió).
  */
 public interface MotorDiagnostico {
 
     /**
      * @param contextoJson contexto del vehículo y síntoma, sin placa, alias ni dispositivo
      */
-    Optional<Diagnostico> diagnosticar(String contextoJson);
+    Optional<Respuesta> diagnosticar(String contextoJson);
 
-    String modelo();
+    /** Modelos configurados, para registrar las respuestas seguras. */
+    String modelos();
 
     String versionPrompt();
+
+    /** @param modelo el modelo que de verdad respondió (RF-MIA-06) */
+    record Respuesta(Diagnostico diagnostico, String modelo) {
+    }
 }
