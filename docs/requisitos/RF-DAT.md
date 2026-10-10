@@ -1,6 +1,6 @@
 # RF-DAT — Tratamiento de datos personales (Ley 1581 de 2012)
 
-Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). La política de tratamiento debe redactarse y revisarse con asesoría legal antes de tener usuarios reales.
+Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Política: [borrador 0.1](../legal/politica-tratamiento-datos-BORRADOR.md), que se usa en el flujo de consentimiento del MVP; la versión final se trabaja con asesoría legal **después del MVP**, antes de tener usuarios reales.
 
 ## RF-DAT-01 Aceptar la política
 - Dado que creo mi cuenta

@@ -45,4 +45,5 @@ Directorio de talleres, grúas y servicios (pestaña Servicios del mockup), voz,
 
 - 2026-10-08: Decreto 019 de 2012, art. 202 vigente para la primera RTM: 5 años desde la matrícula en carros particulares y 2 en motos, luego cada año (RF-DOC-02).
 - 2026-10-08: los avisos de vencimiento con notificación local entran en el MVP (RF-DOC-04).
+- 2026-10-10: la política de tratamiento de datos queda en [borrador](../legal/politica-tratamiento-datos-BORRADOR.md) para el MVP; la versión final, con asesoría legal, después del MVP.
 - 2026-10-10: cuentas con Supabase Auth en vez de identidad por dispositivo; registro con datos mínimos; salud solo con datos suficientes; Mecánico IA conversacional, sin precios por defecto y con límites de uso por balde; avisos insistentes; conflictos sin red: gana lo último validando reglas.

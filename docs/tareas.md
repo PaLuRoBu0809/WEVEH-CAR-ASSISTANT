@@ -18,7 +18,7 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 
 ## Etapa 2 · Cuentas y tratamiento de datos (ADR 0005, RF-CTA, RF-DAT)
 
-- [ ] Redactar la política de tratamiento de datos (borrador + revisión legal).
+- [x] Borrador de la política de tratamiento de datos ([v0.1](legal/politica-tratamiento-datos-BORRADOR.md)); el flujo de consentimiento registra la versión `0.1-borrador`.
 - [ ] Configurar Supabase Auth: correo con verificación, enlace mágico, Google (credenciales en Google Cloud).
 - [ ] Backend: módulo `cuentas`, Spring Security con validación del token (JWKS), `usuario_id` en vez de `dispositivo_id`, 401/404, tablas `usuario` y `consentimiento`, `DELETE /cuenta`.
 - [ ] Migración que borra los vehículos de prueba y cambia la identidad.
@@ -85,3 +85,7 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [ ] Correr el evaluador por modelo y ajustar `WEVEH_IA_MODELO`.
 - [ ] Despertar el backend de Render y probar a la hora de la demo.
 - [ ] Prueba de registro con 3 personas (RNF-11) y en un celular real (RNF-18).
+
+## Después del MVP
+
+- [ ] Política de tratamiento de datos final con asesoría legal: completar los `[POR DEFINIR]` del borrador, base legal de la transferencia internacional y plazos de conservación; publicarla y pedir la aceptación de la nueva versión (RF-DAT-03).
