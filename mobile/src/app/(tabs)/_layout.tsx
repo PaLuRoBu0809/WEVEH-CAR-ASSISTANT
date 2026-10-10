@@ -1,21 +1,14 @@
-import { Tabs } from 'expo-router';
+import { Tabs } from 'expo-router/js-tabs';
 
-import { useTema } from '@/shared/design-system';
+import { BarraPestanas } from '@/shared/navegacion';
 
-/** Fase 0: solo Garaje. Inicio, Preguntar y Combustible llegan en sus fases. */
+/** Mockup Garaje sin "Servicios" (fuera del MVP): Inicio, Garaje y Perfil, más el botón flotante Preguntar. */
 export default function LayoutPestanas() {
-  const tema = useTema();
   return (
-    <Tabs
-      screenOptions={{
-        headerStyle: { backgroundColor: tema.fondo },
-        headerTintColor: tema.texto,
-        tabBarStyle: { backgroundColor: tema.superficie, borderTopColor: tema.borde },
-        tabBarActiveTintColor: tema.accion,
-        tabBarInactiveTintColor: tema.textoSuave,
-        sceneStyle: { backgroundColor: tema.fondo },
-      }}>
+    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <BarraPestanas {...props} />}>
+      <Tabs.Screen name="inicio" options={{ title: 'Inicio' }} />
       <Tabs.Screen name="garaje" options={{ title: 'Garaje' }} />
+      <Tabs.Screen name="perfil" options={{ title: 'Perfil' }} />
     </Tabs>
   );
 }

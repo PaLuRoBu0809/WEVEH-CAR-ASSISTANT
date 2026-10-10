@@ -1,0 +1,514 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>WEVEH Garaje</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Concepto: un teléfono sobre fondo oscuro de presentación; la pantalla sigue la paleta WEVEH. Siempre abre en claro; el modo oscuro se elige con el botón de luna (no depende del sistema). Teal es lo único tocable. */
+:root{
+  --stage:#0A1413;
+  --bg:#FFFFFF; --surface:#F3F6F5; --line:#DCE5E3;
+  --text:#0E1F1D; --text2:#41554F; --text3:#5A6E6A;
+  --primary:#005F54; --primaryPressed:#004A42; --onPrimary:#FFFFFF; --primaryTint:#E2F1EE; --primaryInk:#005F54;
+  --ok:#1E7A46; --okTint:#E5F4EA; --okInk:#17693A;
+  --warn:#F9E03F; --warnTint:#FFF5C2; --warnInk:#6F5200;
+  --err:#C9302C; --errTint:#FCE9E7; --errInk:#A5231F;
+  --track:#AEBFBB; --field:#7F9591; --okBar:#2F9E5F; --errBar:#A61B1B; --warnBar:#8F6B00;
+  --toastBg:#0E1F1D; --toastInk:#EAF3F1; --toastAct:#6FE5D2;
+  --bezel:#101A19; --overlay:rgba(6,18,17,.45);
+  --font:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+.device[data-mode="dark"]{
+  --bg:#0B1514; --surface:#112220; --line:#22403C;
+  --text:#EAF3F1; --text2:#B3C7C3; --text3:#93A9A5;
+  --primary:#3CCFB6; --primaryPressed:#2AB29B; --onPrimary:#03211D; --primaryTint:#12403A; --primaryInk:#5FDCC8;
+  --ok:#4CD07D; --okTint:#12391F; --okInk:#6FE29B;
+  --warn:#F9E03F; --warnTint:#3B3300; --warnInk:#FFE680;
+  --err:#FF7A72; --errTint:#451A18; --errInk:#FF9A93; --bezel:#1B2B29; color-scheme:dark;
+  --track:#43685F; --field:#6A8984; --okBar:#7BD66A; --errBar:#FF6B63; --warnBar:#F9E03F;
+  --toastBg:#EAF3F1; --toastInk:#0B1514; --toastAct:#005F54}
+.device{color-scheme:light;color:var(--text)}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.45;display:flex;justify-content:center;align-items:center;padding-inline:16px;padding-block:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+.topbar{flex:none;padding:0 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.topbar[hidden]{display:none}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--field);background:var(--bg);color:var(--text2);display:grid;place-items:center;flex:none}
+.fab{position:absolute;right:16px;bottom:84px;height:56px;min-width:56px;padding:0 20px 0 16px;border-radius:999px;border:0;background:var(--primary);color:var(--onPrimary);display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(0,40,35,.28);z-index:3}
+.fab.mini{padding:0;width:56px}.fab.mini .lbl{display:none}
+.fab:active{background:var(--primaryPressed)}
+.fab[hidden]{display:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border-radius:16px;padding:12px 8px;text-align:center;display:grid;gap:2px}
+.stat b{font-size:24px;line-height:1;font-weight:700}
+.stat span{font-size:14px;font-weight:700}
+.stat.err b,.stat.err span{color:var(--errInk)}.stat.warn b,.stat.warn span{color:var(--warnInk)}.stat.ok b,.stat.ok span{color:var(--okInk)}
+.stat.err{background:var(--errTint)}.stat.warn{background:var(--warnTint)}.stat.ok{background:var(--okTint)}
+.urg{border-radius:20px;padding:16px;display:grid;gap:10px;background:var(--errTint);color:var(--errInk)}
+.urg.warn{background:var(--warnTint);color:var(--warnInk)}.urg.ok{background:var(--okTint);color:var(--okInk)}
+.urg .t{color:var(--text);font-size:17px}.urg .hint{color:var(--text2)}
+.vcard{width:100%;text-align:left;border:0;display:grid;gap:10px;background:var(--surface);border-radius:20px;padding:16px;color:var(--text)}
+.sec{font-size:14px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 4px}
+.rowbtn{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);color:var(--text)}
+.map{position:relative;border-radius:20px;overflow:hidden;background:var(--surface);margin-bottom:12px;border:1px solid var(--line)}
+.map svg{display:block;width:100%;height:auto}
+.pin{position:absolute;transform:translate(-50%,-50%);min-width:60px;min-height:44px;border-radius:999px;border:2px solid var(--primary);background:var(--bg);color:var(--primaryInk);font-weight:700;font-size:14px;padding:0 10px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.pin.sel{background:var(--primary);color:var(--onPrimary);z-index:2}
+.me{position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:#1A73E8;border:3px solid #fff;box-shadow:0 0 0 10px rgba(26,115,232,.22)}
+.maptag{position:absolute;left:10px;top:10px;background:var(--bg);color:var(--text);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.locate{position:absolute;right:10px;top:10px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.part.on{outline:2px solid var(--primary)}
+.info{display:flex;gap:10px;align-items:flex-start;background:var(--primaryTint);color:var(--primaryInk);border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:14px}
+.toast{position:absolute;left:14px;right:14px;bottom:80px;background:var(--toastBg);color:var(--toastInk);border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:center;z-index:6;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast[hidden]{display:none}.toast span{flex:1}
+.toast button{background:none;border:0;color:var(--toastAct);font-weight:700;min-height:44px;padding:0 6px}
+.banner{background:var(--primaryTint);border-radius:20px;padding:14px;display:grid;gap:10px;margin-bottom:12px}
+.vdot{width:40px;height:40px;border-radius:12px;background:var(--vc);color:#fff;display:grid;place-items:center;flex:none}
+.vcard.accent{box-shadow:inset 6px 0 0 var(--vc)}
+@media (prefers-reduced-motion:no-preference){@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}.pop{animation:pop .55s}}
+.tag{display:inline-block;border-radius:999px;background:var(--primaryTint);color:var(--primaryInk);font-size:14px;font-weight:600;padding:2px 10px}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.device{width:100%;max-width:392px;height:min(820px,100%);background:var(--bg);border:10px solid var(--bezel);border-radius:52px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 0 0 1px #1d302d}
+.status{display:flex;justify-content:space-between;align-items:center;padding:14px 26px 6px;font-weight:700;font-size:14px;flex:none}
+.bat{display:flex;gap:3px;align-items:center;font-size:14px}.bat i{width:8px;height:12px;background:var(--text);border-radius:2px}
+.scroll{flex:1;overflow-y:auto;padding:8px 20px 96px;min-height:0}
+.eyebrow{color:var(--text3);font-size:14px;margin:6px 0 0}
+h1{font-size:28px;line-height:1.15;margin:2px 0 14px;font-weight:700;text-wrap:balance}
+h2{font-size:16px;margin:0;font-weight:700}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+/* nav */
+nav.tabs{flex:none;border-top:1px solid var(--line);background:var(--bg);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:8px}
+nav.tabs button{background:none;border:0;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:14px;font-weight:700;color:var(--text3)}
+nav.tabs button[aria-selected="true"]{color:var(--primaryInk);box-shadow:inset 0 3px 0 var(--primary)}
+/* tarjetas */
+.card{background:var(--surface);border-radius:20px;padding:16px;display:grid;gap:12px}
+.cardtop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.vname{font-weight:700;font-size:17px;line-height:1.2}
+.sub{color:var(--text2);font-size:14px}
+.plate{font-family:var(--mono);font-weight:700;font-size:14px;border:1.5px solid var(--text);border-radius:6px;padding:2px 10px;letter-spacing:.06em;white-space:nowrap}
+.rowx{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:14px;color:var(--text2)}
+.rowx b{color:var(--text);font-weight:700}
+.bar{height:10px;border-radius:999px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px}
+.bar .ok{background:var(--okBar)}.bar .warn{background:var(--warnBar)}.bar .err{background:repeating-linear-gradient(135deg,var(--errBar) 0 9px,rgba(255,255,255,.34) 9px 13px)}
+.bar3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.bar3 i{height:8px;border-radius:999px;background:var(--track)}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px 4px 8px;font-size:14px;font-weight:600;white-space:nowrap}
+.pill.ok{background:var(--okTint);color:var(--okInk)}.pill.warn{background:var(--warnTint);color:var(--warnInk)}.pill.err{background:var(--errTint);color:var(--errInk)}
+.btn{background:var(--primary);color:var(--onPrimary);border:0;border-radius:14px;min-height:52px;padding:0 20px;font-weight:700;width:100%}
+.btn:active{background:var(--primaryPressed)}
+.btn2{background:var(--primaryTint);color:var(--primaryInk);border:0;border-radius:14px;min-height:52px;padding:0 20px;font-weight:700;width:100%}
+.btn2.s{min-height:44px;width:auto;padding:0 16px}
+.back{background:none;border:0;color:var(--primaryInk);font-weight:700;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:4px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-height:44px;border-radius:999px;border:1px solid var(--field);background:var(--bg);padding:0 16px;font-weight:600;color:var(--text2)}
+.chip[aria-pressed="true"]{background:var(--primaryTint);color:var(--primaryInk);border-color:var(--primary)}
+.row{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.tile{width:40px;height:40px;border-radius:12px;background:var(--primaryTint);color:var(--primaryInk);display:grid;place-items:center;flex:none}
+.grow{flex:1;min-width:0}
+.t{font-weight:700}.hint{color:var(--text2);font-size:14px}
+.list{display:grid;gap:10px}
+.part{background:var(--surface);border-radius:20px;padding:14px;display:grid;gap:10px}
+.parthead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.alert{background:var(--warnTint);color:var(--warnInk);border-radius:16px;padding:14px;display:flex;gap:12px}
+.alert.err{background:var(--errTint);color:var(--errInk)}
+.alert b{display:block}
+.steps{display:grid;gap:12px;margin:12px 0}
+.step{display:flex;gap:12px;align-items:flex-start}
+.num{width:28px;height:28px;border-radius:50%;background:var(--primaryTint);color:var(--primaryInk);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:999px;padding:4px;margin-block:16px 14px}
+.seg button{border:0;background:none;border-radius:999px;min-height:44px;font-weight:600;color:var(--text2);font-size:14px;padding:0 2px}
+.seg button[aria-selected="true"]{background:var(--primaryTint);color:var(--primaryInk)}
+.tl{display:grid}
+.ev{display:grid;grid-template-columns:16px 1fr;gap:12px;padding-bottom:14px}
+.ev .dot{width:10px;height:10px;border-radius:50%;background:var(--primary);margin-top:7px;outline:4px solid var(--primaryTint)}
+.ev .dot.f{background:var(--err);outline-color:var(--errTint)}
+.ev .box{background:var(--surface);border-radius:16px;padding:12px 14px}
+.when{font-size:14px;color:var(--text3);font-weight:700}
+.link{background:var(--primaryTint);color:var(--primaryInk);border-radius:999px;padding:3px 10px;font-size:14px;font-weight:600;display:inline-block;margin-top:6px}
+.sim{border:1px dashed var(--line);border-radius:16px;padding:14px;margin-top:18px;display:grid;gap:8px}
+.sim label{font-weight:700;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--primary);min-height:32px}
+.fld{font:inherit;min-height:52px;border-radius:14px;border:2px solid var(--field);padding:0 14px;background:var(--bg);color:var(--text);width:100%}
+.fld:focus{border-color:var(--primary);outline:none}
+.empty{background:var(--surface);border-radius:20px;padding:24px 18px;text-align:center;display:grid;gap:8px;margin-bottom:12px}
+.note{font-size:14px;color:var(--text3);text-align:center;margin:14px 0 0}
+.inputbar{flex:none;display:flex;gap:8px;align-items:center;padding:8px 14px;border-top:1px solid var(--line);background:var(--bg)}
+.inputbar .fld{min-height:46px;border-radius:999px;border-width:1.5px}
+.ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--primaryTint);color:var(--primaryInk);display:grid;place-items:center;flex:none}
+.ib.p{background:var(--primary);color:var(--onPrimary)}
+.sheet-bg{position:absolute;inset:0;background:var(--overlay);display:none;align-items:flex-end;z-index:5}
+.sheet-bg.open{display:flex}
+.sheet{background:var(--bg);width:100%;border-radius:28px 28px 0 0;padding:20px 20px 24px;display:grid;gap:12px}
+.vch{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.vch .chip{white-space:nowrap}
+@media (max-width:480px){
+  body{padding:0;align-items:stretch}
+  .device{max-width:none;height:100%;border:0;border-radius:0;box-shadow:none}
+  .status{display:none}
+}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .4s}}
+</style>
+
+<div class="device" id="device">
+  <div class="status"><span>9:41</span><span class="bat">5G <i></i><i></i><i></i></span></div>
+  <div class="topbar" id="topbar" hidden><button class="back" data-goback aria-label="Volver a la pantalla anterior">${BACKIC}<span id="backlbl">Atrás</span></button></div>
+  <div class="scroll" id="main"></div>
+  <div id="slot"></div>
+  <nav class="tabs" aria-label="Secciones" role="tablist">
+    <button role="tab" data-tab="home" aria-selected="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6v10H3z"/><path d="M9 20v-6h6v6"/></svg>Inicio</button>
+    <button role="tab" data-tab="garage" aria-selected="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v-4l2-5h12l2 5v4"/><path d="M4 13h16"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/></svg>Garaje</button>
+    <button role="tab" data-tab="shops" aria-selected="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z"/></svg>Servicios</button>
+    <button role="tab" data-tab="me" aria-selected="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</button>
+  </nav>
+  <button class="fab" id="fab" data-fab aria-label="Abrir el asistente"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg><span class="lbl">Preguntar</span></button>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+</div>
+
+<script>
+const IC={
+ ok:'<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor" opacity=".18"/><path d="M4.5 8.2l2.3 2.3 4.7-4.9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ warn:'<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l7 12.2H1z" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ err:'<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 1h6l4 4v6l-4 4H5l-4-4V5z" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4.6v4.2M8 10.8v.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ star:'<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.4.5-3.3 3 .9 4.4L8 11.3 4.1 13.5l.9-4.4-3.3-3 4.4-.5z" fill="currentColor" opacity=".2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+ shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>',
+ gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>',
+ cam:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+ mic:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+ send:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 17-3-7z"/></svg>',
+ list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+ back:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>'
+};
+const LAB={ok:'Bien',warn:'Atención',err:'Urgente'};
+const fmt=n=>n.toLocaleString('es-CO');
+const $=s=>document.querySelector(s);
+
+/* ===== Datos de muestra (inventados) · hoy = 1 oct 2026 ===== */
+const V=[
+ {id:1,color:'#3B4B59',tipo:'carro',nombre:'La Negra',marca:'Chevrolet Spark GT',anio:2016,placa:'NJP 218',km:44400,km0:44400,
+  docs:[{n:'SOAT',dias:21,txt:'Vence el 22 oct 2026'},{n:'Revisión técnico-mecánica',dias:160,txt:'Vigente hasta mar 2027'}],
+  piezas:[
+   {n:'Cambio de aceite',e:'Protege el motor del desgaste',iKm:5000,iM:6,lKm:40000,lM:4,f:'Recomendación general'},
+   {n:'Filtro de aire',e:'Evita que el polvo entre al motor',iKm:15000,iM:12,lKm:30000,lM:10,f:'Manual de tu modelo'},
+   {n:'Líquido de frenos',e:'Hace que el pedal frene bien',iKm:null,iM:24,lKm:20000,lM:26,f:'Manual de tu modelo',seg:1},
+   {n:'Pastillas de freno',e:'Las que agarran el disco para frenar',iKm:10000,iM:null,lKm:38000,lM:null,f:'Recomendación general',seg:1},
+   {n:'Correa de repartición',e:'Sincroniza el motor; si se rompe, daño grave',iKm:60000,iM:null,lKm:0,lM:null,f:'Manual de tu modelo'},
+   {n:'Batería',e:'Arranca el carro',iKm:null,iM:12,lKm:null,lM:null,f:'Recomendación general',sinDato:true}],
+  comb:[[41800,0,0],[42300,10.4,161200],[42780,10,155000],[43270,10.2,158100],[43760,10.3,159650],[44150,9.9,153450]],
+  hist:[{t:'Cambio de aceite y filtro de aceite',km:40000,when:'Junio 2026',taller:'Taller Los Álamos'},{t:'Filtro de aire',km:30000,when:'Dic 2025',taller:'Taller Los Álamos'},{t:'Cambio de pastillas delanteras',km:38000,when:'Mayo 2026',taller:'Frenos Centro'}],
+  fallas:[{t:'Ruido al frenar',km:37500,when:'Mayo 2026',causa:'Pastillas de freno desgastadas',pieza:'Pastillas de freno',res:'Cambiadas a los 38.000 km'},{t:'Testigo de batería encendido',km:29000,when:'Nov 2025',causa:'Alternador con carbones gastados',pieza:'Batería',res:'Reparado'}]},
+ {id:2,color:'#5B4B8A',tipo:'moto',nombre:'La Veloz',marca:'AKT NKD 125',anio:2021,placa:'KLM 48A',km:18200,km0:18200,
+  docs:[{n:'SOAT',dias:62,txt:'Vence el 2 dic 2026'},{n:'Revisión técnico-mecánica',dias:320,txt:'Vigente hasta ago 2027'}],
+  piezas:[
+   {n:'Cambio de aceite',e:'Protege el motor del desgaste',iKm:2500,iM:4,lKm:16300,lM:2,f:'Recomendación general'},
+   {n:'Lubricar y tensar la cadena',e:'Una cadena floja se sale o se rompe',iKm:1000,iM:null,lKm:17500,lM:null,f:'Recomendación general',seg:1},
+   {n:'Filtro de aire',e:'Evita que el polvo entre al motor',iKm:8000,iM:12,lKm:12000,lM:9,f:'Recomendación general'},
+   {n:'Bujía',e:'Hace la chispa que prende el motor',iKm:8000,iM:null,lKm:12000,lM:null,f:'Recomendación general'},
+   {n:'Llantas',e:'Lo único que toca el piso',iKm:3000,iM:null,lKm:16000,lM:null,f:'Recomendación general',seg:1}],
+  comb:[[17200,0,0],[17540,2.4,37200],[17880,2.4,37200],[18200,2.3,35650]],
+  hist:[{t:'Cambio de aceite',km:16300,when:'Ago 2026',taller:'Motos El Paisa'},{t:'Bujía y filtro de aire',km:12000,when:'Ene 2026',taller:'Motos El Paisa'}],
+  fallas:[{t:'Se apaga en los semáforos',km:11800,when:'Dic 2025',causa:'Bujía sucia',pieza:'Bujía',res:'Bujía cambiada a los 12.000 km'}]},
+ {id:3,color:'#8A5A2B',tipo:'carro',nombre:'El Camping',marca:'Renault Duster',anio:2019,placa:'TRS 905',km:62000,km0:62000,
+  docs:[{n:'SOAT',dias:220,txt:'Vence el 8 may 2027'},{n:'Revisión técnico-mecánica',dias:14,txt:'Vence el 15 oct 2026'}],
+  piezas:[
+   {n:'Cambio de aceite',e:'Protege el motor del desgaste',iKm:10000,iM:12,lKm:57000,lM:5,f:'Manual de tu modelo'},
+   {n:'Correa de repartición',e:'Sincroniza el motor; si se rompe, daño grave',iKm:60000,iM:60,lKm:0,lM:62,f:'Manual de tu modelo'},
+   {n:'Líquido refrigerante',e:'Evita que el motor se caliente',iKm:40000,iM:36,lKm:20000,lM:30,f:'Recomendación general'},
+   {n:'Rotación de llantas',e:'Las llantas se gastan parejo',iKm:10000,iM:null,lKm:55000,lM:null,f:'Recomendación general'}],
+  comb:[],
+  hist:[{t:'Cambio de aceite',km:57000,when:'Abr 2026',taller:'Taller Los Álamos'}],
+  fallas:[{t:'Se recalienta en subida',km:41000,when:'Mar 2025',causa:'Tapa del radiador en mal estado',pieza:'Líquido refrigerante',res:'Tapa cambiada, refrigerante a los 20.000 km'}]}
+];
+
+/* ===== Lógica (reglas v1 y nuevas) ===== */
+function consumo(p,km){
+  if(p.sinDato) return null;
+  const a=p.iKm?(km-p.lKm)/p.iKm:0, b=p.iM&&p.lM!=null?p.lM/p.iM:0;
+  return Math.max(a,b);
+}
+/* v2: Urgente = vencida y afecta la seguridad, o pasada 30 % del intervalo; vencida leve = Atención ("Vencido") */
+const estado=(c,p)=>c===null?'warn':(c>=1.3||(c>=1&&p&&p.seg))?'err':c>=.85?'warn':'ok';
+const labP=(c,st)=>st==='err'?'Urgente':st==='ok'?'Bien':c===null?'Sin dato':c>=1?'Vencido':'Por vencer';
+function restante(p,km){
+  const c=consumo(p,km); if(c===null) return 'No sabemos cuándo se hizo';
+  const a=p.iKm?(km-p.lKm)/p.iKm:0, b=p.iM&&p.lM!=null?p.lM/p.iM:0;
+  if(c>=1){ // se muestra lo que ya venció (lo que ocurra primero)
+    if(a>=b&&p.iKm) return `Se pasó por ${fmt(km-p.lKm-p.iKm)} km`;
+    const m=Math.round(p.lM-p.iM); return `Se pasó por ${m} ${m===1?'mes':'meses'}`;
+  }
+  const o=[]; if(p.iKm) o.push(`${fmt(p.lKm+p.iKm-km)} km`); if(p.iM&&p.lM!=null){const m=Math.round(p.iM-p.lM);o.push(`${m} ${m===1?'mes':'meses'}`)}
+  return 'Faltan '+o.join(' o ');
+}
+const estadoDoc=d=>d.dias<0?'err':d.dias<=30?'warn':'ok';
+function puntos(c){ if(c===null) return 60; if(c<.85) return 100; if(c<1) return 100-(c-.85)/.15*50; return Math.max(0,50-(c-1)/.3*50); }
+/* Nivel = peor estado de piezas y documentos (RN-GA-09). El puntaje se recorta a la banda de su nivel para que nunca contradiga el estado. */
+function salud(v){
+  let w=0,sum=0,worst='ok';
+  v.piezas.forEach(p=>{const c=consumo(p,v.km),pw=p.seg?2:1;w+=pw;sum+=pw*puntos(c);const st=estado(c,p);if(st==='err')worst='err';else if(st==='warn'&&worst!=='err')worst='warn'});
+  v.docs.forEach(d=>{const st=estadoDoc(d);if(st==='err')worst='err';else if(st==='warn'&&worst!=='err')worst='warn'});
+  let raw=Math.round(sum/w), nivel,lo,hi;
+  if(worst==='err'){nivel='Urgente';lo=0;hi=39}
+  else if(worst==='warn'||raw<70){nivel='Atención';lo=40;hi=69}
+  else if(raw<90){nivel='Bien';lo=70;hi=89}
+  else {nivel='Excelente';lo=90;hi=100}
+  const pct=nivel==='Excelente'?Math.max(lo,Math.min(hi,raw)):Math.round(lo+(hi-lo)*Math.max(0,Math.min(100,raw))/100);
+  const cls=nivel==='Urgente'?'err':nivel==='Atención'?'warn':'ok';
+  return {pct,nivel,cls};
+}
+function peor(v){return [...v.piezas].map(p=>({p,c:consumo(p,v.km)})).sort((a,b)=>(b.c??.9)-(a.c??.9))[0]}
+function consumos(v){const L=v.comb||[],o=[];for(let i=1;i<L.length;i++)o.push({km:L[i][0],kpg:(L[i][0]-L[i-1][0])/L[i][1],gal:L[i][1],cop:L[i][2]});return o}
+const pill=(cls,txt,icon)=>`<span class="pill ${cls}">${icon||IC[cls]}${txt||LAB[cls]}</span>`;
+const vpill=s=>pill(s.cls,s.nivel,s.nivel==='Excelente'?IC.star:null);
+const bar=(pct,cls)=>`<div class="bar" role="img" aria-label="Avance ${pct} por ciento"><i class="${cls}" style="width:${pct}%"></i></div>`;
+
+/* ===== Estado y vistas ===== */
+let S={tab:'home',prev:'home',vid:1,detail:false,sec:'piezas',chat:null,cat:'Talleres',mode:'light',notif:false,sort:'cerca',sel:0,ctx:null,why:null,nt:'carro'};
+const veh=()=>V.find(x=>x.id===S.vid);
+const BACKIC='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
+document.getElementById('topbar').querySelector('button').innerHTML=BACKIC+'<span id="backlbl">Atrás</span>';
+const H=[];
+const snap=()=>({tab:S.tab,detail:S.detail,chat:S.chat,vid:S.vid,sec:S.sec,cat:S.cat});
+const viewKey=o=>o.tab+'|'+o.detail+'|'+o.chat+'|'+(o.detail?o.vid:'');
+const NAMES={home:'Inicio',garage:'Mi garaje',shops:'Servicios',me:'Perfil',chat:'Asistente'};
+function nameOf(o){return o.tab==='garage'&&o.detail?'Mi garaje':o.tab==='chat'&&o.chat?'Asistente':NAMES[o.tab]}
+const secondary=o=>(o.tab==='garage'&&o.detail)||o.tab==='chat';
+function paintBack(){const t=$('#topbar'),p=H[H.length-1];t.hidden=!(p&&secondary(S));if(p)$('#backlbl').textContent='Atrás · '+nameOf(p)}
+
+const CAR='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v-4l2-5h12l2 5v4"/><path d="M4 13h16"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/></svg>';
+const BIKE='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5L9 9h5l4.5 7.5M9 9L7.5 6H5M14 9l1-3h3"/></svg>';
+const MOON='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
+const SUN='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>';
+const themeBtn=()=>`<button class="iconbtn" data-theme aria-label="${S.mode==='dark'?'Cambiar a modo claro':'Cambiar a modo oscuro'}">${S.mode==='dark'?SUN:MOON}</button>`;
+
+/* Pendientes de todos los vehículos, del más al menos grave (seguridad pesa más) */
+function pendientes(){
+  const o=[];
+  V.forEach(v=>{
+    v.piezas.forEach(p=>{const c=consumo(p,v.km),st=estado(c,p);if(st!=='ok')o.push({v,p,c,st,score:(c??.9)+(p.seg?1:0)+(st==='err'?10:0),txt:p.n,det:restante(p,v.km)})});
+    v.docs.forEach(d=>{const st=estadoDoc(d);if(st!=='ok')o.push({v,d,st,score:st==='err'?11:.9+(30-d.dias)/60,txt:d.n,det:d.dias<0?'Vencido':`Vence en ${d.dias} días`})});
+  });
+  return o.sort((a,b)=>b.score-a.score);
+}
+function renderHome(){
+  const P=pendientes(), top=P[0];
+  const lab=x=>x.p?labP(x.c,x.st):(x.st==='err'?'Vencido':'Por vencer');
+  const urg=top?`<div class="urg ${top.st}">
+      <div class="rowx" style="align-items:center;color:inherit"><b style="color:inherit;font-size:14px;text-transform:uppercase;letter-spacing:.06em">Lo más urgente</b>${pill(top.st,lab(top))}</div>
+      <div><div class="t">${top.txt} · ${top.v.nombre}</div><div class="hint">${top.v.marca} · ${top.det}</div></div>
+      ${top.st==='err'&&top.p?`<button class="btn" data-shop="${top.v.id}">Buscar taller</button>`:`<button class="btn" data-open="${top.v.id}">Ver detalle</button>`}</div>`
+    :`<div class="urg ok"><b style="color:inherit">Todo al día</b><div class="hint">No tienes nada pendiente esta semana.</div></div>`;
+  const next=P.slice(1,4);
+  const done=V.flatMap(v=>v.hist.map(h=>({v,h}))).sort((a,b)=>(b.h.when==='Hoy')-(a.h.when==='Hoy')).slice(0,2);
+  const streak=V.find(v=>salud(v).nivel==='Excelente');
+  $('#main').innerHTML=`<div class="head"><div><p class="eyebrow">Buenos días</p><h1>Esta semana</h1></div>${themeBtn()}</div>
+  ${urg}
+  ${S.notif?'':`<div class="banner" style="margin-top:12px"><div><div class="t">Activa los avisos</div><div class="hint">Sin permiso, WEVEH no puede recordarte lo que vence.</div></div><button class="btn2" data-notif>Activar avisos</button></div>`}
+  ${next.length?`<div class="sec">Para hacer</div><div>${next.map(x=>`<button class="row rowbtn" data-open="${x.v.id}"><span class="vdot" style="--vc:${x.v.color}">${x.d?(x.d.n==='SOAT'?IC.shield:IC.gear):IC.gear}</span><div class="grow"><div class="t">${x.txt}</div><div class="hint">${x.v.nombre} · ${x.det}</div></div>${pill(x.st,lab(x))}</button>`).join('')}</div>`:''}
+  ${done.length?`<div class="sec">Lo último que hiciste</div><div>${done.map(({v,h})=>`<div class="row"><span class="tile">${IC.ok.replace('width="16" height="16"','width="22" height="22"')}</span><div class="grow"><div class="t">${h.t}</div><div class="hint">${v.nombre} · ${h.when}</div></div></div>`).join('')}</div>`:''}
+  ${streak?`<div class="urg ok" style="margin-top:14px;grid-template-columns:auto 1fr;align-items:center"><span>${IC.star.replace('width="16" height="16"','width="26" height="26"')}</span><div><b style="color:inherit">${streak.nombre} lleva 5 meses al día</b><div class="hint">Sin nada vencido. Sigue así.</div></div></div>`:''}
+  <p class="note">Mockup con datos de ejemplo.</p>`;
+}
+function renderGarage(){
+  $('#main').innerHTML=`<div class="head"><div><p class="eyebrow">${V.length} vehículos</p><h1>Mi garaje</h1></div></div>
+  <div class="list">${V.map(v=>{const s=salud(v),w=peor(v),wst=estado(w.c,w.p);return `<button class="vcard accent" style="--vc:${v.color}" data-open="${v.id}">
+    <div class="cardtop"><div class="row" style="padding:0;border:0"><span class="vdot" style="--vc:${v.color}">${v.tipo==='moto'?BIKE:CAR}</span><div><div class="vname">${v.nombre}</div><div class="sub">${v.marca} · ${v.anio}</div></div></div><span class="plate">${v.placa}</span></div>
+    <div class="rowx"><span class="mono">${fmt(v.km)} km</span>${vpill(s)}</div>
+    ${bar(s.pct,s.cls)}
+    <div class="rowx"><span>${wst==='ok'?'Lo próximo':wst==='warn'?'Para revisar':'Lo más urgente'}: ${w.p.n.toLowerCase()}</span><b>${restante(w.p,v.km).replace('Faltan ','en ').replace('Se pasó por','se pasó')}</b></div></button>`}).join('')}
+  <button class="btn2" data-add>+ Agregar vehículo</button></div>`;
+}
+
+function renderDetail(){
+  const v=veh();
+  $('#main').innerHTML=`<div id="dyn"></div>
+  <div class="sim"><label for="kmSim">Probar: mover el kilometraje de ${v.nombre}</label><input type="range" id="kmSim" min="${v.km0}" max="${v.km0+15000}" step="100" value="${v.km}"><div class="rowx"><span class="mono">${fmt(v.km0)} km</span><span class="mono">+15.000 km</span></div><div class="hint">Solo para el mockup: mira cómo cambian los estados al sumar kilómetros.</div></div>`;
+  fillDetail();
+}
+function fillDetail(){
+  const v=veh(), s=salud(v);
+  const piezas=[...v.piezas].sort((a,b)=>(consumo(b,v.km)??.9)-(consumo(a,v.km)??.9));
+  let body='';
+  if(S.sec==='piezas'){
+    body='<div class="list">'+piezas.map(p=>{const c=consumo(p,v.km),st=estado(c,p);const w=c===null?0:Math.min(100,Math.round(c*100));
+      return `<div class="part"><div class="parthead"><div><div class="t">${p.n}</div><div class="hint">${p.e}</div></div>${pill(st,labP(c,st))}</div>${bar(w,st)}
+      <div class="rowx"><span>${restante(p,v.km)}</span><span>${p.f}</span></div>
+      <div class="chips">${st!=='ok'?`<button class="btn2 s" data-done="${p.n}">Ya lo hice</button>`:''}<button class="btn2 s" data-why="${p.n}">¿Por qué importa?</button>${st==='err'?`<button class="btn2 s" data-shop="${v.id}">Buscar taller</button>`:''}${st!=='ok'&&!/Rotación|Lubricar/.test(p.n)?`<button class="btn2 s" data-part="${p.n}">Buscar repuesto</button>`:''}</div></div>`}).join('')+'</div>';
+  } else if(S.sec==='historial'){
+    body='<div class="tl">'+v.hist.map(h=>`<div class="ev"><span class="dot"></span><div class="box"><div class="when">${h.when} · <span class="mono">${fmt(h.km)} km</span></div><div class="t">${h.t}</div><div class="hint">${h.taller}</div></div></div>`).join('')+'</div>';
+  } else if(S.sec==='fallas'){
+    const prox=v.piezas.filter(p=>p.iKm).map(p=>({p,at:p.lKm+p.iKm})).sort((a,b)=>a.at-b.at).slice(0,3);
+    body=`<h2 style="margin-bottom:10px">Fallas que ya tuvo</h2><div class="tl">`+v.fallas.map(f=>`<div class="ev"><span class="dot f"></span><div class="box"><div class="when">${f.when} · <span class="mono">${fmt(f.km)} km</span></div><div class="t">${f.t}</div><div class="hint">Causa: ${f.causa}</div><div class="hint">${f.res}</div><span class="link">Pieza: ${f.pieza}</span></div></div>`).join('')+`</div>
+    <h2 style="margin:6px 0 10px">Lo que viene según el kilometraje</h2><div class="list">`+prox.map(({p,at})=>`<div class="part"><div class="parthead"><div class="t">${p.n}</div><span class="mono t">${fmt(at)} km</span></div><div class="hint">${at-v.km>=0?`En ${fmt(at-v.km)} km.`:'Ya se pasó.'} ${p.e}.</div></div>`).join('')+'</div>';
+  } else {
+    const C=consumos(v);
+    if(!C.length) body=`<div class="empty"><b>Aún no hay tanqueadas</b><span class="hint">Anota cada tanqueada con el kilometraje y WEVEH calcula cuánto gasta tu vehículo.</span></div><button class="btn" data-fuel>Registrar tanqueada</button>`;
+    else{const last=C[C.length-1],prev=C.slice(Math.max(0,C.length-6),-1),avg=prev.reduce((a,c)=>a+c.kpg,0)/prev.length;
+      const cpk=C.reduce((a,c)=>a+c.cop,0)/(C[C.length-1].km-v.comb[0][0]), drop=prev.length>=3&&last.kpg<avg*.85;
+      body=`<div class="list">${drop?`<div class="alert"><span>${IC.warn}</span><div><b>Tu consumo subió ${Math.round((1-last.kpg/avg)*100)}%</b>Gastas más gasolina que de costumbre. Suele pasar por llantas con poca presión, filtro de aire sucio o bujías gastadas.</div></div>`:''}
+      <div class="part"><div class="rowx"><span>Último consumo</span><b class="mono">${last.kpg.toFixed(1)} km/gal</b></div><div class="rowx"><span>Promedio anterior</span><b class="mono">${avg.toFixed(1)} km/gal</b></div><div class="rowx"><span>Costo por kilómetro</span><b class="mono">$${fmt(Math.round(cpk))}</b></div></div>
+      ${[...C].reverse().map(c=>`<div class="part"><div class="parthead"><div class="t mono">${fmt(c.km)} km</div><div class="t mono">$${fmt(c.cop)}</div></div><div class="rowx"><span>${c.gal.toFixed(1)} galones</span><span class="mono">${c.kpg.toFixed(1)} km/gal</span></div></div>`).join('')}
+      <button class="btn" data-fuel>Registrar tanqueada</button></div>`}
+  }
+  $('#dyn').innerHTML=`<div class="card" style="margin-top:4px"><div class="cardtop"><div><div class="vname">${v.nombre}</div><div class="sub">${v.marca} · ${v.anio}</div></div><span class="plate">${v.placa}</span></div>
+   <div class="rowx"><span>Cuidado de tu ${v.tipo==='moto'?'moto':'carro'}</span>${vpill(s)}</div>${bar(s.pct,s.cls)}
+   <div class="rowx"><span>Kilometraje</span><b class="mono">${fmt(v.km)} km</b></div><button class="btn" data-upd>Actualizar kilometraje</button></div>
+   <div class="seg" role="tablist">${[['piezas','Piezas'],['historial','Historial'],['fallas','Fallas'],['comb','Gasolina']].map(([k,l])=>`<button role="tab" aria-selected="${S.sec===k}" data-sec="${k}">${l}</button>`).join('')}</div>${body}`;
+}
+
+/* Asistente */
+function renderChat(){
+  const v=veh();
+  if(!S.chat){
+    $('#main').innerHTML=`<p class="eyebrow">${v.nombre} · ${v.marca}</p><h1>¿Qué le pasa a tu vehículo?</h1>
+    <div class="list">
+      ${S.ctx?`<button class="part" data-why="${S.ctx}" style="border:0;text-align:left"><div class="row" style="border:0;padding:0"><span class="tile">${IC.gear}</span><div class="grow"><div class="t">¿Por qué importa: ${S.ctx.toLowerCase()}?</div><div class="hint">Te lo explico para tu ${v.marca}</div></div></div></button>`:''}
+      <button class="part" data-ask style="border:0;text-align:left"><div class="row" style="border:0;padding:0"><span class="tile">${IC.mic}</span><div class="grow"><div class="t">Describir un problema</div><div class="hint">Con texto o voz. Ej: "suena al frenar"</div></div></div></button>
+      <button class="part" data-ask="testigo" style="border:0;text-align:left"><div class="row" style="border:0;padding:0"><span class="tile">${IC.cam}</span><div class="grow"><div class="t">Foto de un testigo del tablero</div><div class="hint">Te explico qué significa y qué hacer</div></div></div></button>
+      <button class="part" data-ask="lista" style="border:0;text-align:left"><div class="row" style="border:0;padding:0"><span class="tile">${IC.list}</span><div class="grow"><div class="t">Lista del taller</div><div class="hint">Te digo qué es urgente y qué preguntar</div></div></div></button>
+    </div><p class="note">Toca una opción para ver un ejemplo de respuesta.</p>`;
+    $('#slot').innerHTML=inputbar();
+  } else {
+    const c=S.chat;
+    let data;
+    if(c==='why'){
+      const p=v.piezas.find(x=>x.n===S.why),cc=consumo(p,v.km),st=estado(cc,p);
+      data={st,eb:v.nombre+' · '+v.marca,h:p.n,txt:`${p.e}. ${restante(p,v.km)}.`,
+        alert:st==='err'?['Conviene atenderlo pronto',p.seg?'Ya pasó su plazo y afecta la seguridad.':'Ya pasó su plazo; seguir así puede causar un daño mayor.']:st==='warn'?['Ya casi toca','No es una emergencia, pero conviene programarlo.']:['Todo en orden','WEVEH te avisa cuando se acerque.'],
+        steps:st==='ok'?['No necesitas hacer nada ahora.','Seguimos contando los kilómetros por ti.']:['Pide cita en el taller que prefieras.','Pregunta qué incluye el trabajo y qué repuestos cambian.','Anótalo en el historial cuando lo hagan.']};
+    } else data={
+      freno:{eb:'Diagnóstico',h:'Chillido al frenar',txt:'Probable desgaste de pastillas de freno. No es urgente, pero conviene revisarlo esta semana.',alert:['Evita trayectos largos','Si el pedal vibra o el ruido empeora, pasa a Urgente.'],steps:['Reduce la velocidad y frena con más distancia.','Pide revisión de pastillas y discos.','Anota el ruido para el taller.']},
+      testigo:{eb:'Testigo del tablero',h:'Luz de batería',txt:'Es el testigo de la batería o del sistema de carga. El carro puede apagarse si no se revisa pronto.',alert:['No apagues el motor','Si lo apagas, quizá no vuelva a encender. Ve a un taller de inmediato.'],steps:['Apaga el aire acondicionado y la radio.','Ve directo a un taller sin hacer paradas.','Pide que revisen batería y alternador.']},
+      lista:{eb:'Lista del taller',h:'4 ítems revisados',txt:'1 es urgente, 2 pueden esperar y 1 conviene preguntarlo antes de aceptar.',alert:['Urgente: líquido de frenos','Ya pasó su plazo y afecta la seguridad. Pídelo ya.'],steps:['Pastillas delanteras: urgente si el taller te muestra el desgaste.','Filtro de aire: puede esperar hasta los 45.000 km.','Bujías: pregunta por qué, el plan dice que se cambiaron hace poco.'],q:true}
+    }[c];
+    const gst=data.st||'warn';
+    $('#main').innerHTML=`<p class="eyebrow">${data.eb}</p><h1>${data.h}</h1>
+    <div class="card"><div class="rowx" style="align-items:center"><b style="font-size:15px">Gravedad</b>${pill(gst,gst==='err'?'Urgente':gst==='ok'?'Bien':'Atención')}</div>
+      <div class="bar3"><i style="background:var(--okBar)"></i><i style="background:${gst==='ok'?'var(--track)':'var(--warnBar)'}"></i><i style="background:${gst==='err'?'var(--errBar)':'var(--track)'}"></i></div><div class="hint" style="font-size:14px">${data.txt}</div></div>
+    <div class="alert${gst==='err'?' err':''}" style="margin-top:12px"><span>${gst==='err'?IC.err:IC.warn}</span><div><b>${data.alert[0]}</b>${data.alert[1]}</div></div>
+    <h2 style="margin-top:18px">${data.q?'Qué hacer con cada ítem':'Qué hacer ahora'}</h2>
+    <div class="steps">${data.steps.map((t,i)=>`<div class="step"><span class="num">${i+1}</span><span>${t}</span></div>`).join('')}</div>
+    <div class="list"><button class="btn" data-tab="shops">Ver talleres cerca</button><button class="btn2" data-save>Anotar en el historial</button></div>
+    <p class="note">Orientación, no reemplaza al mecánico. Ejemplo sin precios.</p>`;
+    $('#slot').innerHTML='';
+  }
+}
+const inputbar=()=>`<div class="inputbar"><button class="ib" aria-label="Foto" data-ask="testigo">${IC.cam}</button><input class="fld" id="msg" placeholder="Escribe o habla…" aria-label="Mensaje"><button class="ib" aria-label="Voz" data-ask>${IC.mic}</button><button class="ib p" aria-label="Enviar" data-ask>${IC.send}</button></div>`;
+
+/* Servicios: talleres, mecánicos, grúas y más (mismas reglas de Google Places) */
+const SERV={
+ Talleres:{carro:[['Taller Mecánico El Pistón',4.8,312,'1,2 km','Abierto hasta las 6 p. m.'],['AutoServicio Laureles',4.7,205,'2,4 km','Abierto hasta las 5 p. m.'],['Frenos y Suspensión Centro',4.6,148,'3,1 km','Cerrado ahora']],
+  moto:[['Motos El Paisa',4.8,312,'1,2 km','Abierto hasta las 6 p. m.'],['Taller Motos Express',4.6,167,'2,0 km','Abierto hasta las 7 p. m.'],['Moto Servicio Norte',4.5,98,'3,4 km','Cerrado ahora']]},
+ Mecánicos:{any:[['Mecánico a domicilio Andrés R.',4.9,74,'Cubre Laureles','Atiende hoy','A domicilio'],['Diagnóstico Móvil Medellín',4.7,121,'Cubre El Poblado','Atiende mañana','A domicilio'],['Electricidad Automotriz JM',4.6,89,'2,8 km','Abierto hasta las 5 p. m.','En taller']]},
+ Grúas:{any:[['Grúas Antioquia 24 h',4.7,430,'Cubre el Valle de Aburrá','24 horas','Urgencias'],['Grúa Rápida Medellín',4.5,265,'Cubre el Valle de Aburrá','24 horas','Urgencias'],['Remolques El Norte',4.4,118,'Cubre Bello y Medellín','6 a. m. a 10 p. m.','Urgencias']]},
+ Llantas:{any:[['Llantas y Rines Laureles',4.8,196,'1,9 km','Abierto hasta las 6 p. m.','Alineación'],['Montallantas Express',4.6,143,'2,6 km','Abierto hasta las 7 p. m.','Montaje']]},
+ Repuestos:{carro:[['AutoPartes El Rayo',4.7,264,'1,6 km','Abierto hasta las 6 p. m.','Repuestos nuevos'],['Repuestos Laureles',4.6,181,'2,2 km','Abierto hasta las 7 p. m.','Originales y alternos'],['Distribuidora Antioquia',4.5,129,'3,8 km','Cerrado ahora','Mayorista']],moto:[['Repuestos Motos El Paisa',4.8,233,'1,3 km','Abierto hasta las 6 p. m.','Repuestos nuevos'],['MotoPartes Express',4.6,152,'2,5 km','Abierto hasta las 7 p. m.','Originales y alternos'],['Accesorios y Repuestos Norte',4.4,96,'3,6 km','Cerrado ahora','Repuestos nuevos']]},
+ Accesorios:{any:[['Accesorios Auto Plus',4.7,210,'1,8 km','Abierto hasta las 7 p. m.','Accesorios y audio'],['Tapicería y Estilo',4.6,134,'2,9 km','Abierto hasta las 5 p. m.','Tapicería'],['Cascos y Equipo Rider',4.5,118,'3,3 km','Abierto hasta las 6 p. m.','Para motos']]},
+ Batería:{any:[['Baterías Centro',4.7,230,'2,1 km','Abierto hasta las 6 p. m.','Cambio en sitio'],['Electro Baterías 24',4.5,102,'3,5 km','Abierto 24 horas','Cambio en sitio']]}
+};
+/* Con mapa: negocios en un local físico. Sin mapa: servicios que van a la ubicación del usuario (a domicilio o por llamada). */
+const CONMAPA={Talleres:1,Llantas:1,Batería:1,Repuestos:1,Accesorios:1};
+const km=t=>parseFloat(String(t[3]).replace(',','.'));
+const bayes=t=>{const R=t[1],n=t[2],C=4.2,m=50;return n/(n+m)*R+m/(n+m)*C};
+const ANG=[-35,160,45,215,100];
+const LOCATE='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+function mapaHTML(list){
+  const W=360,H=250,cx=180,cy=135;
+  const pins=list.map((t,i)=>{const r=Math.min(1,km(t)/5)*95,a=ANG[i%ANG.length]*Math.PI/180;
+    const x=Math.max(14,Math.min(86,(cx+Math.cos(a)*r*1.6)/W*100)),y=Math.max(22,Math.min(84,(cy+Math.sin(a)*r)/H*100));
+    return `<button class="pin${i===S.sel?' sel':''}" data-pin="${i}" style="left:${x}%;top:${y}%" aria-label="${t[0]}, ${String(t[1]).replace('.',',')} estrellas, ${t[3]}" aria-pressed="${i===S.sel}">★ ${String(t[1]).replace('.',',')}</button>`}).join('');
+  return `<div class="map" role="group" aria-label="Mapa ilustrativo de servicios cercanos"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <rect width="${W}" height="${H}" fill="var(--surface)"/>
+    <path d="M250 150 q50-10 70 30 t10 70 h-90z" fill="var(--okTint)"/>
+    <g stroke="var(--bg)" stroke-width="12" fill="none" stroke-linecap="round"><path d="M0 70H360"/><path d="M0 135H360"/><path d="M0 205H360"/><path d="M70 0V250"/><path d="M180 0V250"/><path d="M290 0V250"/><path d="M0 240L130 0" stroke-width="8"/></g>
+    <g stroke="var(--line)" stroke-width="1.5" fill="none"><path d="M0 70H360"/><path d="M0 135H360"/><path d="M0 205H360"/><path d="M70 0V250"/><path d="M180 0V250"/><path d="M290 0V250"/></g>
+    <circle cx="${cx}" cy="${cy}" r="${Math.round(95)}" fill="none" stroke="var(--primary)" stroke-opacity=".35" stroke-width="2" stroke-dasharray="6 6"/>
+  </svg><span class="maptag">5 km a la redonda</span><button class="iconbtn locate" data-link aria-label="Centrar en mi ubicación">${LOCATE}</button>
+  <span class="me" style="left:${cx/W*100}%;top:${cy/H*100}%" role="img" aria-label="Tu ubicación"></span>${pins}</div>`;
+}
+function renderShops(){
+  const v=veh(), cats=Object.keys(SERV), g=SERV[S.cat], base=g[v.tipo]||g.any||g.carro, mapa=!!CONMAPA[S.cat];
+  const list=mapa?[...base].sort((a,b)=>S.sort==='cerca'?km(a)-km(b):bayes(b)-bayes(a)):base;
+  if(S.sel>=list.length)S.sel=0;
+  const intro={Talleres:`Talleres para tu ${v.tipo==='moto'?'moto':'carro'}`,Mecánicos:'Mecánicos',Grúas:'Grúas',Llantas:'Llantas',Batería:'Baterías',Repuestos:`Repuestos para tu ${v.tipo==='moto'?'moto':'carro'}`,Accesorios:'Accesorios'}[S.cat];
+  const aviso=mapa?'':`<div class="info"><span>${IC.warn.replace('opacity=".18"','opacity=".3"')}</span><span>${S.cat==='Grúas'?'La grúa va hasta donde estás, por eso aquí no hay mapa: elige una y llama.':'Este servicio va hasta donde estás, por eso aquí no hay mapa: elige uno y escríbele o llámalo.'}</span></div>`;
+  const busq=S.cat==='Repuestos'&&S.q?`<div class="info"><span>${IC.gear}</span><span>Buscas <b>${S.q.toLowerCase()}</b> para tu ${v.marca} ${v.anio}. Pregunta en el local por el código del fabricante para que sea el correcto.</span></div>`:'';
+  $('#main').innerHTML=`<p class="eyebrow">Cerca de ti · Laureles</p><h1>${intro}</h1>
+  <div class="vch" role="group" aria-label="Tipo de servicio">${cats.map(c=>`<button class="chip" data-cat="${c}" aria-pressed="${S.cat===c}">${c}</button>`).join('')}</div>
+  ${busq}
+  ${mapa?`${mapaHTML(list)}<div class="seg" style="grid-template-columns:repeat(2,1fr);margin-block:0 12px" role="tablist" aria-label="Ordenar por"><button role="tab" data-sort="cerca" aria-selected="${S.sort==='cerca'}">Más cerca</button><button role="tab" data-sort="mejor" aria-selected="${S.sort==='mejor'}">Mejor calificados</button></div>`:aviso}
+  <div class="list">${list.map((t,i)=>`<div class="part${mapa&&i===S.sel?' on':''}"><div class="parthead"><div>${mapa?`<button class="rowbtn t" data-pin="${i}" style="border:0;padding:0;min-height:44px;text-align:left">${t[0]}</button>`:`<div class="t">${t[0]}</div>`}${t[5]?`<span class="tag" style="margin-top:4px">${t[5]}</span>`:''}</div><span class="t mono" style="white-space:nowrap">★ ${String(t[1]).replace('.',',')}</span></div>
+   <div class="rowx"><span>${t[2]} reseñas · ${t[3]}</span><span>${t[4]}</span></div><div class="chips">${S.cat==='Grúas'?'<button class="btn s" style="width:auto;min-height:44px" data-link>Llamar ahora</button>':mapa?'<button class="btn2 s" data-link>Cómo llegar</button><button class="btn2 s" data-link>Llamar</button>':'<button class="btn2 s" data-link>Escribir</button><button class="btn2 s" data-link>Llamar</button>'}</div></div>`).join('')}</div>
+  <p class="note">${mapa?'Mapa ilustrativo: en la app va el mapa de Google con su logo. ':''}Datos de ejemplo. ${mapa?`Ordenados por ${S.sort==='cerca'?'distancia':'calificación y número de reseñas'} en Google. `:''}WEVEH no verifica ni recibe pago por mostrar servicios.</p>`;
+}
+function renderMe(){
+  $('#main').innerHTML=`<p class="eyebrow">Tu cuenta</p><h1>Perfil</h1>
+  <div class="card"><div class="rowx"><span>Plan gratis</span><b>${V.length} de 3 vehículos</b></div><div class="rowx"><span>Mensajes del asistente hoy</span><b>4 de 30</b></div></div>
+  <div class="sec">Apariencia</div><div class="vch" role="group" aria-label="Apariencia"><button class="chip" data-mode="light" aria-pressed="${S.mode==='light'}">Claro</button><button class="chip" data-mode="dark" aria-pressed="${S.mode==='dark'}">Oscuro</button></div>
+  <div style="margin-top:8px">${[['Notificaciones','Avisos de mantenimiento y documentos'],['Unidades','Galones y kilómetros'],['Privacidad','Tus datos y fotos'],['Ayuda','Preguntas frecuentes']].map(r=>r[0]==='Notificaciones'?`<button class="row rowbtn" data-notif><div class="grow"><div class="t">Notificaciones</div><div class="hint">${S.notif?'Activadas: te avisamos antes de que algo venza':'Desactivadas · toca para activarlas'}</div></div></button>`:`<div class="row"><div class="grow"><div class="t">${r[0]}</div><div class="hint">${r[1]}</div></div></div>`).join('')}</div>`;
+}
+function render(){
+  if(S.tab==='home') renderHome();
+  else if(S.tab==='garage') S.detail?renderDetail():renderGarage();
+  else if(S.tab==='chat') renderChat();
+  else if(S.tab==='shops') renderShops();
+  else renderMe();
+  if(S.tab!=='chat') $('#slot').innerHTML='';
+  $('#device').dataset.mode=S.mode;paintBack();
+  $('#fab').hidden=S.tab==='chat';$('#fab').classList.remove('mini');
+  document.querySelectorAll('nav [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===S.tab));
+}
+let toastT,UNDO=null;
+function toast(msg,undo){const t=$('#toast');t.innerHTML=`<span>${msg}</span><button data-undo>Deshacer</button>`;t.hidden=false;UNDO=undo;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true;UNDO=null},7000)}
+function sheet(h){$('#sheet').innerHTML=h;$('#sheetBg').classList.add('open');const f=$('#sheet').querySelector('input,button');f&&f.focus()}
+const closeSheet=()=>$('#sheetBg').classList.remove('open');
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  const d=t.dataset, v=veh();
+  if(d.goback!==undefined){const p=H.pop();if(p){Object.assign(S,p);render();$('#main').scrollTop=0}return}
+  const before=snap();
+  if(d.fab!==undefined){S.ctx=(S.tab==='garage'&&S.detail)?peor(veh()).p.n:null;S.prev=S.tab;S.tab='chat';S.chat=null;render();$('#main').scrollTop=0}
+  else if(d.chatexit!==undefined){S.tab=S.prev||'home';S.chat=null;render()}
+  else if(d.why){S.why=d.why;S.ctx=null;S.tab='chat';S.chat='why';render();$('#main').scrollTop=0}
+  else if(d.undo!==undefined){if(UNDO)UNDO();UNDO=null;$('#toast').hidden=true;render()}
+  else if(d.notif!==undefined){sheet(`<h2>¿Te avisamos a tiempo?</h2><div class="steps"><div class="step"><span class="num">1</span><span>Un aviso cuando algo se acerque a vencer, no cuando ya venció.</span></div><div class="step"><span class="num">2</span><span>Máximo uno al día. Sin publicidad.</span></div><div class="step"><span class="num">3</span><span>Lo apagas cuando quieras desde Perfil.</span></div></div><button class="btn" data-notifok>Activar avisos</button><button class="btn2" data-cancel>Ahora no</button>`)}
+  else if(d.notifok!==undefined){S.notif=true;closeSheet();render()}
+  else if(d.nt){S.nt=d.nt;document.querySelectorAll('[data-nt]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.nt===S.nt))}
+  else if(d.savenv!==undefined){const pl=($('#nvPlaca').value||'').trim().toUpperCase(),km=+$('#nvKm').value;if(!pl||!km){$(pl?'#nvKm':'#nvPlaca').focus()}else{const id=Math.max(...V.map(x=>x.id))+1,m=S.nt==='moto';
+      V.push({id,color:'#2F6F8F',tipo:S.nt,nombre:m?'Mi moto':'Mi carro',marca:'Placa '+pl,anio:'sin año',placa:pl,km,km0:km,docs:[],comb:[],hist:[],fallas:[],
+        piezas:[{n:'Cambio de aceite',e:'Protege el motor del desgaste',iKm:m?2500:5000,iM:6,lKm:null,lM:null,f:'Recomendación general',sinDato:true},{n:m?'Lubricar y tensar la cadena':'Filtro de aire',e:m?'Una cadena floja se sale o se rompe':'Evita que el polvo entre al motor',iKm:m?1000:15000,iM:null,lKm:null,lM:null,f:'Recomendación general',sinDato:true,seg:m?1:0},{n:'Frenos',e:'Hacen que el vehículo pare bien',iKm:20000,iM:null,lKm:null,lM:null,f:'Recomendación general',sinDato:true,seg:1}]});
+      S.vid=id;S.tab='garage';S.detail=true;S.sec='piezas';closeSheet();render();$('#main').scrollTop=0}}
+  else if(d.theme!==undefined){S.mode=S.mode==='dark'?'light':'dark';render()}
+  else if(d.mode){S.mode=d.mode;render()}
+  else if(d.open){S.vid=+d.open;S.tab='garage';S.detail=true;S.sec='piezas';render();$('#main').scrollTop=0}
+  else if(d.shop){S.vid=+d.shop;S.tab='shops';S.cat='Talleres';render();$('#main').scrollTop=0}
+  else if(d.tab){S.tab=d.tab;S.detail=false;S.chat=null;render();$('#main').scrollTop=0}
+      else if(d.back!==undefined){S.detail=false;render()}
+  else if(d.sec){S.sec=d.sec;fillDetail()}
+  else if(d.done){const p=v.piezas.find(x=>x.n===d.done),prev={lKm:p.lKm,lM:p.lM,sinDato:p.sinDato},antes=salud(v).nivel;p.lKm=v.km;p.lM=0;p.sinDato=false;v.hist.unshift({t:p.n,km:v.km,when:'Hoy',taller:'Registrado por ti'});
+    const despues=salud(v).nivel;fillDetail();const pl=document.querySelector('#dyn .card .pill');pl&&pl.classList.add('pop');
+    toast(`${p.n} al día.${antes!==despues?` ${v.nombre} pasó de ${antes} a ${despues}.`:''}`,()=>{Object.assign(p,prev);v.hist.shift()})}
+  else if(d.ask!==undefined){S.chat=d.ask||'freno';render();$('#main').scrollTop=0}
+  else if(d.chatback!==undefined){S.chat=null;render()}
+  else if(d.save!==undefined){sheet(`<h2>¿Anotar en el historial?</h2><p class="hint">Se guardará como falla abierta de ${v.nombre}, con el kilometraje actual. Nada se guarda sin tu confirmación.</p><button class="btn" data-cancel>Sí, anotar</button><button class="btn2" data-cancel>Ahora no</button>`)}
+  else if(d.cat){S.cat=d.cat;S.sel=0;S.q=null;renderShops()}
+  else if(d.part){S.vid=v.id;S.tab='shops';S.cat='Repuestos';S.q=d.part;S.sel=0;render();$('#main').scrollTop=0}
+  else if(d.sort){S.sort=d.sort;S.sel=0;const y=$('#main').scrollTop;renderShops();$('#main').scrollTop=y}
+  else if(d.pin!==undefined){S.sel=+d.pin;const y=$('#main').scrollTop;renderShops();$('#main').scrollTop=y}
+  else if(d.link!==undefined){sheet(`<h2>Ejemplo</h2><p class="hint">Aquí se abre Google Maps con la ruta, o el marcador del teléfono.</p><button class="btn" data-cancel>Entendido</button>`)}
+  else if(d.add!==undefined){sheet(`<h2>Agregar vehículo</h2><div class="vch" role="group" aria-label="Tipo"><button class="chip" data-nt="carro" aria-pressed="${S.nt==='carro'}">Carro</button><button class="chip" data-nt="moto" aria-pressed="${S.nt==='moto'}">Moto</button></div><label class="hint" for="nvPlaca">Placa</label><input id="nvPlaca" class="fld" placeholder="Ej. ABC 123" autocapitalize="characters"><label class="hint" for="nvKm">Kilometraje del tablero</label><input id="nvKm" class="fld" type="number" inputmode="numeric" placeholder="Ej. 45000"><button class="btn2" data-cancel>Mejor fotografío la licencia de tránsito</button><button class="btn" data-savenv>Agregar</button><p class="hint" style="margin:0">Con solo placa y kilómetros ya recibes avisos. Los datos que falten los completas después.</p>`)}
+  else if(d.upd!==undefined){sheet(`<h2>¿Cuántos km marca el tablero?</h2><label class="hint" for="kmIn">Kilometraje actual</label><input id="kmIn" class="fld" type="number" inputmode="numeric" value="${v.km}"><button class="btn" data-savekm>Guardar</button><button class="btn2" data-cancel>Cancelar</button>`)}
+  else if(d.savekm!==undefined){const n=+$('#kmIn').value;if(n<v.km){sheet(`<h2>¿Cambiaste el tablero o te equivocaste antes?</h2><p class="hint">El kilometraje no suele bajar. Revisa el número.</p><button class="btn" data-cancel>Corregir</button>`)}else{v.km=n;closeSheet();render()}}
+  else if(d.fuel!==undefined){sheet(`<h2>Registrar tanqueada</h2><label class="hint" for="fKm">Kilometraje del tablero</label><input id="fKm" type="number" inputmode="numeric" value="${v.km}" class="fld"><label class="hint" for="fGal">Galones</label><input id="fGal" type="number" inputmode="decimal" step="0.1" placeholder="Ej. 9.5" class="fld"><label class="hint" for="fCop">Valor pagado (COP)</label><input id="fCop" type="number" inputmode="numeric" placeholder="Ej. 150000" class="fld"><button class="btn" data-savefuel>Guardar</button><button class="btn2" data-cancel>Cancelar</button>`)}
+  else if(d.savefuel!==undefined){const km=+$('#fKm').value,gal=+$('#fGal').value,cop=+$('#fCop').value;if(km&&gal&&cop&&km>(v.comb.length?v.comb[v.comb.length-1][0]:0)){if(!v.comb.length)v.comb.push([km-300,0,0]);v.comb.push([km,gal,cop]);if(km>v.km)v.km=km;closeSheet();fillDetail()}else{$('#fGal').focus()}}
+  else if(d.cancel!==undefined){closeSheet()}
+  if(viewKey(before)!==viewKey(snap())){if(secondary(snap()))H.push(before);else H.length=0;paintBack()}
+});
+document.addEventListener('input',e=>{if(e.target.id==='kmSim'){veh().km=+e.target.value;fillDetail()}});
+$('#sheetBg').addEventListener('click',e=>{if(e.target.id==='sheetBg')closeSheet()});
+$('#main').addEventListener('scroll',()=>{$('#fab').classList.toggle('mini',$('#main').scrollTop>24)});
+render();
+</script>
+
+</body></html>
