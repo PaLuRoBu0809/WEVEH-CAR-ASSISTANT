@@ -3,6 +3,8 @@ name: arranque
 description: Orden de construcción de WEVEH desde cero, con los comandos y archivos de la fase 0 (repo, ADRs, requisitos, esqueletos de backend Spring Boot y app Expo, Supabase, CI) y el criterio para cerrar cada fase. Úsala cuando vayas a crear los proyectos, la CI o la estructura inicial, o para saber qué toca construir ahora.
 ---
 
+> **Histórico (2026-10-10):** la fase 0 ya está hecha y esta skill describe cómo se hizo en ese momento (identidad por dispositivo, JPA). El plan vigente está en `docs/tareas.md` y las decisiones en `docs/adr/`; si algo de aquí contradice a `docs/`, gana `docs/`.
+
 # Arranque de WEVEH desde cero
 
 El repo arranca solo con material de referencia (`README.md`, `WEVEH.docx`, notebook y diagrama). El código de las ramas `dev/*` y `makers/*` fue un prototipo: no se copia.
