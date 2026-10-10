@@ -3,6 +3,8 @@ name: arquitectura
 description: Reglas de arquitectura de WEVEH (monolito modular Spring Boot con hexagonal por módulo, app Expo por features, Supabase Postgres, identidad por dispositivo). Úsala antes de crear o mover clases, paquetes, carpetas, endpoints o tablas, o al decidir dónde va una lógica.
 ---
 
+> **Vigente (2026-10-10):** la arquitectura completa y su estado están en `docs/arquitectura.md`. Cambios respecto a esta skill: cuentas con Supabase Auth reemplazan la identidad por dispositivo (ADR 0005), persistencia con Spring Data JDBC (ADR 0006), eventos guardados (ADR 0007), sin red con SQLite (ADR 0009), resiliencia y Sentry (ADR 0010), módulo `cuentas`.
+
 # Arquitectura de WEVEH (MVP)
 
 ## Vista general
@@ -53,21 +55,21 @@ Dependencias permitidas: todos pueden usar `shared`; `mantenimiento`, `perfilami
 ```
 co/weveh/<modulo>/
 ├── <Modulo>Api.java            # fachada pública (lo único que otros módulos usan)
-├── domain/                     # entidades, value objects, reglas. Java puro: sin Spring, sin JPA
+├── domain/                     # entidades, value objects, reglas. Java puro: sin Spring, sin persistencia
 ├── application/
 │   ├── <CasoDeUso>.java        # interfaz (puerto de entrada)
 │   ├── <CasoDeUso>Servicio.java
 │   └── puertos/                # interfaces de salida: repositorios, MotorDiagnostico, InvestigadorFichaTecnica...
 └── infrastructure/
     ├── web/                    # @RestController + DTOs (records) + mapeadores
-    ├── persistencia/           # entidades JPA + adaptadores de repositorio
+    ├── persistencia/           # Spring Data JDBC: filas + repositorios + adaptadores (ADR 0006)
     └── ia/                     # adaptadores de OpenRouter (único lugar donde aparece el proveedor de IA)
 ```
 
 Reglas:
 - Controlador: valida formato, llama un caso de uso, mapea respuesta. Nada más.
 - La regla de negocio vive en `domain` (por ejemplo `Vehiculo.actualizarKilometraje`), no en servicios ni controladores.
-- Entidad JPA ≠ entidad de dominio. Mapea en el adaptador.
+- Fila de persistencia ≠ entidad de dominio. Mapea en el adaptador.
 - Cada caso de uso recibe `DispositivoId` y filtra por él. Un recurso de otro dispositivo responde **404**, no 403.
 - Migraciones de esquema solo con Flyway en `backend/src/main/resources/db/migration` (`V<n>__descripcion.sql`). Nunca cambios manuales en Supabase.
 - Spring Modulith viene desde la fase 0 (versión gestionada por el BOM que trae start.spring.io). La prueba `ModularidadTest` con `ApplicationModules.of(WevehApplication.class).verify()` es obligatoria y corre en CI.
@@ -107,6 +109,6 @@ Fronteras con `eslint-plugin-boundaries` v7 (regla `boundaries/dependencies` en 
 
 ## Antes de terminar un cambio de arquitectura
 
-- ¿Alguna clase de `domain` importa Spring, JPA o el SDK de IA? Debe ser no.
+- ¿Alguna clase de `domain` importa Spring, persistencia o el proveedor de IA? Debe ser no.
 - ¿Algún módulo importa `infrastructure` o `domain` de otro? Debe ser no.
 - ¿La decisión merece un ADR en `docs/adr/NNNN-titulo.md` (contexto, decisión, alternativas, consecuencias)? Si cambia el stack, sí.

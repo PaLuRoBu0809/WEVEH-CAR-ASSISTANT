@@ -3,6 +3,8 @@ name: catalogo-vehiculos
 description: Cómo cargar a Supabase (PostgreSQL) las tablas de base gravable del Ministerio de Transporte que usa WEVEH como catálogo de vehículos de Colombia, su esquema, sus limitaciones y la búsqueda marca → línea para el registro. Úsala al importar o actualizar el catálogo, crear sus tablas o endpoints, o construir el selector de vehículo en la app.
 ---
 
+> **Vigente (2026-10-10):** el catálogo es una base viva por año fiscal (ADR 0014): las líneas se actualizan y agregan, nunca se borran, y la importación será un proceso repetible del backend. Los Excel van en `datos/mintransporte/<año>/` y la salida en `datos/catalogo/<año>/` (ignoradas por git). Sin `psql` instalado, la carga puede hacerse con un script de Python (psycopg) que lea las credenciales de `backend/.env`.
+
 # Catálogo de vehículos de Colombia
 
 ## 1. De dónde salen los datos
@@ -48,14 +50,14 @@ El avalúo no se usa en el MVP; se guarda porque viene gratis y sirve después (
 ```bash
 python3 -m pip install openpyxl
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/catalogo-vehiculos/scripts/importar_catalogo.py \
-  --salida salida_catalogo/ "Tabla 1.- Automóviles.xlsx" "Tabla 2.- Camionetas y Camperos.xlsx" ...
+  --salida datos/catalogo/2025/ datos/mintransporte/2025/*.xlsx
 ```
 
 El script detecta solo el encabezado y los años, normaliza nombres, descarta duplicados exactos, marca las filas genéricas, infiere los campos del punto 2 y escribe `marca.csv`, `linea.csv` y `resumen.json`. Al final imprime los `\copy` para Supabase en orden:
 
 ```bash
-psql "$WEVEH_DB_URL" -c "\copy catalogo.marca(...) from 'salida_catalogo/marca.csv' csv header"
-psql "$WEVEH_DB_URL" -c "\copy catalogo.linea(...) from 'salida_catalogo/linea.csv' csv header"
+psql "$WEVEH_DB_URL" -c "\copy catalogo.marca(...) from 'datos/catalogo/2025/marca.csv' csv header"
+psql "$WEVEH_DB_URL" -c "\copy catalogo.linea(...) from 'datos/catalogo/2025/linea.csv' csv header"
 # y el ajuste de secuencias
 ```
 
