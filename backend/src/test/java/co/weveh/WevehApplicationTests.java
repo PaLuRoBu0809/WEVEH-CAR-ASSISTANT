@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,8 +48,8 @@ class WevehApplicationTests {
     }
 
     @Test
-    void garajeVacioDePuntaAPunta() throws Exception {
-        mockMvc.perform(get("/api/v1/vehiculos").header("X-Weveh-Dispositivo", "3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11"))
+    void unDispositivoNuevoTieneElGarajeVacio() throws Exception {
+        mockMvc.perform(get("/api/v1/vehiculos").header("X-Weveh-Dispositivo", UUID.randomUUID().toString()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }

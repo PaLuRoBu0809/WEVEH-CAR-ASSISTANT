@@ -1,7 +1,7 @@
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { espacio, Texto, useTema } from '@/shared/design-system';
+import { Boton, espacio, Texto, useTema } from '@/shared/design-system';
 import { mensajeParaPersona } from '@/shared/http';
 
 import { useVehiculos } from '../application/useVehiculos';
@@ -34,7 +34,12 @@ export function PantallaGaraje({ onAgregar }: Props) {
       {isPending && <ActivityIndicator color={tema.primario} accessibilityLabel="Cargando tu garaje" />}
       {error && <EstadoError mensaje={mensajeParaPersona(error)} onReintentar={() => refetch()} />}
       {data && data.length === 0 && <GarajeVacio onAgregar={onAgregar} />}
-      {data && data.length > 0 && <ListaVehiculos vehiculos={data} />}
+      {data && data.length > 0 && (
+        <>
+          <ListaVehiculos vehiculos={data} />
+          {onAgregar && <Boton variante="secundario" texto="+ Agregar vehículo" onPress={onAgregar} />}
+        </>
+      )}
     </ScrollView>
   );
 }

@@ -37,7 +37,7 @@ Competencia conocida: Garage Hub (asistente similar), Drivoo (enfocado en gastos
 | Carpeta | Qué es | Tecnología |
 |---|---|---|
 | `mobile/` | App del MVP | Expo + React Native + TypeScript, Expo Router, TanStack Query, Zustand, React Hook Form + Zod, expo-sqlite, expo-secure-store |
-| `backend/` | API y agentes IA | Spring Boot 4 (la versión estable que genere start.spring.io), Java 25 LTS, Maven Wrapper; Spring Web, Validation, Data JPA, Flyway, Actuator, Spring Modulith; Anthropic Java SDK |
+| `backend/` | API y agentes IA | Spring Boot 4 (la versión estable que genere start.spring.io), Java 25 LTS, Maven Wrapper; Spring Web, Validation, Data JPA, Flyway, Actuator, Spring Modulith; OpenRouter para IA |
 | `contracts/` | Vectores de prueba compartidos y contrato OpenAPI | JSON / YAML |
 | `evals/` | Casos de evaluación de los agentes IA y resultados | JSON + `results.md` |
 | `docs/` | ADRs, requisitos, arquitectura | Markdown + Mermaid |
@@ -53,7 +53,7 @@ No fijes versiones de memoria: usa las que generen `start.spring.io` y `create-e
 Detalle y comandos: skill `weveh-dev:arranque`. No saltes de fase sin cerrar la anterior (pruebas y CI en verde).
 
 0. **Fundaciones**: higiene del repo, ADR del stack, esqueletos de `backend/` y `mobile/` que compilan y prueban, CI, proyecto Supabase, identidad por dispositivo de punta a punta.
-1. **Catálogo + Garaje**: cargar las tablas de base gravable del Ministerio de Transporte (ya procesadas en los archivos del proyecto, carpeta `catalogo/`), CRUD de vehículos con registro básico.
+1. **Catálogo + Garaje + Mecánico IA**: cargar las tablas de base gravable del Ministerio de Transporte, CRUD de vehículos con registro básico y el Mecánico IA por texto (adelantado de la fase 3 por decisión del equipo, 2026-10-08).
 2. **Mantenimiento + Documentos**: plan por pieza, salud, historial, kilometraje, SOAT/RTM/seguro. Reglas puras con vectores compartidos.
 3. **Mecánico IA**: diagnóstico por texto con contexto completo, validador de seguridad y evals.
 4. **Completar perfil con WEVEH**: agente con búsqueda web y entrevista.
@@ -99,7 +99,7 @@ Detalle: skill `weveh-dev:arquitectura`.
 Detalle: skills `weveh-dev:mecanico-ia` y `weveh-dev:agente-perfilador`.
 
 1. Todo LLM va detrás de un puerto de `application` (`MotorDiagnostico`, `InvestigadorFichaTecnica`, `EntrevistadorPerfil`). Ningún servicio ni clase de dominio llama al SDK directamente; el SDK solo aparece en `infrastructure/ia`.
-2. Proveedor: **Anthropic Java SDK** (`com.anthropic:anthropic-java`), modelo configurable por `WEVEH_IA_MODELO` (por defecto `claude-opus-5-5`). Búsqueda web con la herramienta de servidor `web_search_20260209`. Antes de escribir código del SDK carga la skill `claude-api`: no adivines firmas.
+2. Proveedor: **OpenRouter, solo modelos gratuitos (`:free`)** (`docs/adr/0004-openrouter.md`), desde `RestClient`, sin SDK de un proveedor. `WEVEH_IA_MODELO` es la lista de modelos en orden de intento; llave en `OPENROUTER_API_KEY`, solo en el backend. No agregues modelos de pago sin que el equipo lo pida.
 3. Toda salida del modelo se valida contra esquema en el backend. Si falla: un reintento y luego respuesta segura.
 4. `ValidadorSeguridadDiagnostico` (código determinista, no prompt) corre **después** del modelo y gana siempre: frenos, dirección, testigo rojo, temperatura, aceite o batería ⇒ `CRITICO` + `requiresMechanic`.
 5. Los datos que el agente encuentra en la web son **propuestas**: se guardan con su URL de fuente y `origen = IA_WEB`, y el usuario los confirma antes de que alimenten el plan.

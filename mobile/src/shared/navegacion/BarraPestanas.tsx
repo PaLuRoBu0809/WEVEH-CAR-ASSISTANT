@@ -1,5 +1,5 @@
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
-import { useEffect, useState } from 'react';
+import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,33 +19,17 @@ const ICONOS: Record<string, typeof IconoInicio> = {
   perfil: IconoPerfil,
 };
 
-const AVISO_PREGUNTAR = 'El Mecánico IA llega pronto: primero registramos tu vehículo.';
-
 /** "nav.tabs" y ".fab" del mockup Garaje. */
 export function BarraPestanas({ state, descriptors, navigation }: BottomTabBarProps) {
   const tema = useTema();
   const margenes = useSafeAreaInsets();
-  const [aviso, setAviso] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!aviso) return;
-    const reloj = setTimeout(() => setAviso(null), 2600);
-    return () => clearTimeout(reloj);
-  }, [aviso]);
 
   return (
     <View>
-      {aviso && (
-        <View
-          accessibilityLiveRegion="polite"
-          style={[estilos.aviso, { backgroundColor: tema.avisoFondo, bottom: 76 + margenes.bottom + 72 }]}>
-          <Text style={[estilos.textoAviso, { color: tema.avisoTinta }]}>{aviso}</Text>
-        </View>
-      )}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Abrir el asistente"
-        onPress={() => setAviso(AVISO_PREGUNTAR)}
+        onPress={() => router.push('/preguntar')}
         style={({ pressed }) => [
           estilos.flotante,
           { backgroundColor: pressed ? tema.primarioPresionado : tema.primario, bottom: 76 + margenes.bottom },
@@ -119,14 +103,4 @@ const estilos = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   textoFlotante: { fontFamily: fuentes.negrita, fontSize: 15 },
-  aviso: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    borderRadius: radio.l,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    zIndex: 6,
-  },
-  textoAviso: { fontFamily: fuentes.normal, fontSize: 14 },
 });

@@ -20,6 +20,12 @@ spring:
       enabled: true
 
 weveh:
+  ia:
+    # Modelos de OpenRouter en orden de preferencia, separados por coma (docs/adr/0004).
+    # Por defecto, modelos gratuitos con salida estructurada: si uno está saturado se prueba el siguiente.
+    modelo: ${WEVEH_IA_MODELO:nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free,dots-studio/dots-3-note-preview:free}
+    openrouter:
+      llave: ${OPENROUTER_API_KEY:}
   cors:
     # Solo para probar la app en el navegador del PC (ej. http://localhost:8081). Vacío en producción.
     origenes: ${WEVEH_CORS_ORIGENES:}
