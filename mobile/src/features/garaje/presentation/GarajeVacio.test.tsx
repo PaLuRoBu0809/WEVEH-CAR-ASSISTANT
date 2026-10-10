@@ -12,14 +12,14 @@ describe('GarajeVacio', () => {
   test('sin acción de registro el botón queda deshabilitado', async () => {
     await render(<GarajeVacio />);
 
-    expect(screen.getByRole('button', { name: 'Agregar mi vehículo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '+ Agregar vehículo' })).toBeDisabled();
   });
 
   test('con acción de registro el botón la ejecuta', async () => {
     const onAgregar = jest.fn();
     await render(<GarajeVacio onAgregar={onAgregar} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Agregar mi vehículo' }));
+    fireEvent.press(screen.getByRole('button', { name: '+ Agregar vehículo' }));
 
     expect(onAgregar).toHaveBeenCalledTimes(1);
   });

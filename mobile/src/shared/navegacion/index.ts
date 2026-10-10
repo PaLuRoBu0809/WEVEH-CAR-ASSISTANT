@@ -1,0 +1,1 @@
+export { BarraPestanas } from './BarraPestanas';
