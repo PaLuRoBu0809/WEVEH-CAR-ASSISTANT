@@ -44,8 +44,14 @@ Como dueño quiero ver de un vistazo si mis papeles están al día.
   Cuando veo el inicio
   Entonces aparece en "Lo más urgente" y la salud queda en banda "Atención"
 
-## RF-DOC-04 Avisos de vencimiento
-Como dueño quiero que me avisen antes de que se venzan mis papeles.
-- Dado un SOAT que vence en 30, 7 o 1 día
+## RF-DOC-04 Avisos insistentes de vencimiento
+Como dueño quiero que la app insista para que no se me pase nada.
+- Dado un SOAT que vence en 30, 7, 3 o 1 día, o vence hoy
   Cuando llega ese día
   Entonces recibo una notificación local del celular (sin push del servidor)
+- Dado un documento ya vencido
+  Cuando pasa cada día
+  Entonces recibo un aviso diario hasta que marque "Ya lo renové" o lo posponga
+- Dado que tengo las notificaciones desactivadas
+  Cuando abro la app
+  Entonces veo un aviso fijo "Sin avisos no podemos recordarte lo que vence" con "Activarlas", que abre los ajustes del celular, y vuelve a aparecer mientras sigan desactivadas
