@@ -1,3 +1,5 @@
+> **Obsoleto (2026-10-08):** el proyecto usa OpenRouter con modelos gratuitos (`docs/adr/0004-openrouter.md`). Este archivo queda como referencia del diseño original con el Anthropic Java SDK; no lo copies.
+
 # Implementación de referencia (Anthropic Java SDK)
 
 Dependencia Maven (verifica la última versión en Maven Central antes de fijarla):

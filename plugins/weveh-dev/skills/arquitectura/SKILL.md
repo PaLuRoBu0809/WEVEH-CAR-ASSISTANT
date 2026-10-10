@@ -27,7 +27,7 @@ flowchart LR
     API --> GAR & MAN & DOC & COM & PER & MIA & CAT
   end
   PG[("Supabase Postgres")]
-  LLM["Claude API<br/>+ web_search"]
+  LLM["OpenRouter<br/>modelos :free"]
   Backend --> PG
   PER --> LLM
   MIA --> LLM
@@ -61,7 +61,7 @@ co/weveh/<modulo>/
 └── infrastructure/
     ├── web/                    # @RestController + DTOs (records) + mapeadores
     ├── persistencia/           # entidades JPA + adaptadores de repositorio
-    └── ia/                     # adaptadores del SDK de Anthropic (único lugar donde aparece)
+    └── ia/                     # adaptadores de OpenRouter (único lugar donde aparece el proveedor de IA)
 ```
 
 Reglas:
