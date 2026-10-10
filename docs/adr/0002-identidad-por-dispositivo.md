@@ -1,6 +1,6 @@
 # ADR 0002 — Identidad por dispositivo, sin login
 
-- **Estado:** aceptada
+- **Estado:** reemplazada por el [ADR 0005](0005-cuentas-supabase-auth.md) (2026-10-10). Se conserva como historia: fue la identidad de la demo de la fase 0 y 1.
 - **Fecha:** 2026-10-08
 - **Autores:** Isaac Cano, Pablo Rodríguez
 
