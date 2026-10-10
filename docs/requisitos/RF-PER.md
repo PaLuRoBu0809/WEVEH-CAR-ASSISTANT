@@ -6,7 +6,7 @@ Diseño del agente: skill `weveh-dev:agente-perfilador`. Fase 4.
 Como dueño quiero que WEVEH averigüe el plan de mantenimiento de mi modelo exacto.
 - Dado que toco "Completar perfil con WEVEH" en la Prado 2008 3.400 cc y no existe ficha técnica del modelo
   Cuando inicia
-  Entonces el agente busca en la web y guarda una ficha con intervalos, consumo de referencia, fallas conocidas y la URL de cada fuente
+  Entonces el backend busca en la web, elige las mejores páginas y el agente guarda una ficha con intervalos, consumo de referencia, fallas conocidas y la URL de cada fuente (ADR 0013)
 - Dado que otro vehículo del mismo modelo ya tiene ficha de hace menos de 180 días
   Cuando inicia
   Entonces se reutiliza sin volver a buscar en la web
@@ -52,6 +52,6 @@ Como dueño quiero que me alerten si cuento algo peligroso.
 
 ## RF-PER-05 Límite de uso
 Como equipo queremos controlar el costo de la IA.
-- Dado que ya hice 3 sesiones de perfilamiento hoy para el mismo vehículo
+- Dado que ya hice 3 sesiones de perfilamiento hoy para el mismo vehículo (límite por vehículo y por cuenta)
   Cuando intento otra
   Entonces veo que puedo intentarlo mañana

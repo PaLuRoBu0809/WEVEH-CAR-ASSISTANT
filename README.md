@@ -1,131 +1,41 @@
-# 🚗 Weveh — Asistente Automotriz con IA
+# WEVEH — tu vehículo al día
 
-> Super App vehicular que ayuda a los dueños de carros y motos a cuidar su vehículo antes de que sea demasiado tarde: mantenimiento preventivo, trámites legales y un "Mecánico IA" en el bolsillo.
+App móvil para dueños de carro o moto en Colombia sin conocimientos mecánicos: un mecánico de confianza en el bolsillo que ya conoce tu vehículo. Avisa antes de que se venza el SOAT o toque un cambio, explica qué le pasa al carro sin jerga y reúne su historia, sus papeles y su consumo.
 
-**Equipo:** Equipo Salchicha
-**Curso:** Makers AI Product
+Proyecto del curso Makers AI Product (Equipo Salchicha: Isaac Cano y Pablo Rodríguez). El planteamiento original del curso está en [`docs/referencia/README-original.md`](docs/referencia/README-original.md).
 
----
+## Documentación
 
-## 📌 El problema
+Se construye con SDD (especificación → plan → tareas). Empieza por **[`docs/README.md`](docs/README.md)**.
 
-Los dueños de vehículos —especialmente de segunda mano— tienen dificultades para gestionar el mantenimiento preventivo y los trámites legales de su carro, porque carecen de conocimientos mecánicos técnicos y no llevan un registro organizado de fechas e historial. Esto genera:
+| Qué | Dónde |
+|---|---|
+| Qué debe hacer | [`docs/requisitos/`](docs/requisitos/README.md), [`docs/rnf.md`](docs/rnf.md) |
+| Por qué está hecho así | [`docs/adr/`](docs/adr/) |
+| Cómo está armado | [`docs/arquitectura.md`](docs/arquitectura.md), [`docs/datos.md`](docs/datos.md), [`docs/api.md`](docs/api.md) |
+| Qué falta | [`docs/tareas.md`](docs/tareas.md) |
+| Guía para Claude Code | [`CLAUDE.md`](CLAUDE.md) y el plugin `plugins/weveh-dev/` |
 
-- Multas costosas por documentos vencidos (SOAT, impuestos, revisión técnico-mecánica).
-- Daños mecánicos severos por descuido, que convierten un mantenimiento barato en una reparación carísima.
-- Estrés constante al no saber qué significa un ruido o un testigo encendido en el tablero.
+## Estructura
 
-**Cómo lo resuelven hoy:** memoria, la "tarjetita de cartón" del último cambio de aceite, esperar a que el carro suene raro, o preguntar en foros y a amigos — respuestas genéricas que no consideran la marca, modelo y año exactos del vehículo.
+| Carpeta | Qué es |
+|---|---|
+| `mobile/` | App Expo (React Native + TypeScript) |
+| `backend/` | API Spring Boot (Java 25), monolito modular |
+| `contracts/` | Contrato OpenAPI y vectores de reglas compartidos entre backend y app |
+| `evals/` | Evaluación del Mecánico IA |
+| `docs/` | Documentación (SDD) |
 
-## 💡 La solución
+## Correr en local
 
-Weveh combina un registro organizado del vehículo con un asistente de IA que entiende lenguaje natural (texto, voz o foto) y responde como un mecánico experto, pero preventivo: en vez de esperar a que el carro falle, avisa antes.
+Requisitos: Java 25, Node LTS, Docker (para las pruebas de integración) y, para probar en Android, el emulador de Android Studio.
 
-## ✨ Funcionalidades del MVP
+```bash
+# Backend (copia backend/.env.example a backend/.env y llénalo)
+cd backend && ./mvnw spring-boot:run
+cd backend && ./mvnw -B verify          # pruebas, igual que la CI
 
-- **Perfil Inteligente** — specs de fábrica según marca, modelo y año del vehículo.
-- **Bóveda de Vencimientos** — control de SOAT, impuestos y revisión técnico-mecánica.
-- **Bitácora de Desgaste** — historial de servicios y mantenimientos realizados.
-- **Mecánico IA** — núcleo de IA del producto, con tres capacidades:
-  - *Triaje Mecánico*: diagnóstico preventivo a partir de la descripción del síntoma en lenguaje natural.
-  - *Mantenimiento Predictivo*: recomendaciones basadas en kilometraje promedio.
-  - *Asesoría de Compra*: guía sobre líquidos y repuestos adecuados para el vehículo.
-
-## 🧠 ¿Por qué IA?
-
-Un buscador o un manual en PDF no entienden descripciones vagas como "el carro me jalonea" o "suena un chillido al frenar". La IA puede procesar ese lenguaje informal, cruzarlo con el contexto del vehículo (marca, modelo, año, kilometraje) y dar un diagnóstico preventivo específico — actuando como un mecánico experto en el bolsillo del usuario.
-
-Capacidades usadas:
-- Extracción de información (kilometraje, gastos) desde audio o texto desordenado.
-- Clasificación por gravedad (emergencia real vs. mantenimiento básico).
-- Diagnóstico cruzando síntomas con fallas comunes del modelo exacto.
-- Comprensión de lenguaje natural, poco técnico.
-
-## 🔄 Flujo de la IA
-
-1. El usuario envía un mensaje (texto, voz o foto) describiendo un síntoma.
-2. El sistema valida que el perfil del vehículo (marca, modelo, año) esté completo.
-3. Se agrega contexto: kilometraje estimado e historial de mantenimiento.
-4. La IA identifica el componente mecánico posiblemente afectado.
-5. La IA cruza el síntoma con la base de datos mecánica, genera un pre-diagnóstico y clasifica la urgencia.
-6. El sistema agrega un aviso de seguridad: es una estimación, no reemplaza a un mecánico presencial.
-7. El usuario recibe el diagnóstico en lenguaje sencillo, con nivel de gravedad y próximos pasos.
-8. La app sugiere agendar cita en un taller aliado o registrar la reparación.
-
-## 📤 Output estructurado: `diagnostico_mecanico_preventivo`
-
-| Campo | Tipo | Obligatorio | Valores permitidos | Restricción |
-|---|---|---|---|---|
-| `posible_falla` | string | Sí | Libre | Ninguna |
-| `nivel_gravedad` | string | Sí | `"Crítico"` \| `"Moderado"` \| `"Leve"` | Solo uno de estos tres valores exactos |
-| `explicacion_simple` | string | Sí | Libre | Máximo 2 oraciones, sin jerga técnica |
-| `accion_inmediata` | string | Sí | Libre | Instrucción directa para el usuario |
-| `costo_estimado` | string \| null | No | Libre | Rango estimado; `null` si no se puede estimar de forma segura |
-
-### Ejemplo
-
-```json
-{
-  "posible_falla": "Pastillas de freno desgastadas",
-  "nivel_gravedad": "Crítico",
-  "explicacion_simple": "Las pastillas de freno han perdido su material de fricción y el metal está rozando directamente con el disco al frenar.",
-  "accion_inmediata": "Detener el uso del vehículo y agendar cambio de pastillas inmediatamente para no dañar el disco.",
-  "costo_estimado": "$150.000 - $300.000 COP"
-}
+# App (copia mobile/.env.example a mobile/.env)
+cd mobile && npm ci && npx expo start   # "a" abre el emulador de Android
+cd mobile && npm run lint && npm run typecheck && npm test
 ```
-
-### Prompt estructurado (base)
-
-```
-Actúa como el motor de análisis de un mecánico automotriz experto.
-Devuelve únicamente JSON válido. No incluyas explicaciones ni uses markdown.
-No inventes datos de costos si el problema es ambiguo. Usa null cuando el
-costo no se pueda estimar de forma segura.
-
-Estructura requerida:
-{
-  "posible_falla": "string, nombre del componente afectado",
-  "nivel_gravedad": "string, nivel de riesgo",
-  "explicacion_simple": "string, máximo 2 oraciones sin jerga técnica",
-  "accion_inmediata": "string, qué debe hacer el conductor ahora mismo",
-  "costo_estimado": "string o null, rango de precio referencial"
-}
-
-Valores permitidos: nivel_gravedad: "Crítico" | "Moderado" | "Leve"
-
-Input: Vehículo: {{MARCA_MODELO_AÑO}} Síntoma: {{TEXTO_DEL_USUARIO}}
-```
-
-## ⚠️ Riesgo principal y regla de seguridad
-
-**Riesgo:** que la IA clasifique como "Leve" un problema que en realidad es peligroso (ej. falla en dirección o frenos), llevando al usuario a seguir manejando y sufrir un accidente o daño severo.
-
-**Caso límite detectado:** un testigo rojo de presión de aceite fue subestimado porque el usuario reportó que "el carro se sentía perfecto" — pero ese testigo puede indicar que el motor se funde en minutos.
-
-**Regla de seguridad aplicada:**
-> Cualquier mención de un testigo de color **rojo** en el tablero (especialmente aceite, temperatura o batería) o fallas en el sistema de frenos debe clasificarse **siempre** con `nivel_gravedad: "Crítico"`, sin importar si el usuario indica que el vehículo se siente o conduce de manera normal.
-
-Además:
-- Todo diagnóstico debe mostrar un *disclaimer* aclarando que es una estimación preventiva, no un reemplazo de un mecánico presencial.
-- La app incluye un botón **"¿El mecánico te dijo otra cosa?"** para que el usuario ingrese el diagnóstico real y así retroalimentar el modelo.
-
-## 📊 Criterios de éxito
-
-- **Métrica principal:** cantidad de recordatorios legales cumplidos (SOAT renovado a tiempo) y mantenimientos registrados por mes.
-- **Resultado mínimo aceptable:** 30% de los usuarios nuevos registran al menos un mantenimiento o resuelven una duda con el Mecánico IA en sus primeros 15 días.
-- **Señal de valor:** el usuario abre la app *antes* de llevar el carro al mecánico, o renueva sus seguros directamente desde la app.
-
-## 💰 Monetización
-
-- Venta de seguros.
-- Directorio de talleres aliados (pago).
-- Certificado de reventa premium.
-
-## 👥 Equipo
-
-- Equipo Salchicha
-- Pablo Luis Rodríguez Burgos
-
-## 📄 Licencia
-
-Por definir.

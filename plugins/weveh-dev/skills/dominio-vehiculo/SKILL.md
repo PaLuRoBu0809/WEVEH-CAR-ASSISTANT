@@ -3,9 +3,11 @@ name: dominio-vehiculo
 description: Modelo de dominio y reglas de negocio de WEVEH (registro de vehículo, plan de mantenimiento por pieza, salud, SOAT/RTM/seguro, tanqueadas y consumo km/gal, kilometraje). Úsala al implementar o probar cualquier cálculo o entidad del garaje, mantenimiento, documentos o combustible, en Java o TypeScript.
 ---
 
+> **Cambios vigentes (2026-10-10, ver `docs/requisitos/`):** el registro solo exige tipo, marca, línea, año y km; aceite, SOAT y RTM son opcionales y se completan después (RF-GAR-02, 02b). Si el aceite es desconocido, se recomienda revisarlo con pasos claros. El puntaje de salud solo se muestra con datos suficientes (RF-MAN-03). Los avisos de documentos son insistentes: 30, 7, 3 y 1 día, el día, y diarios si venció (RF-DOC-04).
+
 # Dominio del vehículo
 
-El diagrama de clases completo y el modelo de datos están en `references/modelo-dominio.md`. Léelo antes de crear entidades o tablas.
+El modelo de datos vigente está en `docs/datos.md` (tablas reales y futuras). `references/modelo-dominio.md` es el diseño original: úsalo como guía de las entidades futuras, no como fuente de las tablas.
 
 ## 1. Registro del vehículo (formulario básico)
 

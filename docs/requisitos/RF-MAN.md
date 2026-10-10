@@ -29,8 +29,11 @@ Como dueño quiero saber qué tan cerca está cada pieza de su próximo servicio
 El consumo es el mayor entre consumo por km y consumo por tiempo.
 
 ## RF-MAN-03 Salud del vehículo
-Como dueño quiero un número y un color que me digan cómo está mi vehículo.
-- Dado que todas las piezas están al día y los documentos vigentes
+Como dueño quiero un número y un color que me digan cómo está mi vehículo, cuando haya datos suficientes para que sea confiable.
+- Dado que la mayoría de piezas de mi plan no tiene dato (por ejemplo, recién registrado)
+  Cuando veo Inicio
+  Entonces veo el estado de cada pieza, pero en vez del puntaje general veo "Completa el perfil para ver la salud de tu vehículo" con el botón de la entrevista
+- Dado que la mayoría de piezas tiene dato, todas están al día y los documentos vigentes
   Cuando veo el inicio
   Entonces la salud está entre 90 y 100, banda "Al día"
 - Dado que una pieza de seguridad (frenos, llantas, dirección, distribución) está vencida
