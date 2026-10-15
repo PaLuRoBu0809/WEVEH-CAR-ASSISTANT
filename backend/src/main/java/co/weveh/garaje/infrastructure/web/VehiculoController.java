@@ -59,6 +59,12 @@ class VehiculoController {
         return VehiculoRespuesta.desde(garaje.editar(usuario, id, edicion));
     }
 
+    @PutMapping("/{id}/registro")
+    VehiculoRespuesta completarRegistro(UsuarioId usuario, @PathVariable UUID id,
+                                        @Valid @RequestBody CompletarRegistroSolicitud solicitud) {
+        return VehiculoRespuesta.desde(garaje.completarRegistro(usuario, id, solicitud.aRegistro(), solicitud.versionFila()));
+    }
+
     @DeleteMapping("/{id}")
     ResponseEntity<Void> eliminar(UsuarioId usuario, @PathVariable UUID id) {
         garaje.eliminar(usuario, id);
@@ -83,5 +89,16 @@ class VehiculoController {
 
     record EdicionSolicitud(String alias, String placa, @NotNull UsoVehiculo uso, @NotNull Integer kmPromedioMes,
                             LocalDate fechaMatricula, @NotNull Integer versionFila) {
+    }
+
+    /** RF-GAR-02b: el aceite y los papeles completos como quedan (lo que siga vacío queda para después). */
+    record CompletarRegistroSolicitud(Integer aceiteKm, LocalDate aceiteFecha, LocalDate soatFecha, LocalDate rtmFecha,
+                                      Boolean rtmAunNoAplica, LocalDate seguroInicio, String seguroEntidad,
+                                      @NotNull Integer versionFila) {
+
+        RegistroInicial aRegistro() {
+            return new RegistroInicial(aceiteKm, aceiteFecha, soatFecha, rtmFecha, Boolean.TRUE.equals(rtmAunNoAplica),
+                    seguroInicio, seguroEntidad);
+        }
     }
 }

@@ -4,6 +4,7 @@ import co.weveh.garaje.GarajeApi;
 import co.weveh.garaje.VehiculoEliminado;
 import co.weveh.garaje.VehiculoRegistrado;
 import co.weveh.garaje.application.puertos.VehiculoRepositorio;
+import co.weveh.garaje.domain.RegistroInicial;
 import co.weveh.garaje.domain.Vehiculo;
 import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
@@ -60,6 +61,18 @@ class GarajeServicio implements Garaje, GarajeApi {
         var editado = actual.editar(edicion.alias(), edicion.placa(), edicion.uso(), edicion.kmPromedioMes(),
                 edicion.fechaMatricula(), LocalDate.now(reloj));
         if (!repositorio.actualizar(editado)) {
+            throw conflicto();
+        }
+        return obtener(usuario, vehiculoId);
+    }
+
+    @Override
+    public Vehiculo completarRegistro(UsuarioId usuario, UUID vehiculoId, RegistroInicial registro, int versionFila) {
+        var actual = obtener(usuario, vehiculoId);
+        if (actual.versionFila() != versionFila) {
+            throw conflicto();
+        }
+        if (!repositorio.actualizar(actual.completarRegistro(registro, LocalDate.now(reloj)))) {
             throw conflicto();
         }
         return obtener(usuario, vehiculoId);
