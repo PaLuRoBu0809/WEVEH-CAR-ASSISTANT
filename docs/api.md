@@ -44,6 +44,7 @@ Todo error tiene la misma forma; la app muestra `detail` tal cual porque está e
 | 401 | `identidad-no-confirmada` | Eliminar la cuenta con una sesión de más de 5 minutos: hay que volver a iniciar sesión (RF-CTA-05) |
 | 404 | `no-encontrado` | No existe o es de otra persona |
 | 409 | `conflicto` | El cambio choca con el estado actual |
+| 409 | `confirmacion-requerida` | El cambio es raro y hay que confirmarlo (salto del kilometraje); `detail` trae la pregunta |
 | 429 | `limite-de-uso` ⬜ | Se agotó el cupo del Mecánico IA (dice cuándo vuelve a haber) |
 | 503 | `no-disponible` | La IA no está configurada, está caída (cortacircuitos) o el módulo está apagado |
 
@@ -83,7 +84,7 @@ Los vehículos de la persona, del más antiguo al más reciente. `[]` si no tien
 
 ### `POST /vehiculos`
 
-Registra un vehículo. **Hoy** exige `soatFecha`, y `rtmFecha` o `rtmAunNoAplica`; **con RF-GAR-02** solo son obligatorios `tipo`, `marca`, `linea`, `anioModelo` y `kilometraje`.
+Registra un vehículo. Solo son obligatorios `tipo`, `marca`, `linea`, `anioModelo` y `kilometraje` (RF-GAR-02); el aceite y los papeles pueden quedar para después y la respuesta los lista en `datosFaltantes` (RF-GAR-02b).
 
 ```json
 {
@@ -104,11 +105,14 @@ Respuesta **201** con header `Location: /api/v1/vehiculos/{id}` y el vehículo:
   "id": "7a1c9a2e-…", "tipo": "CARRO", "catalogoLineaId": 7811, "alias": "La Prado",
   "marca": "TOYOTA", "linea": "PRADO VX 5P AT", "cilindradaCc": 3400, "anioModelo": 2008,
   "combustible": "GASOLINA", "transmision": "AUTOMATICA", "traccion": "4X4", "placa": "ABC123",
-  "fechaMatricula": null, "kilometraje": 190000, "uso": "MIXTO", "kmPromedioMes": 1000, "versionFila": 0
+  "fechaMatricula": null, "kilometraje": 190000, "kmActualizadoEn": "2026-10-15", "uso": "MIXTO",
+  "kmPromedioMes": 1000, "aceiteKm": 188000, "aceiteFecha": "2026-06-05", "soatFecha": "2026-06-30",
+  "rtmFecha": "2026-06-28", "rtmAunNoAplica": false, "seguroInicio": null, "seguroEntidad": null,
+  "datosFaltantes": [], "versionFila": 0
 }
 ```
 
-Sin `catalogoLineaId` se registra con texto libre ("Lo revisaremos"). La placa se normaliza (sin espacios ni guiones, en mayúsculas).
+Sin `catalogoLineaId` se registra con texto libre ("Lo revisaremos"). La placa se normaliza (sin espacios ni guiones, en mayúsculas). `datosFaltantes` puede traer `SOAT`, `RTM` (ni fecha ni "aún no aplica") y `ACEITE`.
 
 ### `GET /vehiculos/{id}` · `DELETE /vehiculos/{id}`
 
@@ -118,9 +122,17 @@ Ver uno (200) o eliminarlo con todo lo suyo (204). Ajeno o inexistente → 404.
 
 Edita `alias`, `placa`, `uso`, `kmPromedioMes` y `fechaMatricula`, enviando la `versionFila` que tenía la app. **Hoy** responde 409 si la versión cambió; **con ADR 0009** gana el cambio más reciente si cumple las reglas.
 
-### ⬜ `PUT /vehiculos/{id}/kilometraje` (RF-GAR-05)
+### `PUT /vehiculos/{id}/registro` (RF-GAR-02b)
 
-Actualiza el km. Nunca baja (400); un salto anómalo exige `confirmado: true`.
+Completa el aceite y los papeles que quedaron para después: `aceiteKm`, `aceiteFecha`, `soatFecha`, `rtmFecha`, `rtmAunNoAplica`, `seguroInicio`, `seguroEntidad` y la `versionFila` que tenía la app. Se envían como quedan; lo vacío sigue pendiente. Mismas reglas que el registro; 409 si la versión cambió.
+
+### `PUT /vehiculos/{id}/kilometraje` (RF-GAR-05)
+
+```json
+{ "kilometraje": 191200, "confirmado": false }
+```
+
+Nunca baja (400 "El kilometraje no puede bajar: hoy tiene 190.000 km"). Un salto mayor a `max(3 × km promedio diario × días desde la última lectura, 1.500)` sin `confirmado` responde **409 `confirmacion-requerida`** con la pregunta en `detail`; la app la muestra y reenvía con `confirmado: true`. Publica `KilometrajeActualizado`.
 
 ## Mecánico IA ✅
 

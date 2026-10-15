@@ -27,11 +27,12 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [ ] App propia (development build con EAS) y emulador de Android Studio para probar Google y el enlace mágico (ADR 0011).
 - [ ] Verificación: criterios de RF-CTA y RF-DAT con pruebas; RNF-08, 10, 24, 25, 26.
 
-## Etapa 3 · Registro mínimo y edición (RF-GAR-02, 02b, 03)
+## Etapa 3 · Registro mínimo y edición (RF-GAR-02, 02b, 03, 05) ✅ 2026-10-15
 
-- [ ] Backend: aceite, SOAT y RTM opcionales (migración: `registro_soat_fecha` admite nulo).
-- [ ] App: registro corto (vehículo + km obligatorios, lo demás opcional), recordatorio "Te faltan los papeles" en Inicio, guía paso a paso para revisar el aceite.
-- [ ] App: pantalla de edición del vehículo.
+- [x] Backend: aceite, SOAT y RTM opcionales (V6), `datosFaltantes` y `PUT /vehiculos/{id}/registro`.
+- [x] App: registro corto ("Lo agrego después"), recordatorio "Te faltan los papeles" en Inicio, guía paso a paso para revisar el aceite.
+- [x] App: pantalla del vehículo (editar, completar datos, eliminar).
+- [x] Kilometraje adelantado de la fase 2 (RF-GAR-05): nunca baja, confirma saltos raros (V7), evento `KilometrajeActualizado`. El recálculo del plan llega con mantenimiento.
 
 ## Etapa 4 · Sin red (ADR 0009, RF-GAR-01, RF-GAR-06, RF-CAT-01)
 
@@ -58,7 +59,7 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [ ] Balde de consultas por cuenta, anti-abuso, cobro justo y freno global; cupo en Perfil (RF-MIA-07).
 - [ ] Aviso "No escribas datos personales" (RF-DAT-08).
 
-## Etapa 7 · Fase 2: mantenimiento y documentos (RF-MAN, RF-DOC, RF-GAR-05)
+## Etapa 7 · Fase 2: mantenimiento y documentos (RF-MAN, RF-DOC; el plan escucha `KilometrajeActualizado`)
 
 - [ ] Eventos guardados de Spring Modulith (ADR 0007).
 - [ ] Módulo `mantenimiento`: plan genérico al registrar, estado de piezas y salud (vectores compartidos en Java y TypeScript), historial, editar intervalos, salud solo con datos suficientes.
