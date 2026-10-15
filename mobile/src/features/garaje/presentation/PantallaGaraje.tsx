@@ -11,9 +11,10 @@ import { ListaVehiculos } from './ListaVehiculos';
 
 type Props = {
   onAgregar?: () => void;
+  onAbrir: (vehiculoId: string) => void;
 };
 
-export function PantallaGaraje({ onAgregar }: Props) {
+export function PantallaGaraje({ onAgregar, onAbrir }: Props) {
   const tema = useTema();
   const margenes = useSafeAreaInsets();
   const { data, error, isPending, refetch } = useVehiculos();
@@ -36,7 +37,7 @@ export function PantallaGaraje({ onAgregar }: Props) {
       {data && data.length === 0 && <GarajeVacio onAgregar={onAgregar} />}
       {data && data.length > 0 && (
         <>
-          <ListaVehiculos vehiculos={data} />
+          <ListaVehiculos vehiculos={data} onAbrir={onAbrir} />
           {onAgregar && <Boton variante="secundario" texto="+ Agregar vehículo" onPress={onAgregar} />}
         </>
       )}
