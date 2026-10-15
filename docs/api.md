@@ -13,9 +13,7 @@ Qué puede pedir la app al backend, qué debe enviar y qué recibe. Es el acuerd
 
 ### Quién eres
 
-| Hoy | Con cuentas (ADR 0005) |
-|---|---|
-| Header `X-Weveh-Dispositivo: <UUID v4>`. Sin él o inválido → 400 | Header `Authorization: Bearer <token de Supabase Auth>`. Sin él, vencido o alterado → 401 |
+Header `Authorization: Bearer <token de Supabase Auth>` en toda ruta `/api/**` (ADR 0005). El backend valida la firma (ES256, JWKS del proyecto), el emisor, la audiencia `authenticated` y el vencimiento. Sin token, vencido o alterado → 401 `no-autenticado`.
 
 Todo se filtra por la persona: un recurso ajeno responde **404** (no 403), para no revelar que existe.
 
@@ -41,9 +39,9 @@ Todo error tiene la misma forma; la app muestra `detail` tal cual porque está e
 
 | HTTP | `type` | Cuándo |
 |---|---|---|
-| 400 | `dispositivo-invalido` | Falta o es inválido `X-Weveh-Dispositivo` (desaparece con las cuentas) |
 | 400 | `dato-invalido` | Una regla de negocio o un formato no se cumple |
-| 401 | `no-autenticado` ⬜ | Falta el token, venció o fue alterado |
+| 401 | `no-autenticado` | Falta el token, venció o fue alterado |
+| 401 | `identidad-no-confirmada` | Eliminar la cuenta con una sesión de más de 5 minutos: hay que volver a iniciar sesión (RF-CTA-05) |
 | 404 | `no-encontrado` | No existe o es de otra persona |
 | 409 | `conflicto` | El cambio choca con el estado actual |
 | 429 | `limite-de-uso` ⬜ | Se agotó el cupo del Mecánico IA (dice cuándo vuelve a haber) |
@@ -158,13 +156,16 @@ Respuesta **200**:
 - Conversación: `POST /vehiculos/{id}/conversaciones` y `POST /conversaciones/{id}/mensajes`; `GET` para retomarlas (RF-MIA-02).
 - Cupo: el límite pasa a 429 `limite-de-uso` con cuándo vuelve a haber; `GET /cuenta/cupo` para mostrarlo en Perfil (RF-MIA-07).
 
-## Cuentas y datos ⬜ (ADR 0005, RF-CTA, RF-DAT)
+## Cuentas y datos ✅ (ADR 0005, RF-CTA, RF-DAT)
 
 El registro, el inicio de sesión, Google, el enlace mágico y la recuperación los hace la app directo con **Supabase Auth**. La API agrega:
 
 | Endpoint | Para qué |
 |---|---|
-| `GET /cuenta` | Nombre, correo y consentimientos (RF-DAT-04) |
+| `POST /cuenta` | Crear el perfil con el nombre y la aceptación de la política (RF-DAT-02). Idempotente: la app lo llama en el primer inicio de sesión. 201 |
+| `GET /cuenta` | Nombre, correo (sale del token) y consentimientos (RF-DAT-04). 404 si aún no hay perfil |
 | `PUT /cuenta` | Corregir el nombre (RF-DAT-05) |
 | `POST /cuenta/consentimientos` | Registrar la aceptación de una versión de la política (RF-DAT-02/03) |
-| `DELETE /cuenta` | Eliminar la cuenta y todo lo suyo; exige identidad confirmada hace poco (RF-DAT-06) |
+| `DELETE /cuenta` | Eliminar la cuenta y todo lo suyo, aquí y en Supabase Auth; exige sesión de máximo 5 minutos (RF-DAT-06, RF-CTA-05). 204; 503 si Supabase no responde (no se borra nada) |
+
+Registrar un vehículo sin perfil de cuenta responde 409 "Completa tu cuenta antes de registrar un vehículo".

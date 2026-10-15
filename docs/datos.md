@@ -30,7 +30,7 @@ La búsqueda usa un índice de similitud de texto (`pg_trgm`) sobre el nombre no
 
 | Grupo | Columnas |
 |---|---|
-| Identidad | `id`, `dispositivo_id` (→ `usuario_id` con ADR 0005) |
+| Identidad | `id`, `usuario_id` (llave foránea a `usuario`, se borra en cascada con la cuenta; V5) |
 | Qué vehículo es | `tipo`, `catalogo_linea_id` (sin llave foránea, para que recargar el catálogo no rompa nada), `marca`, `linea`, `cilindrada_cc`, `anio_modelo`, `combustible`, `transmision`, `traccion` |
 | Cómo lo llama la persona | `alias`, `placa` (opcionales) |
 | Estado hoy | `km` (0 a 2.000.000), `uso`, `km_promedio_mes`, `fecha_matricula`, `estado_perfil` |
@@ -45,8 +45,8 @@ La búsqueda usa un índice de similitud de texto (`pg_trgm`) sobre el nombre no
 
 | Tabla | Qué guarda | Decisión |
 |---|---|---|
-| `usuario` | `id` (el de Supabase Auth), `nombre`, `creado_en`. El correo vive en Supabase Auth | ADR 0005 |
-| `consentimiento` | `usuario_id`, `version_politica`, `aceptado_en`, `medio` | RF-DAT-02 |
+| `usuario` | `id` (el de Supabase Auth), `nombre`, `creado_en`. El correo vive en Supabase Auth | ADR 0005 · ✅ V5 |
+| `consentimiento` | `usuario_id`, `version_politica`, `aceptado_en`, `medio` (`APP_REGISTRO`, `APP_NUEVA_VERSION`) | RF-DAT-02 · ✅ V5 |
 | `conversacion` + `mensaje` | Conversaciones del Mecánico IA por vehículo; cada mensaje con su rol, texto, diagnóstico, modelo y prompt; resumen compactado de lo viejo | RF-MIA-02 |
 | `cupo_consultas` | Balde por cuenta: consultas disponibles y última recarga | RF-MIA-07 |
 | `event_publication` | Eventos entre módulos pendientes y completados | ADR 0007 |

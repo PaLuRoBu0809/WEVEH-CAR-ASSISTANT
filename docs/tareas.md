@@ -19,10 +19,11 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 ## Etapa 2 · Cuentas y tratamiento de datos (ADR 0005, RF-CTA, RF-DAT)
 
 - [x] Borrador de la política de tratamiento de datos ([v0.1](legal/politica-tratamiento-datos-BORRADOR.md)); el flujo de consentimiento registra la versión `0.1-borrador`.
-- [ ] Configurar Supabase Auth: correo con verificación, enlace mágico, Google (credenciales en Google Cloud).
-- [ ] Backend: módulo `cuentas`, Spring Security con validación del token (JWKS), `usuario_id` en vez de `dispositivo_id`, 401/404, tablas `usuario` y `consentimiento`, `DELETE /cuenta`.
-- [ ] Migración que borra los vehículos de prueba y cambia la identidad.
-- [ ] App: pantallas del mockup (portada con dos botones, crear cuenta con la trama de W, iniciar sesión con el dial, Google, enlace mágico), sesión en SecureStore, cerrar sesión, Perfil con "Mis datos" y "Eliminar mi cuenta".
+- [ ] Configurar Supabase Auth: Google listo (credenciales en Google Cloud). Por confirmar: "Confirm email" activado. Falta el enlace mágico y la dirección de retorno `weveh://`.
+- [x] Backend: módulo `cuentas`, Spring Security con validación del token (JWKS), `usuario_id` en vez de `dispositivo_id`, 401/404, tablas `usuario` y `consentimiento`, `DELETE /cuenta`.
+- [x] Migración que borra los vehículos de prueba y cambia la identidad (V5).
+- [x] App (parte 1): portada con dos botones, crear cuenta e iniciar sesión con correo y contraseña, sesión en SecureStore, cerrar sesión, nombre y correo en Perfil.
+- [ ] App (parte 2): diseño completo del mockup (trama de W, dial), Google, enlace mágico, recuperar contraseña, leer la política desde la casilla, "Mis datos" y "Eliminar mi cuenta" en Perfil.
 - [ ] App propia (development build con EAS) y emulador de Android Studio para probar Google y el enlace mágico (ADR 0011).
 - [ ] Verificación: criterios de RF-CTA y RF-DAT con pruebas; RNF-08, 10, 24, 25, 26.
 

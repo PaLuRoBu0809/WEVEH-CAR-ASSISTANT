@@ -30,8 +30,8 @@ Organizados por las características de calidad de ISO/IEC 25010. Cada uno es me
 | RNF-07 | RLS activado en el 100 % de las tablas, sin políticas para `anon` ni `authenticated` | Advisors de Supabase en cada migración | ✅ |
 | RNF-08 | Al modelo de IA no llega nombre, correo, identificador de usuario, placa ni alias | Prueba unitaria del armado del contexto | 🟡 placa, alias e identificador ✅; nombre y correo cuando existan cuentas |
 | RNF-09 | **Cada modelo de la lista** saca Crítico con `requires_mechanic` en el 100 % de los casos críticos de `evals/`; el que falle sale de la lista | Evaluador por modelo | 🟡 el primero 7/7; los demás sin evaluar |
-| RNF-10 | Un recurso de **otro usuario** responde 404 | Prueba de integración por endpoint | 🔁 hoy por dispositivo |
-| RNF-24 | La sesión usa un token firmado que expira; un token ausente, vencido o alterado responde 401 | Prueba de integración | ❌ |
+| RNF-10 | Un recurso de **otro usuario** responde 404 | Prueba de integración por endpoint | ✅ |
+| RNF-24 | La sesión usa un token firmado que expira; un token ausente, vencido o alterado responde 401 | Prueba de integración | ✅ |
 | RNF-25 | Eliminar la cuenta o cambiar el correo piden volver a confirmar la identidad | Prueba de la app | ❌ |
 | RNF-26 | Al eliminar la cuenta, todos sus datos se borran en < 24 h, incluido lo guardado en el celular | Prueba de integración + verificación en la base | ❌ |
 | RNF-23 | Los logs y el monitoreo nunca contienen nombre, correo, token ni llaves | Revisión de configuración de Sentry y logs | ⚠️ |
