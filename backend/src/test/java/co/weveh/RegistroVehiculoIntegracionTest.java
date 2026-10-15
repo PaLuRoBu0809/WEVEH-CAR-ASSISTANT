@@ -195,4 +195,39 @@ class RegistroVehiculoIntegracionTest {
                 .andExpect(jsonPath("$.datosFaltantes[0]").value("ACEITE"))
                 .andExpect(jsonPath("$.versionFila").value(1));
     }
+
+    @Test
+    void elKilometrajeSubeNuncaBajaYUnSaltoRaroSeConfirma() throws Exception {
+        var ubicacion = mockMvc.perform(post("/api/v1/vehiculos").with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"tipo":"CARRO","marca":"TOYOTA","linea":"PRADO VX 5P AT","anioModelo":2008,"kilometraje":190000}"""))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+        var kilometraje = ubicacion + "/kilometraje";
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":191200}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kilometraje").value(191200));
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":185000}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El kilometraje no puede bajar: hoy tiene 191.200 km"));
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":199000}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://weveh.co/problemas/confirmacion-requerida"));
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":199000,\"confirmado\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kilometraje").value(199000));
+
+        mockMvc.perform(put(kilometraje).with(como(OTRO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":200000}"))
+                .andExpect(status().isNotFound());
+    }
 }

@@ -29,6 +29,11 @@ public interface Garaje {
      */
     Vehiculo completarRegistro(UsuarioId usuario, UUID vehiculoId, RegistroInicial registro, int versionFila);
 
+    /**
+     * RF-GAR-05: anota el kilometraje actual. Nunca baja; un salto raro exige {@code confirmado}.
+     */
+    Vehiculo actualizarKilometraje(UsuarioId usuario, UUID vehiculoId, int kilometraje, boolean confirmado);
+
     void eliminar(UsuarioId usuario, UUID vehiculoId);
 
     /** @param versionFila la versión que la app tenía al editar; si cambió entre tanto se responde conflicto */

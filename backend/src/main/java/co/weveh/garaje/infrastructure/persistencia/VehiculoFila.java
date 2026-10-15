@@ -30,6 +30,7 @@ record VehiculoFila(
         String placa,
         LocalDate fechaMatricula,
         int km,
+        LocalDate kmActualizadoEn,
         String uso,
         int kmPromedioMes,
         @Embedded.Nullable(prefix = "registro_") RegistroFila registro,
