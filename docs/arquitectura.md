@@ -38,7 +38,7 @@ flowchart LR
 | API | Reglas de negocio, seguridad, coordina la base y la IA | ✅ |
 | Supabase PostgreSQL | Guarda los datos; nadie de afuera la lee (RLS sin políticas) | ✅ |
 | OpenRouter | Modelos gratuitos para el Mecánico IA, con lista de respaldo | ✅ |
-| Supabase Auth | Cuentas: correo, Google, enlace mágico | ⬜ ADR 0005 |
+| Supabase Auth | Cuentas: correo, Google, enlace mágico | 🟡 correo y contraseña · Google y enlace mágico en la app pendientes |
 | SQLite | Último estado y cola de cambios sin red | ⬜ ADR 0009 |
 | Brave Search API | Búsqueda del agente perfilador | 🔜 fase 4 |
 | Sentry | Avisos de errores | ⬜ ADR 0010 |
@@ -46,7 +46,7 @@ flowchart LR
 **Reglas:**
 - La app nunca lee ni escribe datos directo en Supabase; la única excepción es iniciar sesión con Supabase Auth.
 - Las llaves (base de datos, OpenRouter, Brave) solo existen en el backend.
-- Hoy la identidad es el header `X-Weveh-Dispositivo`; con ADR 0005 pasa a `Authorization: Bearer <token>` validado por el backend.
+- La identidad es `Authorization: Bearer <token>` de Supabase Auth, validado por el backend con Spring Security (ADR 0005).
 - Al modelo de IA solo llegan datos del vehículo y lo que la persona escribe: nunca nombre, correo, identificador, placa ni alias.
 
 ## 2. Módulos del backend
@@ -85,7 +85,7 @@ Flechas continuas: llamadas a la fachada pública; punteadas: planeadas o evento
 | `catalogo` | Marcas y líneas del Ministerio de Transporte por año fiscal; fichas técnicas | 1 | ✅ búsqueda · 🔜 fichas (fase 4), años fiscales (ADR 0014) |
 | `garaje` | Vehículo: registrar, ver, editar, eliminar, kilometraje | 1 | ✅ · ⬜ kilometraje (fase 2) |
 | `mecanicoia` | Mecánico IA conversacional, validador de seguridad, límites | 1 | ✅ una pregunta · ⬜ conversación y balde |
-| `cuentas` | Perfil, consentimientos, eliminar la cuenta | 1 | ⬜ |
+| `cuentas` | Perfil, consentimientos, eliminar la cuenta | 1 | ✅ |
 | `mantenimiento` | Plan por pieza, historial, fallas, salud | 2 | 🔜 |
 | `documentos` | SOAT, RTM, seguro y avisos | 2 | 🔜 |
 | `perfilamiento` | Agente investigador (Brave) y entrevistador | 4 | 🔜 |
@@ -128,7 +128,6 @@ mobile/src/
     ├── http/               # cliente: credencial y errores Problem Details
     ├── almacen/            # SecureStore en el celular, localStorage en web
     ├── navegacion/         # barra de pestañas y botón Preguntar
-    ├── dispositivo/        # dispositivoId (se elimina con ADR 0005)
     └── db/                 # SQLite (por construir, ADR 0009)
 ```
 
