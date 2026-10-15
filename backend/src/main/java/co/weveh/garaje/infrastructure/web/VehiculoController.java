@@ -65,6 +65,13 @@ class VehiculoController {
         return VehiculoRespuesta.desde(garaje.completarRegistro(usuario, id, solicitud.aRegistro(), solicitud.versionFila()));
     }
 
+    @PutMapping("/{id}/kilometraje")
+    VehiculoRespuesta actualizarKilometraje(UsuarioId usuario, @PathVariable UUID id,
+                                            @Valid @RequestBody KilometrajeSolicitud solicitud) {
+        return VehiculoRespuesta.desde(garaje.actualizarKilometraje(usuario, id, solicitud.kilometraje(),
+                Boolean.TRUE.equals(solicitud.confirmado())));
+    }
+
     @DeleteMapping("/{id}")
     ResponseEntity<Void> eliminar(UsuarioId usuario, @PathVariable UUID id) {
         garaje.eliminar(usuario, id);
@@ -89,6 +96,10 @@ class VehiculoController {
 
     record EdicionSolicitud(String alias, String placa, @NotNull UsoVehiculo uso, @NotNull Integer kmPromedioMes,
                             LocalDate fechaMatricula, @NotNull Integer versionFila) {
+    }
+
+    /** @param confirmado true cuando la persona ya confirmó un salto raro (respuesta 409 confirmacion-requerida) */
+    record KilometrajeSolicitud(@NotNull Integer kilometraje, Boolean confirmado) {
     }
 
     /** RF-GAR-02b: el aceite y los papeles completos como quedan (lo que siga vacío queda para después). */

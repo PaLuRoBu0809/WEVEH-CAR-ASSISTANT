@@ -1,5 +1,6 @@
 package co.weveh.shared.infrastructure.web;
 
+import co.weveh.shared.domain.ConfirmacionRequeridaException;
 import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.DatoInvalidoException;
 import co.weveh.shared.domain.IdentidadNoConfirmadaException;
@@ -46,6 +47,11 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RecursoNoEncontradoException.class)
     ProblemDetail noEncontrado(RecursoNoEncontradoException excepcion) {
         return problema(HttpStatus.NOT_FOUND, "no-encontrado", "No encontrado", excepcion.getMessage());
+    }
+
+    @ExceptionHandler(ConfirmacionRequeridaException.class)
+    ProblemDetail confirmacionRequerida(ConfirmacionRequeridaException excepcion) {
+        return problema(HttpStatus.CONFLICT, "confirmacion-requerida", "Confirma el cambio", excepcion.getMessage());
     }
 
     @ExceptionHandler(ConflictoException.class)

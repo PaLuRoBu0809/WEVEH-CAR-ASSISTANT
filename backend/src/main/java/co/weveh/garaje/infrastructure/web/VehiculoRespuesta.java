@@ -10,7 +10,8 @@ import java.util.UUID;
  */
 record VehiculoRespuesta(UUID id, String tipo, Long catalogoLineaId, String alias, String marca, String linea,
                          Integer cilindradaCc, int anioModelo, String combustible, String transmision, String traccion,
-                         String placa, LocalDate fechaMatricula, int kilometraje, String uso, int kmPromedioMes,
+                         String placa, LocalDate fechaMatricula, int kilometraje, LocalDate kmActualizadoEn,
+                         String uso, int kmPromedioMes,
                          Integer aceiteKm, LocalDate aceiteFecha, LocalDate soatFecha, LocalDate rtmFecha,
                          boolean rtmAunNoAplica, LocalDate seguroInicio, String seguroEntidad,
                          List<String> datosFaltantes, int versionFila) {
@@ -21,7 +22,7 @@ record VehiculoRespuesta(UUID id, String tipo, Long catalogoLineaId, String alia
                 v.cilindradaCc(), v.anioModelo(), v.combustible() == null ? null : v.combustible().name(),
                 v.transmision() == null ? null : v.transmision().name(),
                 v.traccion() == null ? null : v.traccion().codigo(), v.placa(), v.fechaMatricula(), v.km().valor(),
-                v.uso().name(), v.kmPromedioMes(), r.aceiteKm(), r.aceiteFecha(), r.soatFecha(), r.rtmFecha(),
+                v.kmActualizadoEn(), v.uso().name(), v.kmPromedioMes(), r.aceiteKm(), r.aceiteFecha(), r.soatFecha(), r.rtmFecha(),
                 r.rtmAunNoAplica(), r.seguroInicio(), r.seguroEntidad(),
                 v.datosFaltantes().stream().map(Enum::name).toList(), v.versionFila());
     }
