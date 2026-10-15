@@ -1,0 +1,6 @@
+# Nada de secretos ni artefactos locales dentro de la imagen
+.env
+.env.*
+target/
+.idea/
+*.iml
