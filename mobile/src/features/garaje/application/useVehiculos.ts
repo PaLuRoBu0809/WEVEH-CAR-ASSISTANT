@@ -5,8 +5,9 @@ import { eliminarVehiculo, listarVehiculos, registrarVehiculo } from '../infrast
 
 export const CLAVE_VEHICULOS = ['vehiculos'] as const;
 
-export function useVehiculos() {
-  return useQuery({ queryKey: CLAVE_VEHICULOS, queryFn: listarVehiculos });
+/** @param habilitado false mientras no haya sesión: sin token la API respondería 401 */
+export function useVehiculos(habilitado = true) {
+  return useQuery({ queryKey: CLAVE_VEHICULOS, queryFn: listarVehiculos, enabled: habilitado });
 }
 
 export function useRegistrarVehiculo() {
