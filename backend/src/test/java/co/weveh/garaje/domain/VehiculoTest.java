@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import co.weveh.shared.domain.DatoInvalidoException;
-import co.weveh.shared.domain.DispositivoId;
+import co.weveh.shared.domain.UsuarioId;
 import co.weveh.shared.domain.TipoVehiculo;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class VehiculoTest {
 
     static final LocalDate HOY = LocalDate.of(2026, 10, 8);
-    static final DispositivoId DISPOSITIVO = DispositivoId.desdeTexto("3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11");
+    static final UsuarioId USUARIO = UsuarioId.desdeTexto("3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11");
 
     static RegistroInicial registroPrado() {
         return new RegistroInicial(188000, LocalDate.of(2026, 6, 5), LocalDate.of(2026, 6, 30),
@@ -29,7 +29,7 @@ class VehiculoTest {
     }
 
     static Vehiculo registrar(Vehiculo.DatosRegistro datos) {
-        return Vehiculo.registrar(UUID.randomUUID(), DISPOSITIVO, datos, HOY);
+        return Vehiculo.registrar(UUID.randomUUID(), USUARIO, datos, HOY);
     }
 
     @Test

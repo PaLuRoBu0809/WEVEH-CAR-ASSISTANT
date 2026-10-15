@@ -14,8 +14,21 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        # Tokens de Supabase Auth (ADR 0005): firmados con ES256; las llaves públicas se leen del JWKS del proyecto
+        jwt:
+          issuer-uri: ${weveh.supabase.url}/auth/v1
+          jwk-set-uri: ${weveh.supabase.url}/auth/v1/.well-known/jwks.json
+          audiences: authenticated
 
 weveh:
+  supabase:
+    # URL pública del proyecto weveh (no es secreta)
+    url: ${WEVEH_SUPABASE_URL:https://yrqjxgpskkhjhkkthimm.supabase.co}
+    # Llave service_role: solo para borrar la cuenta en Supabase Auth (RF-DAT-06). Secreta: solo en backend/.env
+    service-role: ${WEVEH_SUPABASE_SERVICE_ROLE:}
   ia:
     # Modelos de OpenRouter en orden de preferencia, separados por coma (docs/adr/0004).
     # Por defecto, modelos gratuitos con salida estructurada: si uno está saturado se prueba el siguiente.

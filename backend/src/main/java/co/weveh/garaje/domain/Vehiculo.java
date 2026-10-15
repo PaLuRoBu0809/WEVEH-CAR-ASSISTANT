@@ -1,9 +1,9 @@
 package co.weveh.garaje.domain;
 
 import co.weveh.shared.domain.DatoInvalidoException;
-import co.weveh.shared.domain.DispositivoId;
 import co.weveh.shared.domain.Kilometraje;
 import co.weveh.shared.domain.TipoVehiculo;
+import co.weveh.shared.domain.UsuarioId;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.UUID;
@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  */
 public record Vehiculo(
         UUID id,
-        DispositivoId dispositivo,
+        UsuarioId usuario,
         TipoVehiculo tipo,
         Long catalogoLineaId,
         String marca,
@@ -71,8 +71,8 @@ public record Vehiculo(
     }
 
     /** RF-GAR-02. */
-    public static Vehiculo registrar(UUID id, DispositivoId dispositivo, DatosRegistro datos, LocalDate hoy) {
-        var vehiculo = new Vehiculo(id, dispositivo, datos.tipo(), datos.catalogoLineaId(), datos.marca(), datos.linea(),
+    public static Vehiculo registrar(UUID id, UsuarioId usuario, DatosRegistro datos, LocalDate hoy) {
+        var vehiculo = new Vehiculo(id, usuario, datos.tipo(), datos.catalogoLineaId(), datos.marca(), datos.linea(),
                 datos.cilindradaCc(), datos.anioModelo(), datos.combustible(), datos.transmision(), datos.traccion(),
                 datos.alias(), datos.placa(), datos.fechaMatricula(), new Kilometraje(datos.km()), datos.uso(),
                 datos.kmPromedioMes() == null ? KM_PROMEDIO_MES_POR_DEFECTO : datos.kmPromedioMes(),
@@ -84,7 +84,7 @@ public record Vehiculo(
     /** RF-GAR-03: lo que se puede corregir sin cambiar de vehículo. El kilometraje va por su propio caso (RF-GAR-05). */
     public Vehiculo editar(String nuevoAlias, String nuevaPlaca, UsoVehiculo nuevoUso, int nuevoKmPromedioMes,
                            LocalDate nuevaFechaMatricula, LocalDate hoy) {
-        var editado = new Vehiculo(id, dispositivo, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
+        var editado = new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
                 combustible, transmision, traccion, nuevoAlias, nuevaPlaca, nuevaFechaMatricula, km, nuevoUso,
                 nuevoKmPromedioMes, registroInicial, versionFila);
         editado.validar(hoy);

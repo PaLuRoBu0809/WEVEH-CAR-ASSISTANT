@@ -16,7 +16,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("vehiculo")
 record VehiculoFila(
         @Id UUID id,
-        UUID dispositivoId,
+        UUID usuarioId,
         String tipo,
         Long catalogoLineaId,
         String marca,
