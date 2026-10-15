@@ -1,10 +1,12 @@
 package co.weveh.garaje.domain;
 
+import co.weveh.shared.domain.ConfirmacionRequeridaException;
 import co.weveh.shared.domain.DatoInvalidoException;
 import co.weveh.shared.domain.Kilometraje;
 import co.weveh.shared.domain.TipoVehiculo;
 import co.weveh.shared.domain.UsuarioId;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -14,6 +16,7 @@ import java.util.regex.Pattern;
  * Vehículo del garaje (skill dominio-vehiculo §1). Inmutable: cada cambio devuelve una copia.
  *
  * @param catalogoLineaId línea del catálogo del Ministerio; null si la persona la escribió a mano ("Lo revisaremos")
+ * @param kmActualizadoEn día de la última lectura del kilometraje: define qué salto es normal (RF-GAR-05)
  * @param versionFila     control de concurrencia optimista (RF-GAR-03)
  */
 public record Vehiculo(
@@ -32,6 +35,7 @@ public record Vehiculo(
         String placa,
         LocalDate fechaMatricula,
         Kilometraje km,
+        LocalDate kmActualizadoEn,
         UsoVehiculo uso,
         int kmPromedioMes,
         RegistroInicial registroInicial,
@@ -40,6 +44,12 @@ public record Vehiculo(
     public static final int ANIO_MINIMO = 1950;
     public static final int KM_PROMEDIO_MES_POR_DEFECTO = 1_000;
     public static final int KM_PROMEDIO_MES_MAXIMO = 20_000;
+    /** RF-GAR-05: un salto hasta este tamaño nunca pide confirmación. */
+    public static final int SALTO_KM_SIN_CONFIRMAR = 1_500;
+    /** RF-GAR-05: se confirma un salto mayor a este múltiplo de lo que suele andar en esos días. */
+    private static final int MULTIPLO_SALTO_NORMAL = 3;
+    private static final double DIAS_POR_MES = 30.0;
+    private static final Locale COLOMBIA = Locale.forLanguageTag("es-CO");
     private static final int LARGO_MAXIMO_TEXTO = 80;
     private static final Pattern PLACA = Pattern.compile("^[A-Z0-9]{5,7}$");
 
@@ -75,7 +85,7 @@ public record Vehiculo(
     public static Vehiculo registrar(UUID id, UsuarioId usuario, DatosRegistro datos, LocalDate hoy) {
         var vehiculo = new Vehiculo(id, usuario, datos.tipo(), datos.catalogoLineaId(), datos.marca(), datos.linea(),
                 datos.cilindradaCc(), datos.anioModelo(), datos.combustible(), datos.transmision(), datos.traccion(),
-                datos.alias(), datos.placa(), datos.fechaMatricula(), new Kilometraje(datos.km()), datos.uso(),
+                datos.alias(), datos.placa(), datos.fechaMatricula(), new Kilometraje(datos.km()), hoy, datos.uso(),
                 datos.kmPromedioMes() == null ? KM_PROMEDIO_MES_POR_DEFECTO : datos.kmPromedioMes(),
                 datos.registroInicial() == null ? RegistroInicial.VACIO : datos.registroInicial(), 0);
         vehiculo.validar(hoy);
@@ -85,10 +95,41 @@ public record Vehiculo(
     /** RF-GAR-02b: agrega (o corrige) el aceite y los papeles que quedaron para después, con las mismas reglas. */
     public Vehiculo completarRegistro(RegistroInicial nuevoRegistro, LocalDate hoy) {
         var completado = new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
-                combustible, transmision, traccion, alias, placa, fechaMatricula, km, uso, kmPromedioMes,
-                nuevoRegistro == null ? RegistroInicial.VACIO : nuevoRegistro, versionFila);
+                combustible, transmision, traccion, alias, placa, fechaMatricula, km, kmActualizadoEn, uso,
+                kmPromedioMes, nuevoRegistro == null ? RegistroInicial.VACIO : nuevoRegistro, versionFila);
         completado.validar(hoy);
         return completado;
+    }
+
+    /**
+     * RF-GAR-05: el kilometraje nunca baja, y un salto mayor a lo esperado pide confirmación.
+     *
+     * @param confirmado la persona ya confirmó que el salto es correcto
+     * @throws ConfirmacionRequeridaException si el salto es raro y no está confirmado
+     */
+    public Vehiculo actualizarKilometraje(int nuevoKm, boolean confirmado, LocalDate hoy) {
+        if (nuevoKm < km.valor()) {
+            throw new DatoInvalidoException("El kilometraje no puede bajar: hoy tiene " + miles(km.valor()) + " km");
+        }
+        var nuevo = new Kilometraje(nuevoKm);
+        var salto = nuevoKm - km.valor();
+        if (!confirmado && salto > saltoEsperadoMaximo(hoy)) {
+            throw new ConfirmacionRequeridaException("Subió " + miles(salto) + " km desde la última vez. ¿Es correcto?");
+        }
+        return new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo, combustible,
+                transmision, traccion, alias, placa, fechaMatricula, nuevo, hoy, uso, kmPromedioMes, registroInicial,
+                versionFila);
+    }
+
+    /** max(3 × km promedio diario × días desde la última lectura, 1.500) (RF-GAR-05). */
+    public int saltoEsperadoMaximo(LocalDate hoy) {
+        var dias = Math.max(0, ChronoUnit.DAYS.between(kmActualizadoEn, hoy));
+        var esperado = MULTIPLO_SALTO_NORMAL * (kmPromedioMes / DIAS_POR_MES) * dias;
+        return (int) Math.max(esperado, SALTO_KM_SIN_CONFIRMAR);
+    }
+
+    private static String miles(int valor) {
+        return String.format(COLOMBIA, "%,d", valor);
     }
 
     public List<DatoFaltante> datosFaltantes() {
@@ -99,8 +140,8 @@ public record Vehiculo(
     public Vehiculo editar(String nuevoAlias, String nuevaPlaca, UsoVehiculo nuevoUso, int nuevoKmPromedioMes,
                            LocalDate nuevaFechaMatricula, LocalDate hoy) {
         var editado = new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
-                combustible, transmision, traccion, nuevoAlias, nuevaPlaca, nuevaFechaMatricula, km, nuevoUso,
-                nuevoKmPromedioMes, registroInicial, versionFila);
+                combustible, transmision, traccion, nuevoAlias, nuevaPlaca, nuevaFechaMatricula, km, kmActualizadoEn,
+                nuevoUso, nuevoKmPromedioMes, registroInicial, versionFila);
         editado.validar(hoy);
         return editado;
     }

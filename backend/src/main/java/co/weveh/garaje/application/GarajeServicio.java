@@ -1,6 +1,7 @@
 package co.weveh.garaje.application;
 
 import co.weveh.garaje.GarajeApi;
+import co.weveh.garaje.KilometrajeActualizado;
 import co.weveh.garaje.VehiculoEliminado;
 import co.weveh.garaje.VehiculoRegistrado;
 import co.weveh.garaje.application.puertos.VehiculoRepositorio;
@@ -75,6 +76,17 @@ class GarajeServicio implements Garaje, GarajeApi {
         if (!repositorio.actualizar(actual.completarRegistro(registro, LocalDate.now(reloj)))) {
             throw conflicto();
         }
+        return obtener(usuario, vehiculoId);
+    }
+
+    @Override
+    public Vehiculo actualizarKilometraje(UsuarioId usuario, UUID vehiculoId, int kilometraje, boolean confirmado) {
+        var actual = obtener(usuario, vehiculoId);
+        var actualizado = actual.actualizarKilometraje(kilometraje, confirmado, LocalDate.now(reloj));
+        if (!repositorio.actualizar(actualizado)) {
+            throw conflicto();
+        }
+        eventos.publishEvent(new KilometrajeActualizado(vehiculoId, kilometraje));
         return obtener(usuario, vehiculoId);
     }
 

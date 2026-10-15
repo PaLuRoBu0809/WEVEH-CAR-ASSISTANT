@@ -80,7 +80,7 @@ class VehiculoRepositorioSpringData implements VehiculoRepositorio {
         return new VehiculoFila(v.id(), v.usuario().valor(), v.tipo().name(), v.catalogoLineaId(), v.marca(),
                 v.linea(), v.cilindradaCc(), v.anioModelo(), nombre(v.combustible()), nombre(v.transmision()),
                 v.traccion() == null ? null : v.traccion().codigo(), v.alias(), v.placa(), v.fechaMatricula(),
-                v.km().valor(), v.uso().name(), v.kmPromedioMes(), registro, version, null);
+                v.km().valor(), v.kmActualizadoEn(), v.uso().name(), v.kmPromedioMes(), registro, version, null);
     }
 
     private static Vehiculo aDominio(VehiculoFila f) {
@@ -103,6 +103,7 @@ class VehiculoRepositorioSpringData implements VehiculoRepositorio {
                 f.placa(),
                 f.fechaMatricula(),
                 new Kilometraje(f.km()),
+                f.kmActualizadoEn(),
                 UsoVehiculo.valueOf(f.uso()),
                 f.kmPromedioMes(),
                 registro,

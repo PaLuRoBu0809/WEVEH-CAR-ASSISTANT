@@ -58,7 +58,7 @@ class VehiculoControllerTest {
                 LocalDate.of(2026, 6, 28), false, null, null);
         return new Vehiculo(UUID.fromString("7a1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c22"), ID_USUARIO, TipoVehiculo.CARRO,
                 7811L, "TOYOTA", "PRADO VX 5P AT", 3400, 2008, null, Transmision.AUTOMATICA, null, "La Prado", null,
-                null, new Kilometraje(190000), UsoVehiculo.MIXTO, 1000, registro, 0);
+                null, new Kilometraje(190000), LocalDate.of(2026, 10, 1), UsoVehiculo.MIXTO, 1000, registro, 0);
     }
 
     @Test
