@@ -12,11 +12,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { usePrepararSesion } from '@/features/cuentas';
 import { useEstadoTema, useTema } from '@/shared/design-system';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 export default function LayoutRaiz() {
+  usePrepararSesion();
   const tema = useTema();
   const modo = useEstadoTema((estado) => estado.modo);
   const cargarModoGuardado = useEstadoTema((estado) => estado.cargarModoGuardado);

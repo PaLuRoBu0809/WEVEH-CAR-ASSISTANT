@@ -9,3 +9,7 @@ export async function leer(llave: string): Promise<string | null> {
 export async function guardar(llave: string, valor: string): Promise<void> {
   globalThis.localStorage?.setItem(llave, valor);
 }
+
+export async function borrar(llave: string): Promise<void> {
+  globalThis.localStorage?.removeItem(llave);
+}
