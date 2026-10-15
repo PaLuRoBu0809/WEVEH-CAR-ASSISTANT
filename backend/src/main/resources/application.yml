@@ -1,4 +1,8 @@
 # Configuración solo por variables de entorno. Ver backend/.env.example.
+server:
+  # Render asigna el puerto con PORT (ADR 0008); en local, 8080
+  port: ${PORT:8080}
+
 spring:
   application:
     name: weveh
