@@ -1,1 +1,1 @@
-export { guardar, leer } from './almacen';
+export { borrar, guardar, leer } from './almacen';

@@ -6,13 +6,14 @@ import { Boton, LogoW, marca, Texto } from '@/shared/design-system';
 import { EscenaCarretera } from './EscenaCarretera';
 
 type Props = {
-  onAgregarVehiculo: () => void;
+  onCrearCuenta: () => void;
+  onIniciarSesion: () => void;
 };
 
 /**
- * Mockup Portada, sin cuentas (identidad por dispositivo, ADR 0002): un solo botón "Agregar mi vehículo".
+ * Mockup Portada con cuentas (ADR 0005): "Crear cuenta" y "Ya tengo cuenta".
  */
-export function PantallaPortada({ onAgregarVehiculo }: Props) {
+export function PantallaPortada({ onCrearCuenta, onIniciarSesion }: Props) {
   const margenes = useSafeAreaInsets();
   return (
     <View style={estilos.contenedor}>
@@ -28,9 +29,10 @@ export function PantallaPortada({ onAgregarVehiculo }: Props) {
         <Texto style={estilos.bajada}>Te avisamos cuándo toca cada cambio y te ayudamos cuando algo falla.</Texto>
       </View>
       <View style={[estilos.acciones, { bottom: margenes.bottom + 26 }]}>
-        <Boton variante="menta" texto="Agregar mi vehículo" onPress={onAgregarVehiculo} />
+        <Boton variante="menta" texto="Crear cuenta" onPress={onCrearCuenta} />
+        <Boton variante="fantasma" texto="Ya tengo cuenta" onPress={onIniciarSesion} />
         <Texto variante="nota" style={estilos.legal}>
-          Sin cuentas ni contraseñas: tus datos quedan ligados a este celular.
+          Tus vehículos quedan en tu cuenta, aunque cambies de celular.
         </Texto>
       </View>
     </View>
