@@ -2,6 +2,7 @@ package co.weveh.shared.infrastructure.web;
 
 import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.DatoInvalidoException;
+import co.weveh.shared.domain.IdentidadNoConfirmadaException;
 import co.weveh.shared.domain.NoAutenticadoException;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
 import co.weveh.shared.domain.ServicioNoDisponibleException;
@@ -30,6 +31,11 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NoAutenticadoException.class)
     ProblemDetail noAutenticado(NoAutenticadoException excepcion) {
         return problema(HttpStatus.UNAUTHORIZED, "no-autenticado", "Inicia sesión", excepcion.getMessage());
+    }
+
+    @ExceptionHandler(IdentidadNoConfirmadaException.class)
+    ProblemDetail identidadNoConfirmada(IdentidadNoConfirmadaException excepcion) {
+        return problema(HttpStatus.UNAUTHORIZED, "identidad-no-confirmada", "Confirma que eres tú", excepcion.getMessage());
     }
 
     @ExceptionHandler(DatoInvalidoException.class)
