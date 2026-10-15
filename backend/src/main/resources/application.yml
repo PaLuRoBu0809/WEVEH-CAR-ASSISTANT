@@ -21,6 +21,8 @@ spring:
         jwt:
           issuer-uri: ${weveh.supabase.url}/auth/v1
           jwk-set-uri: ${weveh.supabase.url}/auth/v1/.well-known/jwks.json
+          # Sin esto Spring solo acepta RS256 y rechaza todos los tokens de Supabase (ES256) con 401
+          jws-algorithms: ES256
           audiences: authenticated
 
 weveh:
