@@ -33,7 +33,7 @@ Competencia conocida: Garage Hub (asistente similar), Drivoo (enfocado en gastos
 
 **No entra (no lo construyas sin que el equipo lo pida):** rol administrador, directorio de talleres/grúas/servicios, voz, foto de testigos, push del servidor, pagos, RUNT, OBD, versión web para usuarios (el navegador es solo para desarrollo).
 
-**Identidad:** cuentas con Supabase Auth (ADR 0005). La app inicia sesión con Supabase y envía `Authorization: Bearer` con el token; el backend lo valida y filtra **todo** por el `usuarioId`. Datos personales mínimos: nombre y correo; nada de cédula ni teléfono; placa opcional. Mientras se construyen las cuentas, el código aún usa el `dispositivoId` del ADR 0002 (reemplazado).
+**Identidad:** cuentas con Supabase Auth (ADR 0005). La app inicia sesión con Supabase y envía `Authorization: Bearer` con el token; el backend lo valida y filtra **todo** por el `usuarioId`. Datos personales mínimos: nombre y correo; nada de cédula ni teléfono; placa opcional.
 
 ## 3. Stack y estructura objetivo del repo
 
@@ -54,7 +54,7 @@ No fijes versiones de memoria: usa las que generen `start.spring.io` y `create-e
 
 ## 4. Orden de construcción
 
-El plan vivo con el estado de cada paso está en **`docs/tareas.md`**. No saltes de etapa sin cerrar la anterior (pruebas y CI en verde). Hechas: fase 0, diseño de los mockups, la primera parte de la fase 1 y la persistencia con Spring Data JDBC. Siguen, en orden: cuentas y datos, registro mínimo y edición, sin red, resiliencia y monitoreo, Mecánico IA conversacional, fase 2 (mantenimiento y documentos), fase 4 (completar perfil), fase 5 (combustible) y catálogo por año fiscal.
+El plan vivo con el estado de cada paso está en **`docs/tareas.md`**. No saltes de etapa sin cerrar la anterior (pruebas y CI en verde). Hechas: fase 0, diseño de los mockups, la primera parte de la fase 1, la persistencia con Spring Data JDBC y las cuentas (backend y login con correo). Siguen, en orden: el resto de cuentas y datos (Google, enlace mágico, Mis datos, eliminar desde la app), registro mínimo y edición, sin red, resiliencia y monitoreo, Mecánico IA conversacional, fase 2 (mantenimiento y documentos), fase 4 (completar perfil), fase 5 (combustible) y catálogo por año fiscal.
 
 ## 5. Comandos (una vez creados los proyectos)
 
