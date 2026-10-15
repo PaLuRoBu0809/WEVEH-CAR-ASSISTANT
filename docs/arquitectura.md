@@ -107,7 +107,7 @@ co/weveh/<modulo>/
     └── ia/                 # OpenRouter y buscador; con cortacircuitos y tiempos máximos (ADR 0010)
 ```
 
-El dominio no conoce Spring, ni la base de datos, ni el proveedor de IA. Hoy los adaptadores de persistencia usan `JdbcClient`; pasan a Spring Data JDBC según ADR 0006.
+El dominio no conoce Spring, ni la base de datos, ni el proveedor de IA. Los adaptadores de persistencia usan Spring Data JDBC (ADR 0006): una fila `record` por tabla, un repositorio y un adaptador que implementa el puerto y traduce fila ↔ dominio.
 
 ## 4. App móvil
 

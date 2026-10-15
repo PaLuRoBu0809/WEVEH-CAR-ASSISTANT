@@ -8,13 +8,13 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [x] **Diseño de los mockups** en la app (PR #7).
 - [x] **Fase 1 · parte A:** catálogo 2025 cargado (508 marcas, 11.583 líneas), búsqueda, registro de vehículos por pasos, eliminar, Mecánico IA de una pregunta con OpenRouter gratis, validador de seguridad, lista de modelos de respaldo, evals 7/7 (PR #8).
 
-## Etapa 1 · Persistencia unificada (ADR 0006)
+## Etapa 1 · Persistencia unificada (ADR 0006) ✅ 2026-10-15
 
-- [ ] Cambiar Spring Data JPA por Spring Data JDBC en el `pom.xml`.
-- [ ] Garaje: filas + repositorio + adaptador con `@Version`; mismas pruebas en verde.
-- [ ] Consultas del Mecánico IA: repositorio con `@Query` para `jsonb`.
-- [ ] Catálogo: repositorio con fragmento personalizado para la búsqueda dinámica.
-- [ ] Verificación: las pruebas actuales (82) y las de integración con Postgres pasan sin cambios en dominio ni API.
+- [x] Cambiar Spring Data JPA por Spring Data JDBC en el `pom.xml`.
+- [x] Garaje: filas + repositorio + adaptador con `@Version`; mismas pruebas en verde.
+- [x] Consultas del Mecánico IA: repositorio con `@Query` para `jsonb`.
+- [x] Catálogo: repositorio con fragmento personalizado para la búsqueda dinámica.
+- [x] Verificación: 84 pruebas en verde (las 82 de antes + 2 de integración nuevas: edición con `@Version` y consultas con `jsonb`), sin cambios en dominio ni API.
 
 ## Etapa 2 · Cuentas y tratamiento de datos (ADR 0005, RF-CTA, RF-DAT)
 
