@@ -5,6 +5,7 @@ import co.weveh.shared.domain.Kilometraje;
 import co.weveh.shared.domain.TipoVehiculo;
 import co.weveh.shared.domain.UsuarioId;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -70,15 +71,28 @@ public record Vehiculo(
             RegistroInicial registroInicial) {
     }
 
-    /** RF-GAR-02. */
+    /** RF-GAR-02: obligatorios solo tipo, marca, línea, año y kilometraje; aceite y papeles pueden quedar para después. */
     public static Vehiculo registrar(UUID id, UsuarioId usuario, DatosRegistro datos, LocalDate hoy) {
         var vehiculo = new Vehiculo(id, usuario, datos.tipo(), datos.catalogoLineaId(), datos.marca(), datos.linea(),
                 datos.cilindradaCc(), datos.anioModelo(), datos.combustible(), datos.transmision(), datos.traccion(),
                 datos.alias(), datos.placa(), datos.fechaMatricula(), new Kilometraje(datos.km()), datos.uso(),
                 datos.kmPromedioMes() == null ? KM_PROMEDIO_MES_POR_DEFECTO : datos.kmPromedioMes(),
-                datos.registroInicial(), 0);
+                datos.registroInicial() == null ? RegistroInicial.VACIO : datos.registroInicial(), 0);
         vehiculo.validar(hoy);
         return vehiculo;
+    }
+
+    /** RF-GAR-02b: agrega (o corrige) el aceite y los papeles que quedaron para después, con las mismas reglas. */
+    public Vehiculo completarRegistro(RegistroInicial nuevoRegistro, LocalDate hoy) {
+        var completado = new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
+                combustible, transmision, traccion, alias, placa, fechaMatricula, km, uso, kmPromedioMes,
+                nuevoRegistro == null ? RegistroInicial.VACIO : nuevoRegistro, versionFila);
+        completado.validar(hoy);
+        return completado;
+    }
+
+    public List<DatoFaltante> datosFaltantes() {
+        return registroInicial.datosFaltantes();
     }
 
     /** RF-GAR-03: lo que se puede corregir sin cambiar de vehículo. El kilometraje va por su propio caso (RF-GAR-05). */

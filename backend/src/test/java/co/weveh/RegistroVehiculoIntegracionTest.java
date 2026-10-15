@@ -171,4 +171,28 @@ class RegistroVehiculoIntegracionTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value("Completa tu cuenta antes de registrar un vehículo"));
     }
+
+    @Test
+    void registroMinimoYCompletarLoQueFaltaDespues() throws Exception {
+        var ubicacion = mockMvc.perform(post("/api/v1/vehiculos").with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"tipo":"CARRO","catalogoLineaId":7811,"marca":"TOYOTA","linea":"PRADO VX 5P AT",
+                                 "anioModelo":2008,"kilometraje":190000}"""))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.soatFecha").isEmpty())
+                .andExpect(jsonPath("$.datosFaltantes.length()").value(3))
+                .andExpect(jsonPath("$.datosFaltantes[0]").value("SOAT"))
+                .andReturn().getResponse().getHeader("Location");
+
+        mockMvc.perform(put(ubicacion + "/registro").with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"soatFecha":"2026-06-30","rtmFecha":"2026-06-28","versionFila":0}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.soatFecha").value("2026-06-30"))
+                .andExpect(jsonPath("$.datosFaltantes.length()").value(1))
+                .andExpect(jsonPath("$.datosFaltantes[0]").value("ACEITE"))
+                .andExpect(jsonPath("$.versionFila").value(1));
+    }
 }

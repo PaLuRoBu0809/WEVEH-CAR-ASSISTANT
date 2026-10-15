@@ -85,8 +85,8 @@ class VehiculoRepositorioSpringData implements VehiculoRepositorio {
 
     private static Vehiculo aDominio(VehiculoFila f) {
         var r = f.registro();
-        var registro = new RegistroInicial(r.aceiteKm(), r.aceiteFecha(), r.soatFecha(), r.rtmFecha(),
-                r.rtmAunNoAplica(), r.seguroInicio(), r.seguroEntidad());
+        var registro = r == null ? RegistroInicial.VACIO : new RegistroInicial(r.aceiteKm(), r.aceiteFecha(),
+                r.soatFecha(), r.rtmFecha(), r.rtmAunNoAplica(), r.seguroInicio(), r.seguroEntidad());
         return new Vehiculo(
                 f.id(),
                 new UsuarioId(f.usuarioId()),
