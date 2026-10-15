@@ -1,26 +1,31 @@
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Boton, espacio, fuentes, IconoCarro, IconoMoto, radio, Texto, useTema } from '@/shared/design-system';
-import { mensajeParaPersona } from '@/shared/http';
+import { espacio, fuentes, IconoCarro, IconoMoto, radio, Texto, useTema } from '@/shared/design-system';
 
-import { useEliminarVehiculo } from '../application/useVehiculos';
 import { nombreParaMostrar, type VehiculoResumen } from '../domain/vehiculo';
 
 type Props = {
   vehiculos: readonly VehiculoResumen[];
+  onAbrir: (vehiculoId: string) => void;
 };
 
 const formatoKm = new Intl.NumberFormat('es-CO');
 
-function TarjetaVehiculo({ vehiculo }: { vehiculo: VehiculoResumen }) {
+function TarjetaVehiculo({ vehiculo, onAbrir }: { vehiculo: VehiculoResumen; onAbrir: () => void }) {
   const tema = useTema();
-  const [confirmando, setConfirmando] = useState(false);
-  const eliminar = useEliminarVehiculo();
   const nombre = nombreParaMostrar(vehiculo);
+  const faltanDatos = vehiculo.datosFaltantes.length > 0;
 
   return (
-    <View style={[estilos.tarjeta, { backgroundColor: tema.superficie, borderLeftColor: tema.primario }]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${nombre}, ${formatoKm.format(vehiculo.kilometraje)} kilómetros${faltanDatos ? ', faltan datos' : ''}`}
+      accessibilityHint="Abre el vehículo para editarlo o actualizar el kilometraje"
+      onPress={onAbrir}
+      style={({ pressed }) => [
+        estilos.tarjeta,
+        { backgroundColor: tema.superficie, borderLeftColor: tema.primario, opacity: pressed ? 0.85 : 1 },
+      ]}>
       <View style={estilos.fila}>
         <View style={[estilos.icono, { backgroundColor: tema.primario }]}>
           {vehiculo.tipo === 'MOTO' ? (
@@ -41,43 +46,28 @@ function TarjetaVehiculo({ vehiculo }: { vehiculo: VehiculoResumen }) {
           </View>
         )}
       </View>
-      <Texto variante="nota" tono="texto2" style={{ fontFamily: fuentes.mono }}>
-        {formatoKm.format(vehiculo.kilometraje)} km
-      </Texto>
-
-      {confirmando ? (
-        <View style={[estilos.confirmar, { backgroundColor: tema.errorTinte }]}>
-          <Texto variante="fuerte" style={{ color: tema.errorTinta }}>
-            ¿Eliminar {nombre}? Se borra todo lo que guardaste de él.
-          </Texto>
-          {eliminar.error && (
-            <Texto variante="nota" style={{ color: tema.errorTinta }}>
-              {mensajeParaPersona(eliminar.error)}
+      <View style={estilos.pie}>
+        <Texto variante="nota" tono="texto2" style={{ fontFamily: fuentes.mono }}>
+          {formatoKm.format(vehiculo.kilometraje)} km
+        </Texto>
+        {faltanDatos && (
+          <View style={[estilos.pildora, { backgroundColor: tema.primarioTinte }]}>
+            <Texto variante="nota" tono="primarioTinta">
+              Faltan datos
             </Texto>
-          )}
-          <View style={estilos.botones}>
-            <Boton
-              pequeno
-              texto={eliminar.isPending ? 'Eliminando…' : 'Sí, eliminar'}
-              deshabilitado={eliminar.isPending}
-              onPress={() => eliminar.mutate(vehiculo.id)}
-            />
-            <Boton pequeno variante="secundario" texto="Cancelar" onPress={() => setConfirmando(false)} />
           </View>
-        </View>
-      ) : (
-        <Boton pequeno variante="secundario" texto="Eliminar" ayuda={`Eliminar ${nombre} del garaje`} onPress={() => setConfirmando(true)} />
-      )}
-    </View>
+        )}
+      </View>
+    </Pressable>
   );
 }
 
 /** Tarjetas ".vcard" del mockup. La salud y "lo más urgente" llegan en la fase 2. */
-export function ListaVehiculos({ vehiculos }: Props) {
+export function ListaVehiculos({ vehiculos, onAbrir }: Props) {
   return (
     <View style={estilos.lista}>
       {vehiculos.map((vehiculo) => (
-        <TarjetaVehiculo key={vehiculo.id} vehiculo={vehiculo} />
+        <TarjetaVehiculo key={vehiculo.id} vehiculo={vehiculo} onAbrir={() => onAbrir(vehiculo.id)} />
       ))}
     </View>
   );
@@ -90,6 +80,6 @@ const estilos = StyleSheet.create({
   icono: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   crece: { flex: 1, minWidth: 0 },
   placa: { borderWidth: 1.5, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 2 },
-  confirmar: { borderRadius: radio.l, padding: 12, gap: 10 },
-  botones: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  pie: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  pildora: { borderRadius: radio.total, paddingHorizontal: 10, paddingVertical: 2 },
 });

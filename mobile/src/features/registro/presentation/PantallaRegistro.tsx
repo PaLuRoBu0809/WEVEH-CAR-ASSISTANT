@@ -6,7 +6,16 @@ import { useRegistrarVehiculo } from '@/features/garaje';
 import { Boton, espacio, IconoAtras, radio, Texto, useTema } from '@/shared/design-system';
 import { mensajeParaPersona } from '@/shared/http';
 
-import { aSolicitud, erroresDelPaso, FORMULARIO_INICIAL, PASOS, pasoCompleto, type Formulario } from '../domain/formulario';
+import {
+  aSolicitud,
+  erroresDelPaso,
+  FORMULARIO_INICIAL,
+  PASO_ACEITE,
+  PASO_PAPELES,
+  PASOS,
+  pasoCompleto,
+  type Formulario,
+} from '../domain/formulario';
 import { PasoVehiculo } from './PasoVehiculo';
 import { PasoAceite, PasoHoy, PasoNombre, PasoPapeles } from './PasosDatos';
 import { TramaW } from './TramaW';
@@ -42,8 +51,12 @@ export function PantallaRegistro({ onCancelar, onRegistrado }: Props) {
     desplazamiento.current?.scrollTo({ y: 0, animated: false });
   };
 
-  const siguiente = () => {
-    if (!pasoCompleto(paso, formulario)) {
+  // RF-GAR-02: el aceite y los papeles se pueden dejar para después
+  const marcaDespues = paso === PASO_ACEITE ? 'aceiteDespues' : paso === PASO_PAPELES ? 'papelesDespues' : null;
+
+  const avanzar = (datos: Formulario) => {
+    setFormulario(datos);
+    if (!pasoCompleto(paso, datos)) {
       setMostrarErrores(true);
       return;
     }
@@ -51,8 +64,11 @@ export function PantallaRegistro({ onCancelar, onRegistrado }: Props) {
       irA(paso + 1);
       return;
     }
-    registrar.mutate(aSolicitud(formulario), { onSuccess: (vehiculo) => onRegistrado(vehiculo.id) });
+    registrar.mutate(aSolicitud(datos), { onSuccess: (vehiculo) => onRegistrado(vehiculo.id) });
   };
+
+  const siguiente = () => avanzar(marcaDespues ? { ...formulario, [marcaDespues]: false } : formulario);
+  const dejarParaDespues = () => marcaDespues && avanzar({ ...formulario, [marcaDespues]: true });
 
   const props = { formulario, errores, cambiar };
 
@@ -107,6 +123,14 @@ export function PantallaRegistro({ onCancelar, onRegistrado }: Props) {
           onPress={siguiente}
           deshabilitado={registrar.isPending}
         />
+        {marcaDespues && (
+          <Boton
+            variante="secundario"
+            texto="Lo agrego después"
+            ayuda="Sigue sin estos datos; te los recordamos en Inicio"
+            onPress={dejarParaDespues}
+          />
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
