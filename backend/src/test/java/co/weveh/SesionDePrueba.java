@@ -2,6 +2,7 @@ package co.weveh;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
+import java.time.Instant;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 /**
@@ -15,7 +16,13 @@ public final class SesionDePrueba {
     private SesionDePrueba() {
     }
 
+    /** Sesión recién iniciada. */
     public static RequestPostProcessor como(String usuarioId) {
-        return jwt().jwt(token -> token.subject(usuarioId).claim("email", CORREO));
+        return comoDesde(usuarioId, Instant.now());
+    }
+
+    /** Sesión iniciada en ese momento (para probar acciones que exigen haber entrado hace poco, RF-CTA-05). */
+    public static RequestPostProcessor comoDesde(String usuarioId, Instant sesionIniciadaEn) {
+        return jwt().jwt(token -> token.subject(usuarioId).claim("email", CORREO).issuedAt(sesionIniciadaEn));
     }
 }
