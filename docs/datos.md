@@ -33,8 +33,8 @@ La búsqueda usa un índice de similitud de texto (`pg_trgm`) sobre el nombre no
 | Identidad | `id`, `usuario_id` (llave foránea a `usuario`, se borra en cascada con la cuenta; V5) |
 | Qué vehículo es | `tipo`, `catalogo_linea_id` (sin llave foránea, para que recargar el catálogo no rompa nada), `marca`, `linea`, `cilindrada_cc`, `anio_modelo`, `combustible`, `transmision`, `traccion` |
 | Cómo lo llama la persona | `alias`, `placa` (opcionales) |
-| Estado hoy | `km` (0 a 2.000.000), `uso`, `km_promedio_mes`, `fecha_matricula`, `estado_perfil` |
-| Registro inicial | `registro_aceite_km`, `registro_aceite_fecha`, `registro_soat_fecha`, `registro_rtm_fecha`, `registro_rtm_aun_no_aplica`, `registro_seguro_inicio`, `registro_seguro_entidad`. Los consumen mantenimiento y documentos en la fase 2. **`registro_soat_fecha` deja de ser obligatoria** (registro con datos mínimos) |
+| Estado hoy | `km` (0 a 2.000.000), `km_actualizado_en` (día de la última lectura, V7), `uso`, `km_promedio_mes`, `fecha_matricula`, `estado_perfil` |
+| Registro inicial | `registro_aceite_km`, `registro_aceite_fecha`, `registro_soat_fecha`, `registro_rtm_fecha`, `registro_rtm_aun_no_aplica`, `registro_seguro_inicio`, `registro_seguro_entidad`. Los consumen mantenimiento y documentos en la fase 2. Todo opcional desde V6 (registro con datos mínimos, RF-GAR-02) |
 | Control | `version_fila` (cambios concurrentes), `creado_en` |
 
 **`consulta_mecanico`** (V4) ✅: `vehiculo_id` (cascada), `sintoma`, `nivel_gravedad`, `diagnostico` (jsonb, ya validado), `respuesta_segura`, `modelo` (el que respondió), `version_prompt`, `creado_en`. Con la conversación (RF-MIA-02) pasa a ser un mensaje dentro de una conversación.
