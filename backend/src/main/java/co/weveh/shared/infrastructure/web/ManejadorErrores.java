@@ -2,7 +2,7 @@ package co.weveh.shared.infrastructure.web;
 
 import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.DatoInvalidoException;
-import co.weveh.shared.domain.DispositivoInvalidoException;
+import co.weveh.shared.domain.NoAutenticadoException;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
 import co.weveh.shared.domain.ServicioNoDisponibleException;
 import java.net.URI;
@@ -27,9 +27,9 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
 
     static final String BASE_TIPOS = "https://weveh.co/problemas/";
 
-    @ExceptionHandler(DispositivoInvalidoException.class)
-    ProblemDetail dispositivoInvalido(DispositivoInvalidoException excepcion) {
-        return problema(HttpStatus.BAD_REQUEST, "dispositivo-invalido", "Dispositivo no válido", excepcion.getMessage());
+    @ExceptionHandler(NoAutenticadoException.class)
+    ProblemDetail noAutenticado(NoAutenticadoException excepcion) {
+        return problema(HttpStatus.UNAUTHORIZED, "no-autenticado", "Inicia sesión", excepcion.getMessage());
     }
 
     @ExceptionHandler(DatoInvalidoException.class)

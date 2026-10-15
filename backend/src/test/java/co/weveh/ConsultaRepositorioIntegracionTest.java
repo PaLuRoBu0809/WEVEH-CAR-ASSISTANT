@@ -30,10 +30,12 @@ class ConsultaRepositorioIntegracionTest {
     @Test
     void guardaElDiagnosticoComoJsonbYLoCuentaEnElUltimoDia() {
         var vehiculoId = UUID.randomUUID();
+        var usuarioId = UUID.randomUUID();
+        jdbc.sql("insert into usuario (id, nombre) values (?, 'Laura')").param(usuarioId).update();
         jdbc.sql("""
-                        insert into vehiculo (id, dispositivo_id, tipo, marca, linea, anio_modelo, km, uso, km_promedio_mes, registro_soat_fecha)
+                        insert into vehiculo (id, usuario_id, tipo, marca, linea, anio_modelo, km, uso, km_promedio_mes, registro_soat_fecha)
                         values (?, ?, 'CARRO', 'TOYOTA', 'PRADO VX 5P AT', 2008, 190000, 'MIXTO', 1000, date '2026-06-30')""")
-                .params(vehiculoId, UUID.randomUUID())
+                .params(vehiculoId, usuarioId)
                 .update();
         var consultaId = UUID.randomUUID();
 

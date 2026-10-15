@@ -1,6 +1,6 @@
 package co.weveh.garaje;
 
-import co.weveh.shared.domain.DispositivoId;
+import co.weveh.shared.domain.UsuarioId;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,8 +10,8 @@ import java.util.UUID;
  */
 public interface GarajeApi {
 
-    /** Vacío si el vehículo no existe o es de otro dispositivo. */
-    Optional<DatosVehiculo> buscar(DispositivoId dispositivo, UUID vehiculoId);
+    /** Vacío si el vehículo no existe o es de otro usuario. */
+    Optional<DatosVehiculo> buscar(UsuarioId usuario, UUID vehiculoId);
 
     /**
      * Lo que otros módulos necesitan del vehículo. Sin placa ni alias: estos datos pueden ir a un modelo de IA
