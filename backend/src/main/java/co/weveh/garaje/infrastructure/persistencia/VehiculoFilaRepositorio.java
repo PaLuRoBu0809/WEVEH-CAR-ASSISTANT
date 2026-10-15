@@ -10,11 +10,11 @@ import org.springframework.data.repository.query.Param;
 
 interface VehiculoFilaRepositorio extends CrudRepository<VehiculoFila, UUID> {
 
-    List<VehiculoFila> findByDispositivoIdOrderByCreadoEn(UUID dispositivoId);
+    List<VehiculoFila> findByUsuarioIdOrderByCreadoEn(UUID usuarioId);
 
-    Optional<VehiculoFila> findByIdAndDispositivoId(UUID id, UUID dispositivoId);
+    Optional<VehiculoFila> findByIdAndUsuarioId(UUID id, UUID usuarioId);
 
     @Modifying
-    @Query("delete from vehiculo where id = :id and dispositivo_id = :dispositivoId")
-    int eliminarDelDispositivo(@Param("id") UUID id, @Param("dispositivoId") UUID dispositivoId);
+    @Query("delete from vehiculo where id = :id and usuario_id = :usuarioId")
+    int eliminarDelUsuario(@Param("id") UUID id, @Param("usuarioId") UUID usuarioId);
 }

@@ -4,7 +4,7 @@ import co.weveh.garaje.GarajeApi.DatosVehiculo;
 import java.time.LocalDate;
 
 /**
- * Lo único que va al modelo (skill mecanico-ia, "Contexto que recibe el modelo"). Nunca placa, alias ni dispositivo.
+ * Lo único que va al modelo (skill mecanico-ia, "Contexto que recibe el modelo"). Nunca placa, alias ni datos de la persona.
  * El síntoma va aparte y el prompt lo trata como dato, no como instrucción.
  */
 record ContextoDiagnostico(Vehiculo vehiculo, UltimoAceite ultimoAceite, String sintoma) {

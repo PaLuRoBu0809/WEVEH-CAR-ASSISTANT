@@ -6,8 +6,8 @@ import co.weveh.garaje.VehiculoRegistrado;
 import co.weveh.garaje.application.puertos.VehiculoRepositorio;
 import co.weveh.garaje.domain.Vehiculo;
 import co.weveh.shared.domain.ConflictoException;
-import co.weveh.shared.domain.DispositivoId;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
+import co.weveh.shared.domain.UsuarioId;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -33,27 +33,27 @@ class GarajeServicio implements Garaje, GarajeApi {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Vehiculo> listar(DispositivoId dispositivo) {
-        return repositorio.buscarPorDispositivo(dispositivo);
+    public List<Vehiculo> listar(UsuarioId usuario) {
+        return repositorio.buscarPorUsuario(usuario);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Vehiculo obtener(DispositivoId dispositivo, UUID vehiculoId) {
-        return repositorio.buscar(dispositivo, vehiculoId).orElseThrow(GarajeServicio::noEncontrado);
+    public Vehiculo obtener(UsuarioId usuario, UUID vehiculoId) {
+        return repositorio.buscar(usuario, vehiculoId).orElseThrow(GarajeServicio::noEncontrado);
     }
 
     @Override
-    public Vehiculo registrar(DispositivoId dispositivo, Vehiculo.DatosRegistro datos) {
-        var vehiculo = Vehiculo.registrar(UUID.randomUUID(), dispositivo, datos, LocalDate.now(reloj));
+    public Vehiculo registrar(UsuarioId usuario, Vehiculo.DatosRegistro datos) {
+        var vehiculo = Vehiculo.registrar(UUID.randomUUID(), usuario, datos, LocalDate.now(reloj));
         repositorio.insertar(vehiculo);
         eventos.publishEvent(new VehiculoRegistrado(vehiculo.id()));
         return vehiculo;
     }
 
     @Override
-    public Vehiculo editar(DispositivoId dispositivo, UUID vehiculoId, Edicion edicion) {
-        var actual = obtener(dispositivo, vehiculoId);
+    public Vehiculo editar(UsuarioId usuario, UUID vehiculoId, Edicion edicion) {
+        var actual = obtener(usuario, vehiculoId);
         if (actual.versionFila() != edicion.versionFila()) {
             throw conflicto();
         }
@@ -62,12 +62,12 @@ class GarajeServicio implements Garaje, GarajeApi {
         if (!repositorio.actualizar(editado)) {
             throw conflicto();
         }
-        return obtener(dispositivo, vehiculoId);
+        return obtener(usuario, vehiculoId);
     }
 
     @Override
-    public void eliminar(DispositivoId dispositivo, UUID vehiculoId) {
-        if (!repositorio.eliminar(dispositivo, vehiculoId)) {
+    public void eliminar(UsuarioId usuario, UUID vehiculoId) {
+        if (!repositorio.eliminar(usuario, vehiculoId)) {
             throw noEncontrado();
         }
         eventos.publishEvent(new VehiculoEliminado(vehiculoId));
@@ -75,8 +75,8 @@ class GarajeServicio implements Garaje, GarajeApi {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<DatosVehiculo> buscar(DispositivoId dispositivo, UUID vehiculoId) {
-        return repositorio.buscar(dispositivo, vehiculoId).map(GarajeServicio::datosPublicos);
+    public Optional<DatosVehiculo> buscar(UsuarioId usuario, UUID vehiculoId) {
+        return repositorio.buscar(usuario, vehiculoId).map(GarajeServicio::datosPublicos);
     }
 
     private static DatosVehiculo datosPublicos(Vehiculo v) {

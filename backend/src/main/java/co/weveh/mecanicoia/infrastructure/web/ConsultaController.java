@@ -2,7 +2,7 @@ package co.weveh.mecanicoia.infrastructure.web;
 
 import co.weveh.mecanicoia.application.ConsultarMecanico;
 import co.weveh.mecanicoia.domain.Diagnostico;
-import co.weveh.shared.domain.DispositivoId;
+import co.weveh.shared.domain.UsuarioId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +20,8 @@ class ConsultaController {
     }
 
     @PostMapping("/api/v1/vehiculos/{vehiculoId}/consultas")
-    DiagnosticoRespuesta consultar(DispositivoId dispositivo, @PathVariable UUID vehiculoId, @RequestBody ConsultaSolicitud solicitud) {
-        return DiagnosticoRespuesta.desde(consultar.consultar(dispositivo, vehiculoId, solicitud.sintoma()));
+    DiagnosticoRespuesta consultar(UsuarioId usuario, @PathVariable UUID vehiculoId, @RequestBody ConsultaSolicitud solicitud) {
+        return DiagnosticoRespuesta.desde(consultar.consultar(usuario, vehiculoId, solicitud.sintoma()));
     }
 
     record ConsultaSolicitud(String sintoma) {

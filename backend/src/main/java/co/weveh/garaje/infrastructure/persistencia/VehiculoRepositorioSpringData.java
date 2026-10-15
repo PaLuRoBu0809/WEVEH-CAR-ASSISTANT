@@ -8,20 +8,25 @@ import co.weveh.garaje.domain.Transmision;
 import co.weveh.garaje.domain.UsoVehiculo;
 import co.weveh.garaje.domain.Vehiculo;
 import co.weveh.garaje.infrastructure.persistencia.VehiculoFila.RegistroFila;
-import co.weveh.shared.domain.DispositivoId;
+import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.Kilometraje;
 import co.weveh.shared.domain.TipoVehiculo;
+import co.weveh.shared.domain.UsuarioId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
 /**
- * Adaptador de la tabla vehiculo con Spring Data JDBC (ADR 0006). Cada lectura filtra por dispositivo.
+ * Adaptador de la tabla vehiculo con Spring Data JDBC (ADR 0006). Cada lectura filtra por usuario.
  */
 @Repository
 class VehiculoRepositorioSpringData implements VehiculoRepositorio {
+
+    /** Llave foránea hacia usuario (V5): falla si la persona aún no creó su perfil de cuenta. */
+    private static final String LLAVE_USUARIO = "vehiculo_usuario_fk";
 
     private final VehiculoFilaRepositorio filas;
 
@@ -30,20 +35,27 @@ class VehiculoRepositorioSpringData implements VehiculoRepositorio {
     }
 
     @Override
-    public List<Vehiculo> buscarPorDispositivo(DispositivoId dispositivo) {
-        return filas.findByDispositivoIdOrderByCreadoEn(dispositivo.valor()).stream()
+    public List<Vehiculo> buscarPorUsuario(UsuarioId usuario) {
+        return filas.findByUsuarioIdOrderByCreadoEn(usuario.valor()).stream()
                 .map(VehiculoRepositorioSpringData::aDominio)
                 .toList();
     }
 
     @Override
-    public Optional<Vehiculo> buscar(DispositivoId dispositivo, UUID vehiculoId) {
-        return filas.findByIdAndDispositivoId(vehiculoId, dispositivo.valor()).map(VehiculoRepositorioSpringData::aDominio);
+    public Optional<Vehiculo> buscar(UsuarioId usuario, UUID vehiculoId) {
+        return filas.findByIdAndUsuarioId(vehiculoId, usuario.valor()).map(VehiculoRepositorioSpringData::aDominio);
     }
 
     @Override
     public void insertar(Vehiculo vehiculo) {
-        filas.save(aFila(vehiculo, null));
+        try {
+            filas.save(aFila(vehiculo, null));
+        } catch (DataIntegrityViolationException error) {
+            if (String.valueOf(error.getMessage()).contains(LLAVE_USUARIO)) {
+                throw new ConflictoException("Completa tu cuenta antes de registrar un vehículo");
+            }
+            throw error;
+        }
     }
 
     @Override
@@ -57,15 +69,15 @@ class VehiculoRepositorioSpringData implements VehiculoRepositorio {
     }
 
     @Override
-    public boolean eliminar(DispositivoId dispositivo, UUID vehiculoId) {
-        return filas.eliminarDelDispositivo(vehiculoId, dispositivo.valor()) == 1;
+    public boolean eliminar(UsuarioId usuario, UUID vehiculoId) {
+        return filas.eliminarDelUsuario(vehiculoId, usuario.valor()) == 1;
     }
 
     private static VehiculoFila aFila(Vehiculo v, Integer version) {
         var r = v.registroInicial();
         var registro = new RegistroFila(r.aceiteKm(), r.aceiteFecha(), r.soatFecha(), r.rtmFecha(), r.rtmAunNoAplica(),
                 r.seguroInicio(), r.seguroEntidad());
-        return new VehiculoFila(v.id(), v.dispositivo().valor(), v.tipo().name(), v.catalogoLineaId(), v.marca(),
+        return new VehiculoFila(v.id(), v.usuario().valor(), v.tipo().name(), v.catalogoLineaId(), v.marca(),
                 v.linea(), v.cilindradaCc(), v.anioModelo(), nombre(v.combustible()), nombre(v.transmision()),
                 v.traccion() == null ? null : v.traccion().codigo(), v.alias(), v.placa(), v.fechaMatricula(),
                 v.km().valor(), v.uso().name(), v.kmPromedioMes(), registro, version, null);
@@ -77,7 +89,7 @@ class VehiculoRepositorioSpringData implements VehiculoRepositorio {
                 r.rtmAunNoAplica(), r.seguroInicio(), r.seguroEntidad());
         return new Vehiculo(
                 f.id(),
-                new DispositivoId(f.dispositivoId()),
+                new UsuarioId(f.usuarioId()),
                 TipoVehiculo.valueOf(f.tipo()),
                 f.catalogoLineaId(),
                 f.marca(),
