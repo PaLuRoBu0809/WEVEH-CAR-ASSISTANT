@@ -12,11 +12,11 @@ Estado revisado el 2026-10-10.
 | RF-CTA-01..07 | [Cuentas](RF-CTA.md) | 1 | 🟡 | 01, 02 (correo y contraseña), 04 y 06 hechos; el backend de 05 y 07 también. Faltan Google, enlace mágico, 03 y las pantallas de 05 y 07 |
 | RF-DAT-01..08 | [Tratamiento de datos](RF-DAT.md) | 1 | 🟡 | 08: ya no van placa, alias ni identificador al modelo; falta el aviso en Preguntar y lo de nombre y correo |
 | RF-GAR-01 | Ver mi garaje | 0 / 1 | 🟡 | Falta ver sin red (ADR 0009) |
-| RF-GAR-02 | Registrar vehículo (datos mínimos) | 1 | 🔁 | Hoy exige aceite, SOAT y RTM; pasan a opcionales |
-| RF-GAR-02b | Completar lo que falta | 1 / 2 | ⬜ | |
-| RF-GAR-03 | Editar vehículo | 1 | 🟡 | El backend edita; falta la pantalla y "gana lo último" |
+| RF-GAR-02 | Registrar vehículo (datos mínimos) | 1 | ✅ | Obligatorios solo vehículo y kilometraje |
+| RF-GAR-02b | Completar lo que falta | 1 / 2 | ✅ | Aviso en Inicio, completar datos y guía del aceite |
+| RF-GAR-03 | Editar vehículo | 1 | 🟡 | Pantalla hecha; "gana lo último" llega con sin red (ADR 0009), hoy responde 409 |
 | RF-GAR-04 | Eliminar vehículo | 1 | ✅ | Plan, documentos y tanqueadas se borrarán en cascada cuando existan |
-| RF-GAR-05 | Actualizar kilometraje | 2 | ⬜ | |
+| RF-GAR-05 | Actualizar kilometraje | 1 | ✅ | El recálculo del plan llega con mantenimiento (fase 2) |
 | RF-GAR-06 | Cambios sin red | 1 | ⬜ | |
 | RF-CAT-01 | Buscar marcas | 1 | 🟡 | Falta la caché sin red |
 | RF-CAT-02 | Buscar líneas de una marca | 1 | ✅ | |

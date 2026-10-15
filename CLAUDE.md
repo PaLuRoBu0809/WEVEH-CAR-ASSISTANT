@@ -54,7 +54,7 @@ No fijes versiones de memoria: usa las que generen `start.spring.io` y `create-e
 
 ## 4. Orden de construcción
 
-El plan vivo con el estado de cada paso está en **`docs/tareas.md`**. No saltes de etapa sin cerrar la anterior (pruebas y CI en verde). Hechas: fase 0, diseño de los mockups, la primera parte de la fase 1, la persistencia con Spring Data JDBC y las cuentas (backend y login con correo). Siguen, en orden: el resto de cuentas y datos (Google, enlace mágico, Mis datos, eliminar desde la app), registro mínimo y edición, sin red, resiliencia y monitoreo, Mecánico IA conversacional, fase 2 (mantenimiento y documentos), fase 4 (completar perfil), fase 5 (combustible) y catálogo por año fiscal.
+El plan vivo con el estado de cada paso está en **`docs/tareas.md`**. No saltes de etapa sin cerrar la anterior (pruebas y CI en verde). Hechas: fase 0, diseño de los mockups, la primera parte de la fase 1, la persistencia con Spring Data JDBC, las cuentas (backend y login con correo) y el garaje en línea (registro mínimo, editar, completar datos y kilometraje). Siguen, en orden: el resto de cuentas y datos (Google, enlace mágico, Mis datos, eliminar desde la app), registro mínimo y edición, sin red, resiliencia y monitoreo, Mecánico IA conversacional, fase 2 (mantenimiento y documentos), fase 4 (completar perfil), fase 5 (combustible) y catálogo por año fiscal.
 
 ## 5. Comandos (una vez creados los proyectos)
 
