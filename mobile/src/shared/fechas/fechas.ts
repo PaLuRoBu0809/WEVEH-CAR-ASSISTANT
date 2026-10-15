@@ -25,3 +25,9 @@ export function hoyIso(ahora: Date = new Date()): string {
   const dia = String(ahora.getDate()).padStart(2, '0');
   return `${ahora.getFullYear()}-${mes}-${dia}`;
 }
+
+/** "2026-06-30" → "30/06/2026" para prellenar un campo; vacío si no hay fecha. */
+export function aFechaVisible(iso: string | null | undefined): string {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso ?? '');
+  return partes ? `${partes[3]}/${partes[2]}/${partes[1]}` : '';
+}

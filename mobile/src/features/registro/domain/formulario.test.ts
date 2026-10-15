@@ -1,4 +1,4 @@
-import { aFechaIso, formatearMientrasEscribe } from './fechas';
+import { aFechaIso, formatearMientrasEscribe } from '@/shared/fechas';
 import { aEntero, aSolicitud, erroresDelPaso, FORMULARIO_INICIAL, pasoCompleto, type Formulario } from './formulario';
 
 const AHORA = new Date(2026, 9, 8, 10, 0);
