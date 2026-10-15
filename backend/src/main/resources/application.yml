@@ -9,10 +9,6 @@ spring:
     url: ${WEVEH_DB_URL:}
     username: ${WEVEH_DB_USUARIO:}
     password: ${WEVEH_DB_CLAVE:}
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
   flyway:
     locations: classpath:db/migration
   mvc:
