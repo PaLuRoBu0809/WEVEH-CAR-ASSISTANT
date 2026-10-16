@@ -37,7 +37,11 @@ class EvalsMecanicoIaTest {
         for (JsonNode caso : raiz.get("casos")) {
             var id = caso.get("id").asString();
             var sintoma = caso.get("sintoma").asString();
-            var contexto = json.writeValueAsString(Map.of("vehiculo", raiz.get("vehiculo"), "sintoma", sintoma));
+            // Mismo contexto que arma ContextoDiagnostico, incluidos los datos que la persona no ha registrado (RF-MIA-05)
+            var contexto = json.writeValueAsString(Map.of(
+                    "vehiculo", raiz.get("vehiculo"),
+                    "datosQueFaltan", caso.has("datosQueFaltan") ? caso.get("datosQueFaltan") : json.createArrayNode(),
+                    "sintoma", sintoma));
             var obtenida = motor.diagnosticar(contexto);
             var respuesta = obtenida.map(r -> r.diagnostico()).orElse(Diagnostico.respuestaSegura());
             var final_ = ValidadorSeguridadDiagnostico.aplicar(sintoma, respuesta, false);

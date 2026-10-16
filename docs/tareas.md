@@ -54,7 +54,7 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 ## Etapa 6 · Mecánico IA conversacional (ADR 0004, RF-MIA)
 
 - [ ] Evaluador por modelo: evals contra cada modelo, filtro de críticos, ranking por calidad, velocidad y estabilidad, propuesta de lista en `evals/results.md`.
-- [ ] Prompt `mecanico-v2`: estructura de 3 pasos, sin precios; evals.
+- [x] Prompt `mecanico-v2`: estructura de 3 pasos, sin precios, siempre en español; evals (`evals/results.md`, 2026-10-16). Pendiente: que pida datos en síntomas ambiguos.
 - [ ] Botón "¿Cuánto podría costar?" (RF-MIA-01b).
 - [ ] Conversación con memoria, compactación y orden para caché (RF-MIA-02).
 - [ ] Balde de consultas por cuenta, anti-abuso, cobro justo y freno global; cupo en Perfil (RF-MIA-07).

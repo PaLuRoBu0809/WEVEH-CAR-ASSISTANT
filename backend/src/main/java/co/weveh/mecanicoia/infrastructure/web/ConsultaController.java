@@ -28,18 +28,21 @@ class ConsultaController {
     }
 
     /**
-     * @param nivel     código para la app (LEVE, MODERADO, CRITICO)
-     * @param gravedad  texto del contrato ("Crítico", "Moderado", "Leve")
+     * RF-MIA-01: qué puede ser, por qué importa y qué hacer en máximo 3 pasos; sin precio (se pide aparte).
+     *
+     * @param nivel         código para la app (LEVE, MODERADO, CRITICO)
+     * @param gravedad      texto del contrato ("Crítico", "Moderado", "Leve")
+     * @param porQueImporta máximo 2 oraciones, sin jerga
      */
-    record DiagnosticoRespuesta(String posibleFalla, String nivel, String gravedad, String explicacionSimple,
-                                String accionInmediata, String costoEstimado, boolean requiereRevisionHumana,
-                                boolean requiereMecanico, List<String> piezasRelacionadas, List<String> datosFaltantes,
-                                boolean respuestaSegura, String aviso) {
+    record DiagnosticoRespuesta(String posibleFalla, String nivel, String gravedad, String porQueImporta,
+                                List<String> pasos, boolean requiereRevisionHumana, boolean requiereMecanico,
+                                List<String> piezasRelacionadas, List<String> datosFaltantes, boolean respuestaSegura,
+                                String aviso) {
 
         static DiagnosticoRespuesta desde(Diagnostico d) {
             return new DiagnosticoRespuesta(d.posibleFalla(), d.nivelGravedad().name(), d.nivelGravedad().texto(),
-                    d.explicacionSimple(), d.accionInmediata(), d.costoEstimado(), d.requiereRevisionHumana(),
-                    d.requiereMecanico(), d.piezasRelacionadas(), d.datosFaltantes(), d.seguro(), Diagnostico.AVISO);
+                    d.explicacionSimple(), d.pasos(), d.requiereRevisionHumana(), d.requiereMecanico(),
+                    d.piezasRelacionadas(), d.datosFaltantes(), d.seguro(), Diagnostico.AVISO);
         }
     }
 }

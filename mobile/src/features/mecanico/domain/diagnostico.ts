@@ -2,14 +2,15 @@ import type { Nivel } from '@/shared/design-system';
 
 export type NivelGravedad = 'LEVE' | 'MODERADO' | 'CRITICO';
 
-/** Igual a DiagnosticoRespuesta del backend. */
+/** Igual a DiagnosticoRespuesta del backend (contrato v2, RF-MIA-01): sin precio, que se pide aparte. */
 export type Diagnostico = Readonly<{
   posibleFalla: string;
   nivel: NivelGravedad;
   gravedad: string;
-  explicacionSimple: string;
-  accionInmediata: string;
-  costoEstimado: string | null;
+  /** "¿Por qué importa?": máximo 2 oraciones. */
+  porQueImporta: string;
+  /** Qué hacer: de 1 a 3 pasos cortos, en orden. */
+  pasos: readonly string[];
   requiereRevisionHumana: boolean;
   requiereMecanico: boolean;
   piezasRelacionadas: readonly string[];

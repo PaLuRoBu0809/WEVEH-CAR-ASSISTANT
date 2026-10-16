@@ -3,6 +3,7 @@ package co.weveh.mecanicoia.domain;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -34,18 +35,28 @@ public final class ValidadorSeguridadDiagnostico {
      * @param piezaSeguridadVencidaMencionada el síntoma habla de una pieza de seguridad que el plan tiene vencida
      */
     public static Diagnostico aplicar(String sintoma, Diagnostico diagnostico, boolean piezaSeguridadVencidaMencionada) {
-        var resultado = costoSeguro(diagnostico);
         if (tieneSenalCritica(sintoma)) {
-            var accion = resultado.nivelGravedad() == NivelGravedad.CRITICO && !resultado.seguro()
-                    ? resultado.accionInmediata()
+            // Si el modelo ya lo vio crítico, sus pasos se respetan; si no, el primer paso es detenerse
+            var primerPaso = diagnostico.nivelGravedad() == NivelGravedad.CRITICO && !diagnostico.seguro()
+                    ? null
                     : ACCION_CRITICA;
-            return resultado.conGravedad(NivelGravedad.CRITICO, true, true, accion);
+            return diagnostico.conGravedad(NivelGravedad.CRITICO, true, true, primerPaso);
         }
-        if (piezaSeguridadVencidaMencionada && resultado.nivelGravedad() == NivelGravedad.LEVE) {
-            return resultado.conGravedad(NivelGravedad.MODERADO, resultado.requiereRevisionHumana(), true,
-                    resultado.accionInmediata());
+        if (piezaSeguridadVencidaMencionada && diagnostico.nivelGravedad() == NivelGravedad.LEVE) {
+            return diagnostico.conGravedad(NivelGravedad.MODERADO, diagnostico.requiereRevisionHumana(), true, null);
         }
-        return resultado;
+        return diagnostico;
+    }
+
+    /**
+     * RF-MIA-01b: un rango en pesos razonable o nada. "Gratis", $0 o una cifra cerrada se descartan ("No se puede
+     * estimar").
+     */
+    public static Optional<String> costoAceptable(String costo) {
+        if (costo == null || costo.isBlank() || COSTO_SOSPECHOSO.matcher(normalizar(costo)).find() || !costo.contains("-")) {
+            return Optional.empty();
+        }
+        return Optional.of(costo.strip());
     }
 
     public static boolean tieneSenalCritica(String sintoma) {
@@ -54,17 +65,6 @@ public final class ValidadorSeguridadDiagnostico {
         }
         var normalizado = normalizar(sintoma);
         return SENALES_CRITICAS.stream().anyMatch(patron -> patron.matcher(normalizado).find());
-    }
-
-    private static Diagnostico costoSeguro(Diagnostico diagnostico) {
-        var costo = diagnostico.costoEstimado();
-        if (costo == null) {
-            return diagnostico;
-        }
-        if (costo.isBlank() || COSTO_SOSPECHOSO.matcher(normalizar(costo)).find() || !costo.contains("-")) {
-            return diagnostico.sinCosto();
-        }
-        return diagnostico;
     }
 
     static String normalizar(String texto) {

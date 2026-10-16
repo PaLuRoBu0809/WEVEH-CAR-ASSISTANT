@@ -2,6 +2,7 @@ package co.weveh.garaje;
 
 import co.weveh.shared.domain.UsuarioId;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +17,8 @@ public interface GarajeApi {
     /**
      * Lo que otros módulos necesitan del vehículo. Sin placa ni alias: estos datos pueden ir a un modelo de IA
      * (CLAUDE.md, reglas de IA 7).
+     *
+     * @param datosFaltantes lo que la persona dejó para después: SOAT, RTM, ACEITE (RF-GAR-02b, RF-MIA-05)
      */
     record DatosVehiculo(
             UUID id,
@@ -34,6 +37,7 @@ public interface GarajeApi {
             LocalDate aceiteFecha,
             LocalDate soatFecha,
             LocalDate rtmFecha,
-            boolean rtmAunNoAplica) {
+            boolean rtmAunNoAplica,
+            List<String> datosFaltantes) {
     }
 }
