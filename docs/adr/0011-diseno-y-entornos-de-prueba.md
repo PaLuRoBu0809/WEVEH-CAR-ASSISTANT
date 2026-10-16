@@ -22,7 +22,7 @@ Los mockups `WEVEH Portada.html` y `WEVEH Garaje.html` (raíz del repo) definen 
 
 - **Emulador de Android Studio** como entorno principal: Expo lo abre con `a`; desde el emulador el backend local está en `http://10.0.2.2:8080`.
 - **App propia (development build con EAS)** para probar Google, el enlace mágico y las notificaciones, que en Expo Go son limitados.
-- **Navegador del PC solo para desarrollo:** `react-native-web`, CORS configurable (`WEVEH_CORS_ORIGENES`, vacío por defecto) y el almacenamiento seguro reemplazado por `localStorage`. No es la "versión web" que el alcance excluye.
+- **Navegador del PC solo para desarrollo:** `react-native-web`, CORS configurable (`WEVEH_CORS_ORIGENES`, vacío por defecto) y el almacenamiento seguro reemplazado por `localStorage`. No es la "versión web" que el alcance excluye. Desde el ADR 0015 esa misma web se publica en Vercel como **demo**.
 - iOS se prueba en un iPhone real (el simulador requiere Mac).
 
 ## Alternativas consideradas
