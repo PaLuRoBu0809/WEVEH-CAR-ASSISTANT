@@ -112,7 +112,7 @@ class GarajeServicio implements Garaje, GarajeApi {
                 v.traccion() == null ? null : v.traccion().codigo(),
                 v.km().valor(), v.uso().name(), v.kmPromedioMes(),
                 registro.aceiteKm(), registro.aceiteFecha(), registro.soatFecha(), registro.rtmFecha(),
-                registro.rtmAunNoAplica());
+                registro.rtmAunNoAplica(), v.datosFaltantes().stream().map(Enum::name).toList());
     }
 
     private static RecursoNoEncontradoException noEncontrado() {

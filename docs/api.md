@@ -149,9 +149,8 @@ Respuesta **200**:
   "posibleFalla": "Ruido de válvulas o de la cadena de distribución",
   "nivel": "MODERADO",
   "gravedad": "Moderado",
-  "explicacionSimple": "…",
-  "accionInmediata": "…",
-  "costoEstimado": "$300.000 - $600.000 COP",
+  "porQueImporta": "Si es la cadena y se estira, puede saltar y dañar el motor.",
+  "pasos": ["Revisa el nivel de aceite.", "Llévalo al mecánico esta semana."],
   "requiereRevisionHumana": false,
   "requiereMecanico": true,
   "piezasRelacionadas": ["cadena_distribucion", "tensores_cadena"],
@@ -161,10 +160,10 @@ Respuesta **200**:
 }
 ```
 
-`nivel` es el código para la app (color); `gravedad` el texto del contrato. Errores: 400 (síntoma vacío o > 1.000 caracteres), 404, 409 (límite diario, hoy), 503 (IA no configurada).
+`nivel` es el código para la app (color); `gravedad` el texto del contrato. `porQueImporta` tiene máximo 2 oraciones y `pasos` de 1 a 3, en orden; si el validador sube la gravedad a crítica, el primer paso es ir al mecánico. Todo el texto va en español: una respuesta del modelo con inglés se descarta y se prueba el siguiente modelo (prompt `mecanico-v2`). Sin precio: se pide aparte. Errores: 400 (síntoma vacío o > 1.000 caracteres), 404, 409 (límite diario, hoy), 503 (IA no configurada).
 
 **Cambios decididos ⬜:**
-- Sin `costoEstimado` en la respuesta; la estructura pasa a "qué puede ser / por qué importa / qué hacer (máx. 3 pasos)". El costo se pide con `POST /vehiculos/{id}/consultas/{consultaId}/costo` (RF-MIA-01b).
+- El costo se pide con `POST /vehiculos/{id}/consultas/{consultaId}/costo` (RF-MIA-01b).
 - Conversación: `POST /vehiculos/{id}/conversaciones` y `POST /conversaciones/{id}/mensajes`; `GET` para retomarlas (RF-MIA-02).
 - Cupo: el límite pasa a 429 `limite-de-uso` con cuándo vuelve a haber; `GET /cuenta/cupo` para mostrarlo en Perfil (RF-MIA-07).
 

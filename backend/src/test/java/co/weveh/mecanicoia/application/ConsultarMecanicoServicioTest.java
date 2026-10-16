@@ -34,7 +34,7 @@ class ConsultarMecanicoServicioTest {
     static final UUID VEHICULO = UUID.randomUUID();
     static final GarajeApi.DatosVehiculo PRADO = new GarajeApi.DatosVehiculo(VEHICULO, "CARRO", "TOYOTA", "PRADO VX 5P AT",
             3400, 2008, "GASOLINA", "AUTOMATICA", "4X4", 190000, "MIXTO", 1000, 188000, LocalDate.of(2026, 6, 5),
-            LocalDate.of(2026, 6, 30), LocalDate.of(2026, 6, 28), false);
+            LocalDate.of(2026, 6, 30), LocalDate.of(2026, 6, 28), false, List.of("ACEITE"));
 
     GarajeApi garaje = mock(GarajeApi.class);
     MotorDiagnostico motor = mock(MotorDiagnostico.class);
@@ -42,8 +42,8 @@ class ConsultarMecanicoServicioTest {
     ConsultarMecanicoServicio servicio = new ConsultarMecanicoServicio(garaje, motor, consultas, JsonMapper.builder().build());
 
     static Diagnostico leve() {
-        return new Diagnostico("Plumillas gastadas", NivelGravedad.LEVE, "Las gomas se endurecieron.", "Cámbialas pronto.",
-                "$40.000 - $80.000 COP", false, false, List.of("plumillas"), List.of(), false);
+        return new Diagnostico("Plumillas gastadas", NivelGravedad.LEVE, "Las gomas se endurecieron.",
+                List.of("Cámbialas pronto."), false, false, List.of("plumillas"), List.of(), false);
     }
 
     @BeforeEach
@@ -63,6 +63,7 @@ class ConsultarMecanicoServicioTest {
         verify(motor).diagnosticar(contexto.capture());
         assertThat(contexto.getValue())
                 .contains("PRADO VX 5P AT", "190000", "las plumillas dejan rayas")
+                .contains("\"datosQueFaltan\":[\"ACEITE\"]")
                 .doesNotContain(USUARIO.toString(), "placa", "alias");
     }
 

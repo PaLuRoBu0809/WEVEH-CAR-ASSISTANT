@@ -30,8 +30,8 @@ class MotorDiagnosticoOpenRouterTest {
     static final JsonMapper JSON = JsonMapper.builder().build();
     static final String SALIDA_VALIDA = """
             {"posible_falla":"Pastillas de freno desgastadas","nivel_gravedad":"Crítico",
-             "explicacion_simple":"El metal roza el disco.","accion_inmediata":"Lleva el carro al taller hoy.",
-             "costo_estimado":"$150.000 - $300.000 COP","requires_human_review":false,"requires_mechanic":true,
+             "por_que_importa":"El metal roza el disco.","pasos":["Lleva el carro al taller hoy."],
+             "requiere_revision_humana":false,"requiere_mecanico":true,
              "piezas_relacionadas":["pastillas_freno"],"datos_faltantes":[]}""";
 
     final RestClient.Builder constructor = RestClient.builder().baseUrl("https://openrouter.test/api/v1");
@@ -69,6 +69,43 @@ class MotorDiagnosticoOpenRouterTest {
         assertThat(motor.interpretar(respuesta(SALIDA_VALIDA.replace("\"Crítico\"", "\"Grave\""), "stop"))).isEmpty();
         assertThat(motor.interpretar(respuesta(SALIDA_VALIDA, "length"))).isEmpty();
         assertThat(motor.interpretar(respuesta("{\"nivel_gravedad\":\"Leve\"}", "stop"))).isEmpty();
+    }
+
+    @Test
+    void sinPasosNoEsUnaRespuestaValida() throws Exception {
+        var sinPasos = SALIDA_VALIDA.replace("[\"Lleva el carro al taller hoy.\"]", "[]");
+
+        assertThat(motor("a:free", "llave").interpretar(respuesta(sinPasos, "stop"))).isEmpty();
+    }
+
+    @Test
+    void unaRespuestaConInglesNoSeMuestra() throws Exception {
+        var conIngles = SALIDA_VALIDA.replace("El metal roza el disco.", "No se sabe lo que está happening.");
+
+        assertThat(motor("a:free", "llave").interpretar(respuesta(conIngles, "stop"))).isEmpty();
+    }
+
+    @Test
+    void siUnModeloRespondeEnInglesPruebaElSiguiente() throws Exception {
+        var conIngles = SALIDA_VALIDA.replace("Lleva el carro al taller hoy.", "Check the brakes today.");
+        servidor.expect(requestTo(URL)).andRespond(withSuccess(respuesta(conIngles, "stop"), MediaType.APPLICATION_JSON));
+        servidor.expect(requestTo(URL)).andRespond(withSuccess(respuesta(SALIDA_VALIDA, "stop"), MediaType.APPLICATION_JSON));
+
+        assertThat(motor("a:free,b:free", "llave").diagnosticar("{}").orElseThrow().modelo()).isEqualTo("b:free");
+    }
+
+    @Test
+    void recortaLaExplicacionLosPasosYNormalizaLasPiezas() throws Exception {
+        var larga = SALIDA_VALIDA
+                .replace("El metal roza el disco.", "El metal roza el disco. Eso lo raya. Y frenar cuesta más.")
+                .replace("[\"Lleva el carro al taller hoy.\"]", "[\"Uno.\",\"Dos.\",\"Tres.\",\"Cuatro.\"]")
+                .replace("[\"pastillas_freno\"]", "[\"Pastillas de Freno\",\"válvulas\"]");
+
+        var diagnostico = motor("a:free", "llave").interpretar(respuesta(larga, "stop")).orElseThrow();
+
+        assertThat(diagnostico.explicacionSimple()).isEqualTo("El metal roza el disco. Eso lo raya.");
+        assertThat(diagnostico.pasos()).containsExactly("Uno.", "Dos.", "Tres.");
+        assertThat(diagnostico.piezasRelacionadas()).containsExactly("pastillas_de_freno", "valvulas");
     }
 
     @Test
