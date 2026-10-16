@@ -4,6 +4,15 @@ App móvil para dueños de carro o moto en Colombia sin conocimientos mecánicos
 
 Proyecto del curso Makers AI Product (Equipo Salchicha: Isaac Cano y Pablo Rodríguez). El planteamiento original del curso está en [`docs/referencia/README-original.md`](docs/referencia/README-original.md).
 
+## En línea
+
+| Qué | Dónde |
+|---|---|
+| Web de demo (ADR 0015) | https://weveh-car-assistant-mobile.vercel.app |
+| API (ADR 0008) | https://weveh-backend.onrender.com · salud en `/actuator/health` |
+
+El backend usa el plan gratis de Render: si nadie lo usó en 15 minutos, la primera petición tarda ~1 minuto en despertar.
+
 ## Documentación
 
 Se construye con SDD (especificación → plan → tareas). Empieza por **[`docs/README.md`](docs/README.md)**.

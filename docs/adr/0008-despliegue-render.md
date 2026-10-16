@@ -20,6 +20,14 @@ El backend solo corre en el PC de un integrante. Para la demo y para que el otro
 - **Ambientes separados** (dos proyectos de Supabase): más seguro, pero el plan gratis permite dos proyectos activos y uno está en uso por otro proyecto del equipo.
 - **Solo en el PC:** no permite probar a dos personas.
 
+## Cómo quedó (2026-10-15)
+
+- Servicio `weveh-backend` → `https://weveh-backend.onrender.com`. Región Virginia (la más cercana a Supabase São Paulo entre las de Render), plan free.
+- **Docker** (Render no tiene runtime Java): `backend/Dockerfile` en dos etapas (JDK 25 compila, JRE 25 ejecuta), contexto `backend/`. Memoria ajustada a 512 MB; en prueba local usa ~230 MB y arranca en ~15 s.
+- Rama **`dev/pablo`** con despliegue automático en cada push. El puerto llega por `PORT`.
+- Variables en Render: `WEVEH_DB_URL`, `WEVEH_DB_USUARIO`, `WEVEH_DB_CLAVE`, `OPENROUTER_API_KEY`, `WEVEH_IA_MODELO`, `WEVEH_SUPABASE_SERVICE_ROLE` y `WEVEH_CORS_ORIGENES` (dominio de la web de demo, ADR 0015).
+- Health check: `/actuator/health`.
+
 ## Consecuencias
 
 - El plan gratis de Render **se duerme tras 15 minutos sin uso** y tarda unos 50 s en despertar: antes de una demo hay que despertarlo. La app muestra progreso mientras espera.

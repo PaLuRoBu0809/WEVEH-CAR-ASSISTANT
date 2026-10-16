@@ -48,7 +48,8 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [ ] Salud por módulo en Actuator.
 - [ ] Sentry en backend y app, sin datos personales.
 - [ ] JaCoCo y `jest --coverage` con mínimo de 80 % en `domain` en la CI (RNF-17).
-- [ ] Despliegue en Render (ADR 0008) y contrato OpenAPI generado y vigilado en la CI (ADR 0012).
+- [x] Despliegue del backend en Render (ADR 0008) y web de demo en Vercel (ADR 0015).
+- [ ] Contrato OpenAPI generado y vigilado en la CI (ADR 0012).
 
 ## Etapa 6 · Mecánico IA conversacional (ADR 0004, RF-MIA)
 

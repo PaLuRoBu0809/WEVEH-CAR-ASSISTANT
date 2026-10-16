@@ -31,7 +31,7 @@ Competencia conocida: Garage Hub (asistente similar), Drivoo (enfocado en gastos
 7. **Tanqueadas** y **consumo km/gal**, comparado con el rango normal del modelo.
 8. **Mecánico IA conversacional por texto**, con el contexto completo del vehículo, guardas de seguridad, sin precios salvo que se pidan y con límites de uso que no estorban.
 
-**No entra (no lo construyas sin que el equipo lo pida):** rol administrador, directorio de talleres/grúas/servicios, voz, foto de testigos, push del servidor, pagos, RUNT, OBD, versión web para usuarios (el navegador es solo para desarrollo).
+**No entra (no lo construyas sin que el equipo lo pida):** rol administrador, directorio de talleres/grúas/servicios, voz, foto de testigos, push del servidor, pagos, RUNT, OBD, versión web para usuarios (la web existe solo como **demo** en Vercel, ADR 0015).
 
 **Identidad:** cuentas con Supabase Auth (ADR 0005). La app inicia sesión con Supabase y envía `Authorization: Bearer` con el token; el backend lo valida y filtra **todo** por el `usuarioId`. Datos personales mínimos: nombre y correo; nada de cédula ni teléfono; placa opcional.
 
