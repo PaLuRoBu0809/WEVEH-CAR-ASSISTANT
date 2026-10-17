@@ -8,3 +8,7 @@ export function leer(llave: string): Promise<string | null> {
 export function guardar(llave: string, valor: string): Promise<void> {
   return SecureStore.setItemAsync(llave, valor);
 }
+
+export function borrar(llave: string): Promise<void> {
+  return SecureStore.deleteItemAsync(llave);
+}

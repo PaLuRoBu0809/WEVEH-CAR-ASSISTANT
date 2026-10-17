@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface MotorDiagnostico {
 
     /**
-     * @param contextoJson contexto del vehículo y síntoma, sin placa, alias ni dispositivo
+     * @param contextoJson contexto del vehículo y síntoma, sin placa, alias ni datos de la persona
      */
     Optional<Respuesta> diagnosticar(String contextoJson);
 

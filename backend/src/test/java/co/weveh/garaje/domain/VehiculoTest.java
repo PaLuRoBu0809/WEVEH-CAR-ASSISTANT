@@ -3,20 +3,21 @@ package co.weveh.garaje.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import co.weveh.shared.domain.ConfirmacionRequeridaException;
 import co.weveh.shared.domain.DatoInvalidoException;
-import co.weveh.shared.domain.DispositivoId;
 import co.weveh.shared.domain.TipoVehiculo;
+import co.weveh.shared.domain.UsuarioId;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * RF-GAR-02 y RF-GAR-03 con la Prado de referencia (skill dominio-vehiculo §1).
+ * RF-GAR-02, RF-GAR-02b, RF-GAR-03 y RF-GAR-05 con la Prado de referencia (skill dominio-vehiculo §1).
  */
 class VehiculoTest {
 
     static final LocalDate HOY = LocalDate.of(2026, 10, 8);
-    static final DispositivoId DISPOSITIVO = DispositivoId.desdeTexto("3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11");
+    static final UsuarioId USUARIO = UsuarioId.desdeTexto("3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11");
 
     static RegistroInicial registroPrado() {
         return new RegistroInicial(188000, LocalDate.of(2026, 6, 5), LocalDate.of(2026, 6, 30),
@@ -29,7 +30,7 @@ class VehiculoTest {
     }
 
     static Vehiculo registrar(Vehiculo.DatosRegistro datos) {
-        return Vehiculo.registrar(UUID.randomUUID(), DISPOSITIVO, datos, HOY);
+        return Vehiculo.registrar(UUID.randomUUID(), USUARIO, datos, HOY);
     }
 
     @Test
@@ -93,17 +94,42 @@ class VehiculoTest {
     }
 
     @Test
-    void sinSoatSeRechaza() {
-        var registro = new RegistroInicial(null, null, null, LocalDate.of(2026, 6, 28), false, null, null);
+    void conSoloVehiculoYKilometrajeSeRegistraYQuedaLoQueFalta() {
+        var prado = registrar(datos(190000, 2008, null, null));
 
-        assertThatThrownBy(() -> registrar(datos(190000, 2008, null, registro))).hasMessageContaining("SOAT");
+        assertThat(prado.registroInicial()).isEqualTo(RegistroInicial.VACIO);
+        assertThat(prado.datosFaltantes()).containsExactly(DatoFaltante.SOAT, DatoFaltante.RTM, DatoFaltante.ACEITE);
     }
 
     @Test
-    void sinRtmNiAunNoAplicaSeRechaza() {
-        var registro = new RegistroInicial(null, null, LocalDate.of(2026, 6, 30), null, false, null, null);
+    void conTodoAlDiaNoFaltaNada() {
+        assertThat(registrar(datos(190000, 2008, null, registroPrado())).datosFaltantes()).isEmpty();
+    }
 
-        assertThatThrownBy(() -> registrar(datos(190000, 2008, null, registro))).hasMessageContaining("Aún no aplica");
+    @Test
+    void unVehiculoNuevoSinRtmQueAunNoAplicaSoloPideLoDemas() {
+        var registro = new RegistroInicial(null, null, LocalDate.of(2026, 6, 30), null, true, null, null);
+
+        assertThat(registrar(datos(5000, 2025, null, registro)).datosFaltantes()).containsExactly(DatoFaltante.ACEITE);
+    }
+
+    @Test
+    void rtmConFechaYAunNoAplicaALaVezSeRechaza() {
+        var registro = new RegistroInicial(null, null, null, LocalDate.of(2026, 6, 28), true, null, null);
+
+        assertThatThrownBy(() -> registrar(datos(190000, 2008, null, registro))).hasMessageContaining("aún no aplica");
+    }
+
+    @Test
+    void completarElRegistroDespuesUsaLasMismasReglas() {
+        var prado = registrar(datos(190000, 2008, null, null));
+
+        var completado = prado.completarRegistro(registroPrado(), HOY);
+
+        assertThat(completado.datosFaltantes()).isEmpty();
+        assertThat(completado.km()).isEqualTo(prado.km());
+        var aceiteImposible = new RegistroInicial(200000, LocalDate.of(2026, 6, 5), null, null, false, null, null);
+        assertThatThrownBy(() -> prado.completarRegistro(aceiteImposible, HOY)).hasMessageContaining("cambio de aceite");
     }
 
     @Test
@@ -111,6 +137,46 @@ class VehiculoTest {
         var registro = new RegistroInicial(null, null, LocalDate.of(2026, 10, 9), null, true, null, null);
 
         assertThatThrownBy(() -> registrar(datos(190000, 2008, null, registro))).hasMessageContaining("futura");
+    }
+
+    @Test
+    void subirElKilometrajeLoAnotaConSuFecha() {
+        var prado = registrar(datos(190000, 2008, null, null));
+        var enUnaSemana = HOY.plusDays(7);
+
+        var actualizado = prado.actualizarKilometraje(191200, false, enUnaSemana);
+
+        assertThat(actualizado.km().valor()).isEqualTo(191200);
+        assertThat(actualizado.kmActualizadoEn()).isEqualTo(enUnaSemana);
+    }
+
+    @Test
+    void elKilometrajeNuncaBaja() {
+        var prado = registrar(datos(190000, 2008, null, null));
+
+        assertThatThrownBy(() -> prado.actualizarKilometraje(185000, true, HOY))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessage("El kilometraje no puede bajar: hoy tiene 190.000 km");
+    }
+
+    @Test
+    void unSaltoRaroPideConfirmacionYConfirmadoPasa() {
+        var prado = registrar(datos(190000, 2008, null, null));
+
+        assertThatThrownBy(() -> prado.actualizarKilometraje(192000, false, HOY))
+                .isInstanceOf(ConfirmacionRequeridaException.class)
+                .hasMessage("Subió 2.000 km desde la última vez. ¿Es correcto?");
+        assertThat(prado.actualizarKilometraje(192000, true, HOY).km().valor()).isEqualTo(192000);
+    }
+
+    @Test
+    void loNormalDependeDeCuantoAndaYDeLosDiasQuePasaron() {
+        var prado = registrar(datos(190000, 2008, null, null));
+        var enUnMes = HOY.plusDays(30);
+
+        assertThat(prado.saltoEsperadoMaximo(HOY)).isEqualTo(Vehiculo.SALTO_KM_SIN_CONFIRMAR);
+        assertThat(prado.saltoEsperadoMaximo(enUnMes)).isEqualTo(3000);
+        assertThat(prado.actualizarKilometraje(192500, false, enUnMes).km().valor()).isEqualTo(192500);
     }
 
     @Test

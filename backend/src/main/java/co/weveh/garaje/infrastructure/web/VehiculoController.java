@@ -7,8 +7,8 @@ import co.weveh.garaje.domain.Traccion;
 import co.weveh.garaje.domain.Transmision;
 import co.weveh.garaje.domain.UsoVehiculo;
 import co.weveh.garaje.domain.Vehiculo;
-import co.weveh.shared.domain.DispositivoId;
 import co.weveh.shared.domain.TipoVehiculo;
+import co.weveh.shared.domain.UsuarioId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -36,32 +36,45 @@ class VehiculoController {
     }
 
     @GetMapping
-    List<VehiculoRespuesta> listar(DispositivoId dispositivo) {
-        return garaje.listar(dispositivo).stream().map(VehiculoRespuesta::desde).toList();
+    List<VehiculoRespuesta> listar(UsuarioId usuario) {
+        return garaje.listar(usuario).stream().map(VehiculoRespuesta::desde).toList();
     }
 
     @GetMapping("/{id}")
-    VehiculoRespuesta obtener(DispositivoId dispositivo, @PathVariable UUID id) {
-        return VehiculoRespuesta.desde(garaje.obtener(dispositivo, id));
+    VehiculoRespuesta obtener(UsuarioId usuario, @PathVariable UUID id) {
+        return VehiculoRespuesta.desde(garaje.obtener(usuario, id));
     }
 
     @PostMapping
-    ResponseEntity<VehiculoRespuesta> registrar(DispositivoId dispositivo, @Valid @RequestBody RegistroSolicitud solicitud) {
-        var vehiculo = garaje.registrar(dispositivo, solicitud.aDatos());
+    ResponseEntity<VehiculoRespuesta> registrar(UsuarioId usuario, @Valid @RequestBody RegistroSolicitud solicitud) {
+        var vehiculo = garaje.registrar(usuario, solicitud.aDatos());
         return ResponseEntity.created(URI.create("/api/v1/vehiculos/" + vehiculo.id()))
                 .body(VehiculoRespuesta.desde(vehiculo));
     }
 
     @PutMapping("/{id}")
-    VehiculoRespuesta editar(DispositivoId dispositivo, @PathVariable UUID id, @Valid @RequestBody EdicionSolicitud solicitud) {
+    VehiculoRespuesta editar(UsuarioId usuario, @PathVariable UUID id, @Valid @RequestBody EdicionSolicitud solicitud) {
         var edicion = new Garaje.Edicion(solicitud.alias(), solicitud.placa(), solicitud.uso(),
                 solicitud.kmPromedioMes(), solicitud.fechaMatricula(), solicitud.versionFila());
-        return VehiculoRespuesta.desde(garaje.editar(dispositivo, id, edicion));
+        return VehiculoRespuesta.desde(garaje.editar(usuario, id, edicion));
+    }
+
+    @PutMapping("/{id}/registro")
+    VehiculoRespuesta completarRegistro(UsuarioId usuario, @PathVariable UUID id,
+                                        @Valid @RequestBody CompletarRegistroSolicitud solicitud) {
+        return VehiculoRespuesta.desde(garaje.completarRegistro(usuario, id, solicitud.aRegistro(), solicitud.versionFila()));
+    }
+
+    @PutMapping("/{id}/kilometraje")
+    VehiculoRespuesta actualizarKilometraje(UsuarioId usuario, @PathVariable UUID id,
+                                            @Valid @RequestBody KilometrajeSolicitud solicitud) {
+        return VehiculoRespuesta.desde(garaje.actualizarKilometraje(usuario, id, solicitud.kilometraje(),
+                Boolean.TRUE.equals(solicitud.confirmado())));
     }
 
     @DeleteMapping("/{id}")
-    ResponseEntity<Void> eliminar(DispositivoId dispositivo, @PathVariable UUID id) {
-        garaje.eliminar(dispositivo, id);
+    ResponseEntity<Void> eliminar(UsuarioId usuario, @PathVariable UUID id) {
+        garaje.eliminar(usuario, id);
         return ResponseEntity.noContent().build();
     }
 
@@ -83,5 +96,20 @@ class VehiculoController {
 
     record EdicionSolicitud(String alias, String placa, @NotNull UsoVehiculo uso, @NotNull Integer kmPromedioMes,
                             LocalDate fechaMatricula, @NotNull Integer versionFila) {
+    }
+
+    /** @param confirmado true cuando la persona ya confirmó un salto raro (respuesta 409 confirmacion-requerida) */
+    record KilometrajeSolicitud(@NotNull Integer kilometraje, Boolean confirmado) {
+    }
+
+    /** RF-GAR-02b: el aceite y los papeles completos como quedan (lo que siga vacío queda para después). */
+    record CompletarRegistroSolicitud(Integer aceiteKm, LocalDate aceiteFecha, LocalDate soatFecha, LocalDate rtmFecha,
+                                      Boolean rtmAunNoAplica, LocalDate seguroInicio, String seguroEntidad,
+                                      @NotNull Integer versionFila) {
+
+        RegistroInicial aRegistro() {
+            return new RegistroInicial(aceiteKm, aceiteFecha, soatFecha, rtmFecha, Boolean.TRUE.equals(rtmAunNoAplica),
+                    seguroInicio, seguroEntidad);
+        }
     }
 }

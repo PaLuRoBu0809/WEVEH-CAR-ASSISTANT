@@ -1,7 +1,18 @@
-export { CLAVE_VEHICULOS, useEliminarVehiculo, useRegistrarVehiculo, useVehiculos } from './application/useVehiculos';
 export {
+  CLAVE_VEHICULOS,
+  useCompletarRegistro,
+  useEliminarVehiculo,
+  useRegistrarVehiculo,
+  useVehiculo,
+  useVehiculos,
+} from './application/useVehiculos';
+export {
+  listaFaltantes,
   nombreParaMostrar,
+  tituloFaltantes,
   type Combustible,
+  type DatoFaltante,
+  type RegistroCompletado,
   type SolicitudRegistro,
   type TipoVehiculo,
   type Traccion,
@@ -10,3 +21,4 @@ export {
   type VehiculoResumen,
 } from './domain/vehiculo';
 export { PantallaGaraje } from './presentation/PantallaGaraje';
+export { PantallaVehiculo } from './presentation/PantallaVehiculo';

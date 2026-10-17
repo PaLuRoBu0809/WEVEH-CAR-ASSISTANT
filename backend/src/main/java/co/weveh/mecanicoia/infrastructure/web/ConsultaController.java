@@ -2,7 +2,7 @@ package co.weveh.mecanicoia.infrastructure.web;
 
 import co.weveh.mecanicoia.application.ConsultarMecanico;
 import co.weveh.mecanicoia.domain.Diagnostico;
-import co.weveh.shared.domain.DispositivoId;
+import co.weveh.shared.domain.UsuarioId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,26 +20,29 @@ class ConsultaController {
     }
 
     @PostMapping("/api/v1/vehiculos/{vehiculoId}/consultas")
-    DiagnosticoRespuesta consultar(DispositivoId dispositivo, @PathVariable UUID vehiculoId, @RequestBody ConsultaSolicitud solicitud) {
-        return DiagnosticoRespuesta.desde(consultar.consultar(dispositivo, vehiculoId, solicitud.sintoma()));
+    DiagnosticoRespuesta consultar(UsuarioId usuario, @PathVariable UUID vehiculoId, @RequestBody ConsultaSolicitud solicitud) {
+        return DiagnosticoRespuesta.desde(consultar.consultar(usuario, vehiculoId, solicitud.sintoma()));
     }
 
     record ConsultaSolicitud(String sintoma) {
     }
 
     /**
-     * @param nivel     código para la app (LEVE, MODERADO, CRITICO)
-     * @param gravedad  texto del contrato ("Crítico", "Moderado", "Leve")
+     * RF-MIA-01: qué puede ser, por qué importa y qué hacer en máximo 3 pasos; sin precio (se pide aparte).
+     *
+     * @param nivel         código para la app (LEVE, MODERADO, CRITICO)
+     * @param gravedad      texto del contrato ("Crítico", "Moderado", "Leve")
+     * @param porQueImporta máximo 2 oraciones, sin jerga
      */
-    record DiagnosticoRespuesta(String posibleFalla, String nivel, String gravedad, String explicacionSimple,
-                                String accionInmediata, String costoEstimado, boolean requiereRevisionHumana,
-                                boolean requiereMecanico, List<String> piezasRelacionadas, List<String> datosFaltantes,
-                                boolean respuestaSegura, String aviso) {
+    record DiagnosticoRespuesta(String posibleFalla, String nivel, String gravedad, String porQueImporta,
+                                List<String> pasos, boolean requiereRevisionHumana, boolean requiereMecanico,
+                                List<String> piezasRelacionadas, List<String> datosFaltantes, boolean respuestaSegura,
+                                String aviso) {
 
         static DiagnosticoRespuesta desde(Diagnostico d) {
             return new DiagnosticoRespuesta(d.posibleFalla(), d.nivelGravedad().name(), d.nivelGravedad().texto(),
-                    d.explicacionSimple(), d.accionInmediata(), d.costoEstimado(), d.requiereRevisionHumana(),
-                    d.requiereMecanico(), d.piezasRelacionadas(), d.datosFaltantes(), d.seguro(), Diagnostico.AVISO);
+                    d.explicacionSimple(), d.pasos(), d.requiereRevisionHumana(), d.requiereMecanico(),
+                    d.piezasRelacionadas(), d.datosFaltantes(), d.seguro(), Diagnostico.AVISO);
         }
     }
 }

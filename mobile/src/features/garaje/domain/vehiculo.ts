@@ -5,6 +5,9 @@ export type Combustible = 'GASOLINA' | 'DIESEL' | 'HIBRIDO' | 'ELECTRICO';
 export type Transmision = 'AUTOMATICA' | 'MECANICA';
 export type Traccion = '4X2' | '4X4' | 'AWD';
 
+/** Lo que la persona dejó para después en el registro (RF-GAR-02b). */
+export type DatoFaltante = 'SOAT' | 'RTM' | 'ACEITE';
+
 export type VehiculoResumen = Readonly<{
   id: string;
   tipo: TipoVehiculo;
@@ -20,10 +23,61 @@ export type VehiculoResumen = Readonly<{
   placa: string | null;
   fechaMatricula: string | null;
   kilometraje: number;
+  /** Día de la última lectura del kilometraje (ISO). */
+  kmActualizadoEn: string;
   uso: UsoVehiculo;
   kmPromedioMes: number;
+  aceiteKm: number | null;
+  aceiteFecha: string | null;
+  soatFecha: string | null;
+  rtmFecha: string | null;
+  rtmAunNoAplica: boolean;
+  seguroInicio: string | null;
+  seguroEntidad: string | null;
+  datosFaltantes: readonly DatoFaltante[];
   versionFila: number;
 }>;
+
+/** RF-GAR-03: lo que se puede corregir. Se envía la versión que tenía la app. */
+export type EdicionVehiculo = Readonly<{
+  alias: string | null;
+  placa: string | null;
+  uso: UsoVehiculo;
+  kmPromedioMes: number;
+  fechaMatricula: string | null;
+  versionFila: number;
+}>;
+
+/** RF-GAR-02b: el aceite y los papeles como quedan; lo vacío sigue pendiente. */
+export type RegistroCompletado = Readonly<{
+  aceiteKm: number | null;
+  aceiteFecha: string | null;
+  soatFecha: string | null;
+  rtmFecha: string | null;
+  rtmAunNoAplica: boolean;
+  seguroInicio: string | null;
+  seguroEntidad: string | null;
+  versionFila: number;
+}>;
+
+const NOMBRE_FALTANTE: Readonly<Record<DatoFaltante, string>> = {
+  SOAT: 'el SOAT',
+  RTM: 'la revisión técnico-mecánica',
+  ACEITE: 'el último cambio de aceite',
+};
+
+/** "el SOAT, la revisión técnico-mecánica y el último cambio de aceite". */
+export function listaFaltantes(faltan: readonly DatoFaltante[]): string {
+  const nombres = faltan.map((dato) => NOMBRE_FALTANTE[dato]);
+  if (nombres.length <= 1) return nombres.join('');
+  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
+}
+
+/** Título del aviso en Inicio: los papeles primero, porque vencen y tienen multa. */
+export function tituloFaltantes(nombre: string, faltan: readonly DatoFaltante[]): string {
+  const faltanPapeles = faltan.includes('SOAT') || faltan.includes('RTM');
+  return faltanPapeles ? `Te faltan los papeles de ${nombre}` : `Te falta un dato de ${nombre}`;
+}
 
 /** Lo que envía el registro básico (RF-GAR-02). Fechas en ISO AAAA-MM-DD. */
 export type SolicitudRegistro = Readonly<{
@@ -41,7 +95,7 @@ export type SolicitudRegistro = Readonly<{
   kmPromedioMes: number;
   aceiteKm: number | null;
   aceiteFecha: string | null;
-  soatFecha: string;
+  soatFecha: string | null;
   rtmFecha: string | null;
   rtmAunNoAplica: boolean;
   fechaMatricula: string | null;

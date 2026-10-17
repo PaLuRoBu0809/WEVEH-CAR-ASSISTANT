@@ -1,10 +1,12 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useCerrarSesion, useCuenta } from '@/features/cuentas';
 import {
+  Boton,
   espacio,
   fuentes,
-  IconoTelefono,
+  IconoPerfil,
   radio,
   TACTIL_MINIMO,
   Tarjeta,
@@ -19,9 +21,11 @@ const OPCIONES: readonly { modo: ModoTema; texto: string }[] = [
   { modo: 'oscuro', texto: 'Oscuro' },
 ];
 
-/** Mockup Garaje → Perfil, sin cuenta: explica la identidad por dispositivo (ADR 0002) y permite cambiar el tema. */
+/** Mockup Garaje → Perfil: la cuenta (ADR 0005), cerrar sesión (RF-CTA-06) y el tema. */
 export function PantallaPerfil() {
   const tema = useTema();
+  const cuenta = useCuenta();
+  const cerrarSesion = useCerrarSesion();
   const margenes = useSafeAreaInsets();
   const modo = useEstadoTema((estado) => estado.modo);
   const cambiarModo = useEstadoTema((estado) => estado.cambiarModo);
@@ -32,7 +36,7 @@ export function PantallaPerfil() {
       contentContainerStyle={[estilos.contenido, { paddingTop: margenes.top + espacio.s }]}>
       <View>
         <Texto variante="nota" tono="texto3">
-          Tu celular
+          Tu cuenta
         </Texto>
         <Texto variante="titulo" accessibilityRole="header">
           Perfil
@@ -42,16 +46,22 @@ export function PantallaPerfil() {
       <Tarjeta>
         <View style={estilos.fila}>
           <View style={[estilos.icono, { backgroundColor: tema.primarioTinte }]}>
-            <IconoTelefono color={tema.primarioTinta} tamano={22} />
+            <IconoPerfil color={tema.primarioTinta} tamano={22} />
           </View>
           <View style={estilos.crece}>
-            <Texto variante="fuerte">Sin cuenta ni contraseña</Texto>
+            <Texto variante="fuerte">{cuenta.data?.nombre ?? 'Tu cuenta'}</Texto>
             <Texto variante="nota" tono="texto2">
-              Tus vehículos están guardados para este celular. Si desinstalas la app o cambias de celular, los pierdes.
+              {cuenta.data?.correo ?? (cuenta.isError ? 'No pudimos cargar tus datos' : 'Cargando…')}
             </Texto>
           </View>
         </View>
       </Tarjeta>
+      <Boton
+        variante="secundario"
+        texto={cerrarSesion.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
+        deshabilitado={cerrarSesion.isPending}
+        onPress={() => cerrarSesion.mutate()}
+      />
 
       <Texto variante="seccion" tono="texto3" style={estilos.seccion}>
         Apariencia

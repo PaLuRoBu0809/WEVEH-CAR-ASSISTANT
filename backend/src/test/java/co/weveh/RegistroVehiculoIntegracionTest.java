@@ -1,12 +1,15 @@
 package co.weveh;
 
+import static co.weveh.SesionDePrueba.como;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +42,8 @@ class RegistroVehiculoIntegracionTest {
 
     @BeforeEach
     void catalogoDePrueba() {
-        jdbc.sql("delete from vehiculo").update();
+        jdbc.sql("delete from usuario").update();
+        jdbc.sql("insert into usuario (id, nombre) values (?::uuid, 'Laura'), (?::uuid, 'Otra persona')").params(MIO, OTRO).update();
         jdbc.sql("delete from catalogo.linea").update();
         jdbc.sql("delete from catalogo.marca").update();
         jdbc.sql("insert into catalogo.marca (id, nombre, nombre_normalizado, tipo) values (145, 'TOYOTA', 'toyota', 'AMBOS'), (200, 'CITROËN', 'citroen', 'CARRO')").update();
@@ -53,7 +57,7 @@ class RegistroVehiculoIntegracionTest {
 
     @Test
     void buscaMarcasSinTildesNiMayusculas() throws Exception {
-        mockMvc.perform(get("/api/v1/catalogo/marcas").param("tipo", "CARRO").param("q", "CITROEN").header("X-Weveh-Dispositivo", MIO))
+        mockMvc.perform(get("/api/v1/catalogo/marcas").param("tipo", "CARRO").param("q", "CITROEN").with(como(MIO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].nombre").value("CITROËN"));
@@ -61,20 +65,20 @@ class RegistroVehiculoIntegracionTest {
 
     @Test
     void buscaLineasPorPalabrasSinGenericasOrdenadasPorCilindrada() throws Exception {
-        mockMvc.perform(get("/api/v1/catalogo/marcas/145/lineas").param("q", "prado vx").header("X-Weveh-Dispositivo", MIO))
+        mockMvc.perform(get("/api/v1/catalogo/marcas/145/lineas").param("q", "prado vx").with(como(MIO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].cilindradaCc").value(3400))
                 .andExpect(jsonPath("$[0].transmision").value("AUTOMATICA"));
 
-        mockMvc.perform(get("/api/v1/catalogo/marcas/145/lineas").header("X-Weveh-Dispositivo", MIO))
+        mockMvc.perform(get("/api/v1/catalogo/marcas/145/lineas").with(como(MIO)))
                 .andExpect(jsonPath("$[?(@.nombre == 'SIN LINEA')]").isEmpty());
     }
 
     @Test
-    void registraLaPradoYSoloLaVeSuDispositivo() throws Exception {
+    void registraLaPradoYSoloLaVeSuUsuario() throws Exception {
         var respuesta = mockMvc.perform(post("/api/v1/vehiculos")
-                        .header("X-Weveh-Dispositivo", MIO)
+                        .with(como(MIO))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"tipo":"CARRO","catalogoLineaId":7811,"marca":"TOYOTA","linea":"PRADO VX 5P AT",
@@ -88,27 +92,27 @@ class RegistroVehiculoIntegracionTest {
         var ubicacion = respuesta.getHeader("Location");
         assertThat(ubicacion).startsWith("/api/v1/vehiculos/");
 
-        mockMvc.perform(get("/api/v1/vehiculos").header("X-Weveh-Dispositivo", MIO))
+        mockMvc.perform(get("/api/v1/vehiculos").with(como(MIO)))
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].alias").value("La Prado"))
                 .andExpect(jsonPath("$[0].kilometraje").value(190000));
-        mockMvc.perform(get("/api/v1/vehiculos").header("X-Weveh-Dispositivo", OTRO))
+        mockMvc.perform(get("/api/v1/vehiculos").with(como(OTRO)))
                 .andExpect(jsonPath("$.length()").value(0));
-        mockMvc.perform(get(ubicacion).header("X-Weveh-Dispositivo", OTRO))
+        mockMvc.perform(get(ubicacion).with(como(OTRO)))
                 .andExpect(status().isNotFound());
-        mockMvc.perform(delete(ubicacion).header("X-Weveh-Dispositivo", OTRO))
+        mockMvc.perform(delete(ubicacion).with(como(OTRO)))
                 .andExpect(status().isNotFound());
 
-        mockMvc.perform(delete(ubicacion).header("X-Weveh-Dispositivo", MIO))
+        mockMvc.perform(delete(ubicacion).with(como(MIO)))
                 .andExpect(status().isNoContent());
-        mockMvc.perform(get("/api/v1/vehiculos").header("X-Weveh-Dispositivo", MIO))
+        mockMvc.perform(get("/api/v1/vehiculos").with(como(MIO)))
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
     void vehiculoQueNoEstaEnElCatalogoSeRegistraConTextoLibre() throws Exception {
         mockMvc.perform(post("/api/v1/vehiculos")
-                        .header("X-Weveh-Dispositivo", MIO)
+                        .with(como(MIO))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"tipo":"MOTO","marca":"Marca rara","linea":"Modelo X","anioModelo":2020,
@@ -120,12 +124,110 @@ class RegistroVehiculoIntegracionTest {
     @Test
     void kilometrajeNegativoMuestraElMensajeDelRequisito() throws Exception {
         mockMvc.perform(post("/api/v1/vehiculos")
-                        .header("X-Weveh-Dispositivo", MIO)
+                        .with(como(MIO))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"tipo":"CARRO","marca":"TOYOTA","linea":"COROLLA XEI","anioModelo":2015,
                                  "kilometraje":-10,"soatFecha":"2026-01-10","rtmAunNoAplica":true}"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value("El kilometraje debe ser mayor o igual a cero"));
+    }
+
+    @Test
+    void editarSubeLaVersionYUnaEdicionViejaRespondeConflicto() throws Exception {
+        var ubicacion = mockMvc.perform(post("/api/v1/vehiculos")
+                        .with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"tipo":"CARRO","catalogoLineaId":7811,"marca":"TOYOTA","linea":"PRADO VX 5P AT",
+                                 "anioModelo":2008,"kilometraje":190000,"soatFecha":"2026-06-30","rtmFecha":"2026-06-28"}"""))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.versionFila").value(0))
+                .andReturn().getResponse().getHeader("Location");
+        var edicion = """
+                {"alias":"%s","uso":"MIXTO","kmPromedioMes":1500,"versionFila":0}""";
+
+        mockMvc.perform(put(ubicacion).with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON).content(edicion.formatted("La Prado")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.alias").value("La Prado"))
+                .andExpect(jsonPath("$.versionFila").value(1));
+
+        mockMvc.perform(put(ubicacion).with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON).content(edicion.formatted("Otra")))
+                .andExpect(status().isConflict());
+        mockMvc.perform(get(ubicacion).with(como(MIO)))
+                .andExpect(jsonPath("$.alias").value("La Prado"));
+    }
+
+    @Test
+    void sinPerfilDeCuentaNoSePuedeRegistrarVehiculo() throws Exception {
+        mockMvc.perform(post("/api/v1/vehiculos")
+                        .with(como(UUID.randomUUID().toString()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"tipo":"MOTO","marca":"Marca rara","linea":"Modelo X","anioModelo":2020,
+                                 "kilometraje":12000,"soatFecha":"2026-01-10","rtmAunNoAplica":true}"""))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Completa tu cuenta antes de registrar un vehículo"));
+    }
+
+    @Test
+    void registroMinimoYCompletarLoQueFaltaDespues() throws Exception {
+        var ubicacion = mockMvc.perform(post("/api/v1/vehiculos").with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"tipo":"CARRO","catalogoLineaId":7811,"marca":"TOYOTA","linea":"PRADO VX 5P AT",
+                                 "anioModelo":2008,"kilometraje":190000}"""))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.soatFecha").isEmpty())
+                .andExpect(jsonPath("$.datosFaltantes.length()").value(3))
+                .andExpect(jsonPath("$.datosFaltantes[0]").value("SOAT"))
+                .andReturn().getResponse().getHeader("Location");
+
+        mockMvc.perform(put(ubicacion + "/registro").with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"soatFecha":"2026-06-30","rtmFecha":"2026-06-28","versionFila":0}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.soatFecha").value("2026-06-30"))
+                .andExpect(jsonPath("$.datosFaltantes.length()").value(1))
+                .andExpect(jsonPath("$.datosFaltantes[0]").value("ACEITE"))
+                .andExpect(jsonPath("$.versionFila").value(1));
+    }
+
+    @Test
+    void elKilometrajeSubeNuncaBajaYUnSaltoRaroSeConfirma() throws Exception {
+        var ubicacion = mockMvc.perform(post("/api/v1/vehiculos").with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"tipo":"CARRO","marca":"TOYOTA","linea":"PRADO VX 5P AT","anioModelo":2008,"kilometraje":190000}"""))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+        var kilometraje = ubicacion + "/kilometraje";
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":191200}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kilometraje").value(191200));
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":185000}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El kilometraje no puede bajar: hoy tiene 191.200 km"));
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":199000}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://weveh.co/problemas/confirmacion-requerida"));
+
+        mockMvc.perform(put(kilometraje).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":199000,\"confirmado\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kilometraje").value(199000));
+
+        mockMvc.perform(put(kilometraje).with(como(OTRO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kilometraje\":200000}"))
+                .andExpect(status().isNotFound());
     }
 }

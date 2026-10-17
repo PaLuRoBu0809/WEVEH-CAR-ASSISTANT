@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Campo, Casilla, espacio, Opciones, Texto } from '@/shared/design-system';
 
-import { formatearMientrasEscribe } from '../domain/fechas';
+import { formatearMientrasEscribe } from '@/shared/fechas';
 import type { Errores, Formulario } from '../domain/formulario';
 
 type Props = {
@@ -94,8 +94,12 @@ export function PasoAceite({ formulario: f, errores, cambiar }: Props) {
   );
 }
 
-/** Paso 4: SOAT, revisión técnico-mecánica y seguro todo riesgo (opcional). */
-export function PasoPapeles({ formulario: f, errores, cambiar }: Props) {
+/**
+ * Paso 4: SOAT, revisión técnico-mecánica y seguro todo riesgo (opcional).
+ *
+ * @param conMatricula false al completar datos: la fecha de matrícula se edita en el detalle del vehículo
+ */
+export function PasoPapeles({ formulario: f, errores, cambiar, conMatricula = true }: Props & { conMatricula?: boolean }) {
   return (
     <View style={estilos.paso}>
       <CampoFecha
@@ -111,7 +115,7 @@ export function PasoPapeles({ formulario: f, errores, cambiar }: Props) {
         onCambiar={(rtmAunNoAplica) => cambiar({ rtmAunNoAplica })}
       />
       {f.rtmAunNoAplica ? (
-        <CampoFecha
+        conMatricula && <CampoFecha
           etiqueta="Fecha de matrícula (opcional)"
           valor={f.fechaMatricula}
           error={errores.fechaMatricula}

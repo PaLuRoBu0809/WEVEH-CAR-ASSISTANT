@@ -7,7 +7,7 @@ import type {
   UsoVehiculo,
 } from '@/features/garaje';
 
-import { aFechaIso, hoyIso } from './fechas';
+import { aFechaIso, hoyIso } from '@/shared/fechas';
 
 /**
  * Registro básico por pasos (skill dominio-vehiculo §1). Cada paso completo enciende una W.
@@ -29,9 +29,13 @@ export type Formulario = {
   uso: UsoVehiculo;
   kmMes: string;
   aceiteNoSe: boolean;
+  /** RF-GAR-02: tocó "Lo agrego después" en el paso del aceite. */
+  aceiteDespues: boolean;
   aceiteKm: string;
   aceiteFecha: string;
   soatFecha: string;
+  /** RF-GAR-02: tocó "Lo agrego después" en el paso de los papeles. */
+  papelesDespues: boolean;
   rtmAunNoAplica: boolean;
   rtmFecha: string;
   fechaMatricula: string;
@@ -57,9 +61,11 @@ export const FORMULARIO_INICIAL: Formulario = {
   uso: 'MIXTO',
   kmMes: '1000',
   aceiteNoSe: false,
+  aceiteDespues: false,
   aceiteKm: '',
   aceiteFecha: '',
   soatFecha: '',
+  papelesDespues: false,
   rtmAunNoAplica: false,
   rtmFecha: '',
   fechaMatricula: '',
@@ -69,11 +75,15 @@ export const FORMULARIO_INICIAL: Formulario = {
   placa: '',
 };
 
+/** Pasos que se pueden dejar para después (RF-GAR-02: obligatorios solo el vehículo y el kilometraje). */
+export const PASO_ACEITE = 2;
+export const PASO_PAPELES = 3;
+
 export const PASOS = [
   { titulo: 'Tu vehículo', bajada: 'Búscalo como aparece en la tarjeta de propiedad.' },
   { titulo: 'Cómo está hoy', bajada: 'Mira el tablero: con eso calculamos qué le toca.' },
-  { titulo: 'Lo último que le hiciste', bajada: 'El último cambio de aceite. Si no lo sabes, no pasa nada.' },
-  { titulo: 'Papeles', bajada: 'Pon cuándo los sacaste; nosotros calculamos cuándo vencen.' },
+  { titulo: 'Lo último que le hiciste', bajada: 'El último cambio de aceite. Si no lo tienes a mano, agrégalo después.' },
+  { titulo: 'Papeles', bajada: 'Pon cuándo los sacaste; nosotros calculamos cuándo vencen. También puedes hacerlo después.' },
   { titulo: 'Cómo lo llamas', bajada: 'Opcional: un nombre para reconocerlo y la placa.' },
 ] as const;
 
@@ -110,7 +120,7 @@ export function erroresDelPaso(paso: number, f: Formulario, ahora: Date = new Da
     const kmMes = aEntero(f.kmMes);
     if (kmMes === null || kmMes > 20_000) errores.kmMes = 'Escribe un número entre 0 y 20.000';
   }
-  if (paso === 2 && !f.aceiteNoSe) {
+  if (paso === PASO_ACEITE && !f.aceiteNoSe && !f.aceiteDespues) {
     const aceiteKm = aEntero(f.aceiteKm);
     const km = aEntero(f.km) ?? 0;
     if (aceiteKm === null) errores.aceiteKm = 'Escribe los kilómetros o marca "No sé"';
@@ -118,7 +128,7 @@ export function erroresDelPaso(paso: number, f: Formulario, ahora: Date = new Da
     const fecha = fechaPasada(f.aceiteFecha, hoy, 'del cambio');
     if (fecha) errores.aceiteFecha = fecha;
   }
-  if (paso === 3) {
+  if (paso === PASO_PAPELES && !f.papelesDespues) {
     const soat = fechaPasada(f.soatFecha, hoy, 'del SOAT');
     if (soat) errores.soatFecha = soat;
     if (!f.rtmAunNoAplica) {
@@ -148,7 +158,8 @@ export function pasoCompleto(paso: number, f: Formulario, ahora?: Date): boolean
 const opcional = (texto: string): string | null => (texto.trim() ? texto.trim() : null);
 
 export function aSolicitud(f: Formulario): SolicitudRegistro {
-  const aceiteConocido = !f.aceiteNoSe;
+  const aceiteConocido = !f.aceiteNoSe && !f.aceiteDespues;
+  const papeles = !f.papelesDespues;
   return {
     tipo: f.tipo,
     catalogoLineaId: f.manual ? null : f.catalogoLineaId,
@@ -164,12 +175,12 @@ export function aSolicitud(f: Formulario): SolicitudRegistro {
     kmPromedioMes: aEntero(f.kmMes) ?? 1000,
     aceiteKm: aceiteConocido ? aEntero(f.aceiteKm) : null,
     aceiteFecha: aceiteConocido ? aFechaIso(f.aceiteFecha) : null,
-    soatFecha: aFechaIso(f.soatFecha) ?? '',
-    rtmFecha: f.rtmAunNoAplica ? null : aFechaIso(f.rtmFecha),
-    rtmAunNoAplica: f.rtmAunNoAplica,
-    fechaMatricula: f.fechaMatricula.trim() ? aFechaIso(f.fechaMatricula) : null,
-    seguroInicio: f.seguroInicio.trim() ? aFechaIso(f.seguroInicio) : null,
-    seguroEntidad: opcional(f.seguroEntidad),
+    soatFecha: papeles ? aFechaIso(f.soatFecha) : null,
+    rtmFecha: papeles && !f.rtmAunNoAplica ? aFechaIso(f.rtmFecha) : null,
+    rtmAunNoAplica: papeles && f.rtmAunNoAplica,
+    fechaMatricula: papeles && f.fechaMatricula.trim() ? aFechaIso(f.fechaMatricula) : null,
+    seguroInicio: papeles && f.seguroInicio.trim() ? aFechaIso(f.seguroInicio) : null,
+    seguroEntidad: papeles ? opcional(f.seguroEntidad) : null,
     alias: opcional(f.alias),
     placa: opcional(f.placa),
   };

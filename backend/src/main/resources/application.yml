@@ -1,4 +1,8 @@
 # Configuración solo por variables de entorno. Ver backend/.env.example.
+server:
+  # Render asigna el puerto con PORT (ADR 0008); en local, 8080
+  port: ${PORT:8080}
+
 spring:
   application:
     name: weveh
@@ -9,17 +13,28 @@ spring:
     url: ${WEVEH_DB_URL:}
     username: ${WEVEH_DB_USUARIO:}
     password: ${WEVEH_DB_CLAVE:}
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
   flyway:
     locations: classpath:db/migration
   mvc:
     problemdetails:
       enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        # Tokens de Supabase Auth (ADR 0005): firmados con ES256; las llaves públicas se leen del JWKS del proyecto
+        jwt:
+          issuer-uri: ${weveh.supabase.url}/auth/v1
+          jwk-set-uri: ${weveh.supabase.url}/auth/v1/.well-known/jwks.json
+          # Sin esto Spring solo acepta RS256 y rechaza todos los tokens de Supabase (ES256) con 401
+          jws-algorithms: ES256
+          audiences: authenticated
 
 weveh:
+  supabase:
+    # URL pública del proyecto weveh (no es secreta)
+    url: ${WEVEH_SUPABASE_URL:https://yrqjxgpskkhjhkkthimm.supabase.co}
+    # Llave service_role: solo para borrar la cuenta en Supabase Auth (RF-DAT-06). Secreta: solo en backend/.env
+    service-role: ${WEVEH_SUPABASE_SERVICE_ROLE:}
   ia:
     # Modelos de OpenRouter en orden de preferencia, separados por coma (docs/adr/0004).
     # Por defecto, modelos gratuitos con salida estructurada: si uno está saturado se prueba el siguiente.

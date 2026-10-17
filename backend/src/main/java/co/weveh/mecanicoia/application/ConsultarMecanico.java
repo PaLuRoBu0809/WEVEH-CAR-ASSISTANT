@@ -1,7 +1,7 @@
 package co.weveh.mecanicoia.application;
 
 import co.weveh.mecanicoia.domain.Diagnostico;
-import co.weveh.shared.domain.DispositivoId;
+import co.weveh.shared.domain.UsuarioId;
 import java.util.UUID;
 
 /**
@@ -12,5 +12,5 @@ public interface ConsultarMecanico {
     int LARGO_MAXIMO_SINTOMA = 1_000;
     int CONSULTAS_POR_DIA = 30;
 
-    Diagnostico consultar(DispositivoId dispositivo, UUID vehiculoId, String sintoma);
+    Diagnostico consultar(UsuarioId usuario, UUID vehiculoId, String sintoma);
 }

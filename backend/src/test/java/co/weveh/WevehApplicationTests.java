@@ -1,8 +1,10 @@
 package co.weveh;
 
+import static co.weveh.SesionDePrueba.como;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.UUID;
@@ -48,9 +50,22 @@ class WevehApplicationTests {
     }
 
     @Test
-    void unDispositivoNuevoTieneElGarajeVacio() throws Exception {
-        mockMvc.perform(get("/api/v1/vehiculos").header("X-Weveh-Dispositivo", UUID.randomUUID().toString()))
+    void unUsuarioNuevoTieneElGarajeVacio() throws Exception {
+        mockMvc.perform(get("/api/v1/vehiculos").with(como(UUID.randomUUID().toString())))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void sinTokenResponde401() throws Exception {
+        mockMvc.perform(get("/api/v1/vehiculos"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.type").value("https://weveh.co/problemas/no-autenticado"));
+    }
+
+    @Test
+    void conTokenAlteradoResponde401() throws Exception {
+        mockMvc.perform(get("/api/v1/vehiculos").header("Authorization", "Bearer eyJhbGciOiJFUzI1NiJ9.alterado.firma"))
+                .andExpect(status().isUnauthorized());
     }
 }

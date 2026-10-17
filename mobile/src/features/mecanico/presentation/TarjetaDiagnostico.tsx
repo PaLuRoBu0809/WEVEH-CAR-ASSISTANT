@@ -32,22 +32,21 @@ export function TarjetaDiagnostico({ diagnostico: d }: { diagnostico: Diagnostic
             <View key={i} style={[estilos.tramo, { backgroundColor: color }]} />
           ))}
         </View>
-        <Texto tono="texto2">{d.explicacionSimple}</Texto>
+        <Texto variante="fuerte">¿Por qué importa?</Texto>
+        <Texto tono="texto2">{d.porQueImporta}</Texto>
       </Tarjeta>
 
       <View style={[estilos.alerta, { backgroundColor: alerta.fondo }]}>
         <Texto variante="fuerte" style={{ color: alerta.tinta }}>
-          {d.requiereMecanico ? 'Llévalo al mecánico' : 'Qué hacer ahora'}
+          {d.requiereMecanico ? 'Llévalo al mecánico' : 'Qué hacer'}
         </Texto>
-        <Texto style={{ color: alerta.tinta }}>{d.accionInmediata}</Texto>
+        {d.pasos.map((paso, indice) => (
+          <Texto key={paso} style={{ color: alerta.tinta }}>
+            {d.pasos.length > 1 ? `${indice + 1}. ` : ''}
+            {paso}
+          </Texto>
+        ))}
       </View>
-
-      {d.costoEstimado && (
-        <View style={estilos.fila}>
-          <Texto tono="texto2">Costo de referencia</Texto>
-          <Texto variante="fuerte">{d.costoEstimado}</Texto>
-        </View>
-      )}
 
       {d.piezasRelacionadas.length > 0 && (
         <View style={estilos.piezas}>

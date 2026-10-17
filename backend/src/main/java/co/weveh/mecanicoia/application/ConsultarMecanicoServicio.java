@@ -7,8 +7,8 @@ import co.weveh.mecanicoia.domain.Diagnostico;
 import co.weveh.mecanicoia.domain.ValidadorSeguridadDiagnostico;
 import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.DatoInvalidoException;
-import co.weveh.shared.domain.DispositivoId;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
+import co.weveh.shared.domain.UsuarioId;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.json.JsonMapper;
@@ -35,7 +35,7 @@ class ConsultarMecanicoServicio implements ConsultarMecanico {
     }
 
     @Override
-    public Diagnostico consultar(DispositivoId dispositivo, UUID vehiculoId, String sintoma) {
+    public Diagnostico consultar(UsuarioId usuario, UUID vehiculoId, String sintoma) {
         var texto = sintoma == null ? "" : sintoma.strip();
         if (texto.length() < 3) {
             throw new DatoInvalidoException("Cuéntanos qué le pasa a tu vehículo");
@@ -43,7 +43,7 @@ class ConsultarMecanicoServicio implements ConsultarMecanico {
         if (texto.length() > LARGO_MAXIMO_SINTOMA) {
             throw new DatoInvalidoException("Descríbelo en menos de 1.000 caracteres");
         }
-        var vehiculo = garaje.buscar(dispositivo, vehiculoId)
+        var vehiculo = garaje.buscar(usuario, vehiculoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No encontramos ese vehículo en tu garaje"));
         if (consultas.contarUltimoDia(vehiculoId) >= CONSULTAS_POR_DIA) {
             throw new ConflictoException("Llegaste al límite de preguntas de hoy para este vehículo. Intenta mañana.");
