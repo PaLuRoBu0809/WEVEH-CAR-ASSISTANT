@@ -29,7 +29,7 @@ Usa la versión de SDK que instale `create-expo-app` y no mezcles versiones a ma
 
 ## Pantallas del MVP
 
-Fuente visual: los mockups `WEVEH Portada.html` y `WEVEH Garaje.html` (raíz del repo). Decisiones del equipo (2026-10-08): sin login ni pestaña Servicios, tema claro por defecto.
+Fuente visual: `mobile/src/shared/design-system/` (tokens y componentes ya construidos a partir de los mockups originales, retirados del repo). Decisiones del equipo (2026-10-08): sin login ni pestaña Servicios, tema claro por defecto.
 
 | Ruta | Basada en |
 |---|---|

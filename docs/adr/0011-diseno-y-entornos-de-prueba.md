@@ -6,7 +6,7 @@
 
 ## Contexto
 
-Los mockups `WEVEH Portada.html` y `WEVEH Garaje.html` (raíz del repo) definen la identidad visual. Algunas partes quedan fuera del MVP. Además, el equipo necesita probar la app sin depender de que el celular y el PC estén en la misma red.
+Los mockups `WEVEH Portada.html` y `WEVEH Garaje.html` (ya retirados del repo tras implementarse) definieron la identidad visual, capturada ahora en `mobile/src/shared/design-system/`. Algunas partes quedan fuera del MVP. Además, el equipo necesita probar la app sin depender de que el celular y el PC estén en la misma red.
 
 ## Decisión
 

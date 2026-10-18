@@ -4,7 +4,7 @@ Guía para Claude Code en este repositorio. Lo que está aquí son decisiones to
 
 **El proyecto se construye desde cero con SDD (Spec-Driven Development).** La especificación manda: requisitos y RNF (`docs/requisitos/`, `docs/rnf.md`), plan (`docs/adr/`, `docs/arquitectura.md`, `docs/datos.md`, `docs/api.md`, `contracts/`) y tareas (`docs/tareas.md`). Empieza por `docs/README.md`. Si el código y `docs/` no coinciden, señálalo y corrige uno de los dos en el mismo PR; si una skill contradice a `docs/`, gana `docs/`.
 
-Material de referencia: `docs/referencia/README-original.md` (problema, flujo de IA y contrato del Mecánico IA), `WEVEH.docx`, `Sesion_8_Use_case_WEVEH.ipynb`, `mermaid diagram.png` y los mockups `WEVEH Portada.html` y `WEVEH Garaje.html`. El código de las ramas `dev/*` y `makers/*` fue un prototipo: no lo copies.
+Material de referencia: `docs/referencia/README-original.md` (problema, flujo de IA y contrato del Mecánico IA). El notebook, el .docx, el diagrama suelto y los mockups `.html` de las primeras sesiones ya se retiraron del repo: su contenido quedó implementado en la app y documentado en `docs/` (mockups) y `docs/adr/` (decisiones). El código de las ramas `dev/*` y `makers/*` fue un prototipo: no lo copies.
 
 El detalle operativo vive en el plugin `weveh-dev` (`plugins/weveh-dev/`). Cárgalo con:
 

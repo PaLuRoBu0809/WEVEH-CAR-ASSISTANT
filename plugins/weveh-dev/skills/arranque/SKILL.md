@@ -7,7 +7,7 @@ description: Orden de construcción de WEVEH desde cero, con los comandos y arch
 
 # Arranque de WEVEH desde cero
 
-El repo arranca solo con material de referencia (`README.md`, `WEVEH.docx`, notebook y diagrama). El código de las ramas `dev/*` y `makers/*` fue un prototipo: no se copia.
+El repo arrancó solo con material de referencia (`README.md`, `WEVEH.docx`, notebook y diagrama; estos tres últimos ya se retiraron del repo una vez su contenido quedó implementado y documentado en `docs/`). El código de las ramas `dev/*` y `makers/*` fue un prototipo: no se copia.
 
 ## Fases
 

@@ -1,6 +1,6 @@
 # RF-CTA — Cuentas
 
-Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Pantallas: mockup `WEVEH Portada.html` (crear cuenta, iniciar sesión). Un solo rol: usuario.
+Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Pantallas implementadas: `mobile/src/app/(onboarding)/crear-cuenta.tsx` e `iniciar-sesion.tsx` (mockup `WEVEH Portada.html` original ya retirado del repo). Un solo rol: usuario.
 
 ## RF-CTA-01 Crear cuenta
 Como dueño quiero crear mi cuenta para que mis vehículos sean míos.
