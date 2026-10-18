@@ -37,8 +37,8 @@ export const supabase = createClient(
 // El token se renueva solo mientras la app está abierta (guía de Supabase para React Native)
 AppState.addEventListener('change', (estado) => {
   if (estado === 'active') {
-    supabase.auth.startAutoRefresh();
+    void supabase.auth.startAutoRefresh();
   } else {
-    supabase.auth.stopAutoRefresh();
+    void supabase.auth.stopAutoRefresh();
   }
 });

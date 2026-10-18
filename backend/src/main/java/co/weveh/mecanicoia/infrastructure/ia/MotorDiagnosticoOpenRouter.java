@@ -214,7 +214,7 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
         return piezas.stream()
                 .filter(pieza -> !vacio(pieza))
                 .map(pieza -> Normalizer.normalize(pieza.strip(), Normalizer.Form.NFKD).replaceAll("\\p{M}", "")
-                        .toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "_").replaceAll("^_|_$", ""))
+                        .toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "_").replaceAll("(?:^_)|(?:_$)", ""))
                 .filter(pieza -> !pieza.isEmpty())
                 .distinct()
                 .toList();
