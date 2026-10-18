@@ -1,5 +1,12 @@
 # WEVEH — tu vehículo al día
 
+[![CI](https://github.com/PaLuRoBu0809/WEVEH-CAR-ASSISTANT/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/PaLuRoBu0809/WEVEH-CAR-ASSISTANT/actions/workflows/ci.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=bugs)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
+
 App móvil para dueños de carro o moto en Colombia sin conocimientos mecánicos: un mecánico de confianza en el bolsillo que ya conoce tu vehículo. Avisa antes de que se venza el SOAT o toque un cambio, explica qué le pasa al carro sin jerga y reúne su historia, sus papeles y su consumo.
 
 Proyecto del curso Makers AI Product (Equipo Salchicha: Isaac Cano y Pablo Rodríguez). El planteamiento original del curso está en [`docs/referencia/README-original.md`](docs/referencia/README-original.md).
