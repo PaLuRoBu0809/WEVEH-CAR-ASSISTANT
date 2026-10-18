@@ -47,7 +47,8 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [ ] Cortacircuitos y compartimento para OpenRouter (Resilience4j); "mucha demanda" en la app.
 - [ ] Salud por módulo en Actuator.
 - [ ] Sentry en backend y app, sin datos personales.
-- [ ] JaCoCo y `jest --coverage` con mínimo de 80 % en `domain` en la CI (RNF-17).
+- [x] JaCoCo y `jest --coverage` con SonarCloud en la CI (job `sonar`, `sonar-project.properties`) (RNF-17).
+- [ ] Crear el proyecto en sonarcloud.io, agregar el secreto `SONAR_TOKEN` en GitHub y fijar el umbral de 80 % en su Quality Gate para que el job deje de fallar por falta de configuración.
 - [x] Despliegue del backend en Render (ADR 0008) y web de demo en Vercel (ADR 0015).
 - [ ] Contrato OpenAPI generado y vigilado en la CI (ADR 0012).
 

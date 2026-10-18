@@ -51,3 +51,49 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test -- --ci
+
+  sonar:
+    name: SonarCloud analysis
+    needs: [backend, mobile]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # SonarCloud necesita el historico completo para asignar los issues
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      # `test` alcanza para que JaCoCo escriba target/site/jacoco/jacoco.xml (ver backend/pom.xml);
+      # `verify` correria tambien las pruebas de integracion con Testcontainers, que no hacen falta aqui.
+      - working-directory: backend
+        run: ./mvnw -B test
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - working-directory: mobile
+        run: npm ci
+      - working-directory: mobile
+        run: npm test -- --coverage --ci
+
+      - name: SonarCloud scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # Falla el job si el Quality Gate de SonarCloud no pasa (RNF-17: la CI
+      # debe fallar si la cobertura baja del umbral configurado en el proyecto)
+      - name: SonarCloud quality gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

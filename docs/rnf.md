@@ -51,7 +51,7 @@ Organizados por las características de calidad de ISO/IEC 25010. Cada uno es me
 |---|---|---|---|
 | RNF-15 | Ningún módulo usa clases internas de otro | `ModularidadTest` en la CI; ESLint de fronteras en la app | ✅ |
 | RNF-16 | Las reglas de dominio pasan los mismos vectores en Java y TypeScript | CI (JUnit + Jest sobre `contracts/`) | 🔜 fase 2 |
-| RNF-17 | Cobertura de líneas ≥ 80 % en los paquetes `domain` del backend y de las features. La cobertura dice qué código ejecutaron las pruebas, no si revisan bien el resultado | JaCoCo (backend) y `jest --coverage` (app); la CI falla si baja | ⚠️ |
+| RNF-17 | Cobertura de líneas ≥ 80 % en los paquetes `domain` del backend y de las features. La cobertura dice qué código ejecutaron las pruebas, no si revisan bien el resultado | JaCoCo (backend) y `jest --coverage` (app), medidos por SonarCloud (job `sonar` en la CI, `sonar-project.properties`); la CI falla si el Quality Gate no pasa | 🟡 CI lista, falta crear el proyecto en SonarCloud y el secreto `SONAR_TOKEN`, y fijar el umbral de 80 % en su Quality Gate |
 | RNF-22 | `/actuator/health` muestra el estado de cada módulo y de sus dependencias (base de datos, OpenRouter, buscador) | Prueba de Actuator | ❌ |
 | RNF-30 | Los errores del backend y de la app llegan a Sentry con aviso por correo | Error de prueba en cada despliegue | ❌ |
 

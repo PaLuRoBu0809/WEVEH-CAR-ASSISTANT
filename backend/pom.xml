@@ -31,6 +31,8 @@
 		<spring-modulith.version>2.1.1</spring-modulith.version>
 		<!-- Los evals llaman al modelo real: se corren aparte con -Dgroups=evals -DexcludedGroups=none -->
 		<excludedGroups>evals</excludedGroups>
+		<!-- SonarCloud: ver sonar-project.properties en la raiz del repo para el analisis combinado -->
+		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -162,6 +164,27 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- JaCoCo: mide la cobertura de las pruebas (RNF-17) y genera el informe
+			     XML que SonarCloud lee para calcular el porcentaje -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.13</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
