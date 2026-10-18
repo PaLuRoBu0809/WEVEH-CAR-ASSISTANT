@@ -1,6 +1,7 @@
 # WEVEH — tu vehículo al día
 
 [![CI](https://github.com/PaLuRoBu0809/WEVEH-CAR-ASSISTANT/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/PaLuRoBu0809/WEVEH-CAR-ASSISTANT/actions/workflows/ci.yml)
+[![Snyk](https://github.com/PaLuRoBu0809/WEVEH-CAR-ASSISTANT/actions/workflows/snyk.yml/badge.svg?branch=dev/pablo)](https://github.com/PaLuRoBu0809/WEVEH-CAR-ASSISTANT/actions/workflows/snyk.yml)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=PaLuRoBu0809_WEVEH-CAR-ASSISTANT&metric=bugs)](https://sonarcloud.io/summary/new_code?id=PaLuRoBu0809_WEVEH-CAR-ASSISTANT)
