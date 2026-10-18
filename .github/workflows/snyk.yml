@@ -1,0 +1,48 @@
+name: Snyk
+
+# Escanea vulnerabilidades en las dependencias de backend (Maven) y mobile (npm).
+# Por ahora es informativo: continue-on-error deja el check en verde aunque Snyk encuentre algo.
+# Cuando el equipo revise el reporte inicial, quitar continue-on-error para que bloquee.
+
+on:
+  push:
+    branches: [dev/pablo, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+      - uses: snyk/actions/maven@v1
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=backend/pom.xml --severity-threshold=high
+
+  mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+        working-directory: mobile
+      - uses: snyk/actions/node@v1
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=mobile/package.json --severity-threshold=high
