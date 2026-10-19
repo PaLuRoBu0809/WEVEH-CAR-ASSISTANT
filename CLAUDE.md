@@ -123,3 +123,14 @@ Detalle: skills `weveh-dev:mecanico-ia` y `weveh-dev:agente-perfilador`.
 - `docs/` actualizado si hubo una decisión (ADR en `docs/adr/`).
 
 Antes de abrir un PR puedes correr `/weveh-dev:revisar`.
+
+## 11. Flujo orquestador (Claude + OpenCode)
+
+Claude **analiza, delega y revisa**; OpenCode **implementa**. Reglas para OpenCode: `AGENTS.md`; permisos y modelo: `opencode.json`.
+
+1. Claude escribe un brief en `.delegacion/NNN-nombre.md` (ignorado por git): requisito con ID, archivos, patrón a copiar, criterios de aceptación, pruebas y comandos de verificación.
+2. Claude lo delega con `opencode run -f <brief> --format json` y guarda el ID de sesión.
+3. Claude **revisa siempre** con `git diff` y corriendo él mismo `verify`, lint, tipos y pruebas (nunca por el informe de OpenCode), contra §7, §8, §9 y §10.
+4. Si hay un error o baja la calidad, devuelve defectos concretos con `opencode run -s <id>`. Máximo 3 rondas; luego lo corrige Claude o consulta al equipo.
+5. OpenCode **no hace commit ni push** (lo impide `opencode.json`); los hace Claude cuando la revisión pasa. Los commits no llevan marca de Claude.
+6. Llaves de proveedor solo con `opencode auth login`; nunca en archivos del repo ni en el chat. Si cambia el prompt o el modelo de IA, los evals los corre Claude.
