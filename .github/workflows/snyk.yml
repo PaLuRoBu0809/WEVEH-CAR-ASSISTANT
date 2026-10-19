@@ -22,12 +22,11 @@ jobs:
           distribution: temurin
           java-version: "25"
           cache: maven
-      - uses: snyk/actions/maven@v1
+      - uses: snyk/actions/setup@v1
+      - run: snyk test --file=backend/pom.xml --severity-threshold=high
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --file=backend/pom.xml --severity-threshold=high
 
   snyk-mobile:
     runs-on: ubuntu-latest
