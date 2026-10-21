@@ -3,7 +3,7 @@ name: ci
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, 'dev/**']
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -14,11 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # La revisión de reglas compara contra main: necesita el histórico
+          fetch-depth: 0
       - name: Rechazar dependencias o secretos rastreados
         run: |
           if git ls-files | grep -E '(^|/)(node_modules|target|dist|\.expo)/|(^|/)\.env$'; then
             echo "Hay archivos que no deben estar en git"; exit 1
           fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      # Las mismas reglas que corren los hooks de Claude Code (scripts/calidad/): RLS, migraciones, evals, hexagonal y secretos
+      - name: Reglas de WEVEH
+        run: node scripts/calidad/revisar.mjs origin/${{ github.base_ref || 'main' }}
 
   backend:
     runs-on: ubuntu-latest

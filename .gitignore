@@ -14,6 +14,13 @@ build/
 .env.*
 !.env.example
 
+# Claude Code: permisos personales y estado local del hook de verificación
+.claude/settings.local.json
+.claude/.compuerta.json
+
+# Salidas de ejecución local
+*.log
+
 # OpenCode: config local con llaves y encargos delegados
 .opencode.json
 .opencode/
