@@ -1,5 +1,5 @@
 {
-  "$comment": "Salida estructurada de cada turno de la entrevista (Fase B).",
+  "$comment": "Salida estructurada de cada turno de la entrevista (Fase B). 2026-10-21: 'bloque' y 'valor' son opcionales para no romper turnos anteriores; los tipos BANDERA y USO_ENTORNO son propuestas que el código valida (RF-PER-06 a 08). La ruta entre bloques la decide el código, no el modelo.",
   "type": "object",
   "additionalProperties": false,
   "required": ["registros", "siguiente_pregunta", "progreso", "sintoma_critico_detectado"],
@@ -11,8 +11,9 @@
         "additionalProperties": false,
         "required": ["tipo", "pieza", "km", "fecha", "descripcion", "certeza"],
         "properties": {
-          "tipo": {"type": "string", "enum": ["SERVICIO", "FALLA", "SIN_DATO", "SINTOMA_ACTUAL"]},
+          "tipo": {"type": "string", "enum": ["SERVICIO", "FALLA", "SIN_DATO", "SINTOMA_ACTUAL", "BANDERA", "USO_ENTORNO"]},
           "pieza": {"type": ["string", "null"]},
+          "valor": {"type": ["string", "null"], "description": "Para BANDERA: motorCambiado, cambioCombustible, conversionGas, choque, inundacion, usoSevero. Para USO_ENTORNO: clave=valor de una opción cerrada (ej. 'via=TROCHA', 'municipio=Medellin')."},
           "km": {"type": ["integer", "null"]},
           "fecha": {"type": ["string", "null"], "description": "YYYY-MM-DD o YYYY-MM"},
           "descripcion": {"type": ["string", "null"]},
@@ -31,6 +32,7 @@
         "permite_texto": {"type": "boolean"}
       }
     },
+    "bloque": {"type": "string", "enum": ["HISTORIA", "USO_ENTORNO", "PIEZAS", "SINTOMAS"], "description": "Bloque al que pertenece la siguiente pregunta; máximo 8 preguntas por bloque."},
     "progreso": {"type": "number"},
     "sintoma_critico_detectado": {"type": "boolean"}
   }

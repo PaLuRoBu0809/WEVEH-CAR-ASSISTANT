@@ -20,7 +20,7 @@ Usa la versión de SDK que instale `create-expo-app` y no mezcles versiones a ma
 ## Pasos para una feature (ejemplo: tanqueadas)
 
 1. **Dominio** `src/features/combustible/domain/consumo.ts`: funciones puras (`calcularKmPorGalon`, `clasificarConsumo`) probadas con `contracts/vectores-consumo.json`.
-2. **Infraestructura** `infrastructure/`: `apiCombustible.ts` (llamadas con el cliente de `shared/http`, que agrega `X-Weveh-Dispositivo`), `repositorioLocal.ts` (SQLite) y mapeadores DTO → dominio.
+2. **Infraestructura** `infrastructure/`: `apiCombustible.ts` (llamadas con el cliente de `shared/http`, que agrega `Authorization: Bearer` con el token de Supabase, ADR 0005), `repositorioLocal.ts` (SQLite) y mapeadores DTO → dominio.
 3. **Aplicación** `application/`: hooks `useTanqueadas(vehiculoId)` y `useRegistrarTanqueada()` con TanStack Query; actualización optimista y cola offline.
 4. **Presentación** `presentation/`: componentes puros (`TarjetaConsumo`, `FormularioTanqueada`). El formulario usa React Hook Form + Zod con mensajes en español claro.
 5. **Ruta** `src/app/(tabs)/combustible.tsx`: solo compone la pantalla.
@@ -40,7 +40,10 @@ Fuente visual: `mobile/src/shared/design-system/` (tokens y componentes ya const
 | `src/app/(tabs)/inicio` | Garaje → Inicio: "Lo más urgente", "Para hacer", "Lo último que hiciste", botón de luna |
 | `src/app/(tabs)/garaje` y `garaje/[id]` | Tarjetas con salud; detalle con segmentos Piezas, Historial, Fallas y **Gasolina** (el combustible vive aquí, no en una pestaña) |
 | `src/app/(tabs)/perfil` | Garaje → Perfil sin cuenta: aviso de identidad por dispositivo y Apariencia claro/oscuro |
-| Botón flotante "Preguntar" | Mecánico IA por texto (sin cámara ni voz en el MVP) |
+| Botón flotante "Preguntar" | Mecánico IA por texto o voz: mantener pulsado el micrófono graba hasta 60 s, se muestra el texto transcrito para corregirlo y recién ahí se envía (RF-MIA-11, ADR 0018). El permiso del micrófono se pide con una explicación (RF-DAT-09) |
+| Fotos de factura y tablero | Cámara o galería **solo como evidencia** (servicio o lectura de km): se reducen a menos de 1 MB y se suben por la API; ningún modelo las lee (ADR 0018, RNF-33) |
+
+> Desde el 2026-10-21 (ADR 0005 y la ampliación aprobada) la portada tiene "Crear mi cuenta" y "Ya tengo cuenta", y Perfil muestra la cuenta; las filas de arriba sobre "sin login" quedan como historia. Gana `docs/`.
 
 Pestañas: Inicio, Garaje y Perfil (barra propia en `src/shared/navegacion/BarraPestanas.tsx`). `Tabs` se importa de `expo-router/js-tabs` (el de `expo-router` está obsoleto en SDK 57).
 
