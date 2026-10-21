@@ -1,6 +1,6 @@
 import { aFechaIso, aFechaVisible, hoyIso } from '@/shared/fechas';
 
-import type { EdicionVehiculo, UsoVehiculo, VehiculoResumen } from './vehiculo';
+import type { Combustible, EdicionVehiculo, TipoVehiculo, Traccion, Transmision, UsoVehiculo, VehiculoResumen } from './vehiculo';
 
 /**
  * RF-GAR-03: formulario para corregir los datos del vehículo. Los textos de error son los que ve la persona.
@@ -11,6 +11,10 @@ export type FormularioEdicion = Readonly<{
   uso: UsoVehiculo;
   kmMes: string;
   fechaMatricula: string;
+  /** Se corrigen, por ejemplo, tras un cambio de motor; el plan se reconstruye con ese perfil (RF-MAN-07). */
+  combustible: Combustible | null;
+  transmision: Transmision | null;
+  traccion: Traccion | null;
 }>;
 
 export type ErroresEdicion = Partial<Record<keyof FormularioEdicion, string>>;
@@ -34,6 +38,9 @@ export function formularioDesde(vehiculo: VehiculoResumen): FormularioEdicion {
     uso: vehiculo.uso,
     kmMes: String(vehiculo.kmPromedioMes),
     fechaMatricula: aFechaVisible(vehiculo.fechaMatricula),
+    combustible: vehiculo.combustible,
+    transmision: vehiculo.transmision,
+    traccion: vehiculo.traccion,
   };
 }
 
@@ -54,13 +61,17 @@ export function erroresEdicion(f: FormularioEdicion, ahora: Date = new Date()): 
   return errores;
 }
 
-export function aEdicion(f: FormularioEdicion, versionFila: number): EdicionVehiculo {
+/** @param tipo una moto no lleva tracción */
+export function aEdicion(f: FormularioEdicion, versionFila: number, tipo: TipoVehiculo = 'CARRO'): EdicionVehiculo {
   return {
     alias: f.alias.trim() || null,
     placa: f.placa.trim() ? normalizarPlaca(f.placa) : null,
     uso: f.uso,
     kmPromedioMes: aEntero(f.kmMes) ?? 0,
     fechaMatricula: f.fechaMatricula.trim() ? aFechaIso(f.fechaMatricula) : null,
+    combustible: f.combustible,
+    transmision: f.transmision,
+    traccion: tipo === 'CARRO' ? f.traccion : null,
     versionFila,
   };
 }

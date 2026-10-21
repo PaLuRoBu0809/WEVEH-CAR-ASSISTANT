@@ -76,6 +76,67 @@ class RegistroVehiculoIntegracionTest {
     }
 
     @Test
+    void lasLineasTraenCadaAtributoConSuOrigen() throws Exception {
+        // ADR 0021: la web cuenta solo verificada y con fuente; el equipo gana sobre la web; el nombre gana sobre todo
+        jdbc.sql("""
+                insert into catalogo.atributo_linea (linea_id, atributo, valores, origen, fuente_url, tipo_fuente, verificada)
+                values (7900, 'COMBUSTIBLE', '{GASOLINA}', 'IA_WEB', 'https://www.toyota.com.co/corolla', 'FABRICANTE', true),
+                       (7900, 'TRACCION', '{4X2}', 'IA_WEB', 'https://www.toyota.com.co/corolla', 'FABRICANTE', false),
+                       (7811, 'TRANSMISION', '{MECANICA}', 'IA_WEB', 'https://ejemplo.co', 'PRENSA', true),
+                       (7811, 'TRACCION', '{4X2,4X4}', 'IA_WEB', 'https://www.toyota.com.co/prado', 'CONCESIONARIO', true),
+                       (7811, 'TRACCION', '{4X4}', 'EQUIPO', null, null, true)""").update();
+
+        mockMvc.perform(get("/api/v1/catalogo/marcas/145/lineas").param("q", "corolla").with(como(MIO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].combustible").isEmpty())
+                .andExpect(jsonPath("$[0].atributos.combustible.valores[0]").value("GASOLINA"))
+                .andExpect(jsonPath("$[0].atributos.combustible.origen").value("IA_WEB"))
+                .andExpect(jsonPath("$[0].atributos.combustible.fuente").value("https://www.toyota.com.co/corolla"))
+                .andExpect(jsonPath("$[0].atributos.traccion").isEmpty())
+                .andExpect(jsonPath("$[0].atributos.transmision").isEmpty());
+
+        mockMvc.perform(get("/api/v1/catalogo/marcas/145/lineas").param("q", "prado vx").with(como(MIO)))
+                .andExpect(jsonPath("$[0].atributos.transmision.valores[0]").value("AUTOMATICA"))
+                .andExpect(jsonPath("$[0].atributos.transmision.origen").value("CATALOGO"))
+                .andExpect(jsonPath("$[0].atributos.traccion.valores.length()").value(1))
+                .andExpect(jsonPath("$[0].atributos.traccion.origen").value("EQUIPO"));
+    }
+
+    @Test
+    void laWebSinFuenteNoSePuedeGuardar() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> jdbc.sql("""
+                        insert into catalogo.atributo_linea (linea_id, atributo, valores, origen)
+                        values (7900, 'COMBUSTIBLE', '{GASOLINA}', 'IA_WEB')""").update())
+                .hasMessageContaining("atributo_linea_web_con_fuente");
+    }
+
+    @Test
+    void editarCorrigeCombustibleTransmisionYTraccion() throws Exception {
+        var ubicacion = mockMvc.perform(post("/api/v1/vehiculos").with(como(MIO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"tipo":"CARRO","catalogoLineaId":7811,"marca":"TOYOTA","linea":"PRADO VX 5P AT",
+                                 "anioModelo":2008,"kilometraje":190000,"transmision":"AUTOMATICA","traccion":"4X4"}"""))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+
+        mockMvc.perform(put(ubicacion).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"uso":"MIXTO","kmPromedioMes":1000,"combustible":"GAS","traccion":"4X2","versionFila":0}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.combustible").value("GAS"))
+                .andExpect(jsonPath("$.transmision").value("AUTOMATICA"))
+                .andExpect(jsonPath("$.traccion").value("4X2"));
+
+        mockMvc.perform(put(ubicacion).with(como(MIO)).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"uso":"MIXTO","kmPromedioMes":1000,"combustible":"HIBRIDO_ENCHUFABLE","versionFila":1}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.combustible").value("HIBRIDO_ENCHUFABLE"))
+                .andExpect(jsonPath("$.traccion").value("4X2"));
+    }
+
+    @Test
     void registraLaPradoYSoloLaVeSuUsuario() throws Exception {
         var respuesta = mockMvc.perform(post("/api/v1/vehiculos")
                         .with(como(MIO))

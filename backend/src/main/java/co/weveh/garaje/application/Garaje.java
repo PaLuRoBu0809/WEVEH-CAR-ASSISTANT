@@ -1,10 +1,8 @@
 package co.weveh.garaje.application;
 
 import co.weveh.garaje.domain.RegistroInicial;
-import co.weveh.garaje.domain.UsoVehiculo;
 import co.weveh.garaje.domain.Vehiculo;
 import co.weveh.shared.domain.UsuarioId;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,7 +35,6 @@ public interface Garaje {
     void eliminar(UsuarioId usuario, UUID vehiculoId);
 
     /** @param versionFila la versión que la app tenía al editar; si cambió entre tanto se responde conflicto */
-    record Edicion(String alias, String placa, UsoVehiculo uso, int kmPromedioMes, LocalDate fechaMatricula,
-                   int versionFila) {
+    record Edicion(Vehiculo.DatosEdicion datos, int versionFila) {
     }
 }

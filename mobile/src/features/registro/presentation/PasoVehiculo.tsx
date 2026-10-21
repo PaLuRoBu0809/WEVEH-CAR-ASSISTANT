@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
-import { nombreLinea, useLineas, useMarcas, type LineaCatalogo } from '@/features/catalogo';
+import { atributosDe, nombreLinea, useLineas, useMarcas, type LineaCatalogo } from '@/features/catalogo';
+import { COMBUSTIBLES, TRACCIONES, TRANSMISIONES } from '@/features/garaje';
 import { Campo, espacio, fuentes, Opciones, radio, TACTIL_MINIMO, Texto, useTema } from '@/shared/design-system';
 
+import {
+  decidirAtributos,
+  NO_SE,
+  textoOrigen,
+  valorInicial,
+  type DecisionAtributo,
+  type NoSe,
+} from '../domain/atributosLinea';
 import type { Errores, Formulario } from '../domain/formulario';
 
 type Props = {
@@ -14,7 +23,7 @@ type Props = {
 
 const MOSTRAR = 8;
 
-function Resultado({ texto, onPress }: { texto: string; onPress: () => void }) {
+function Resultado({ texto, onPress }: Readonly<{ texto: string; onPress: () => void }>) {
   const tema = useTema();
   return (
     <Pressable
@@ -26,7 +35,13 @@ function Resultado({ texto, onPress }: { texto: string; onPress: () => void }) {
   );
 }
 
-function Elegido({ etiqueta, texto, onCambiar }: { etiqueta: string; texto: string; onCambiar: () => void }) {
+function Elegido({
+  etiqueta,
+  texto,
+  nota,
+  accion = 'Cambiar',
+  onCambiar,
+}: Readonly<{ etiqueta: string; texto: string; nota?: string; accion?: string; onCambiar: () => void }>) {
   const tema = useTema();
   return (
     <View style={[estilos.elegido, { backgroundColor: tema.primarioTinte }]}>
@@ -37,34 +52,77 @@ function Elegido({ etiqueta, texto, onCambiar }: { etiqueta: string; texto: stri
         <Texto variante="fuerte" tono="primarioTinta">
           {texto}
         </Texto>
+        {nota && (
+          <Texto variante="nota" tono="texto2">
+            {nota}
+          </Texto>
+        )}
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel={`Cambiar ${etiqueta.toLowerCase()}`} onPress={onCambiar} style={estilos.cambiar}>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${accion} ${etiqueta.toLowerCase()}`} onPress={onCambiar} style={estilos.cambiar}>
         <Texto variante="fuerte" tono="primarioTinta" style={{ textDecorationLine: 'underline' }}>
-          Cambiar
+          {accion}
         </Texto>
       </Pressable>
     </View>
   );
 }
 
+type OpcionTexto<T extends string> = Readonly<{ valor: T; texto: string }>;
+
+/**
+ * RF-CAT-04: un atributo conocido se muestra con "Corregir"; si no, se pregunta (solo entre las versiones que
+ * existen, si se saben) con "No sé" y sin ninguna opción marcada de antemano.
+ */
+function PreguntaAtributo<T extends string>(
+  props: Readonly<{
+    titulo: string;
+    decision: DecisionAtributo<T>;
+    todas: readonly OpcionTexto<T>[];
+    valor: T | NoSe | null;
+    onCambiar: (valor: T | NoSe) => void;
+  }>,
+) {
+  const { titulo, decision, todas, valor, onCambiar } = props;
+  const [corrigiendo, setCorrigiendo] = useState(false);
+  const textoDe = (v: T) => todas.find((o) => o.valor === v)?.texto ?? v;
+
+  if (decision.modo === 'DATO' && !corrigiendo && valor === decision.valor) {
+    return <Elegido etiqueta={titulo} nota={textoOrigen(decision)} texto={textoDe(decision.valor)} accion="Corregir" onCambiar={() => setCorrigiendo(true)} />;
+  }
+  const valores = decision.modo === 'ELEGIR_ENTRE' ? decision.opciones : todas.map((o) => o.valor);
+  const opciones: OpcionTexto<T | NoSe>[] = [...valores.map((v) => ({ valor: v, texto: textoDe(v) })), { valor: NO_SE, texto: 'No sé' }];
+  return (
+    <>
+      <Texto variante="fuerte">{titulo}</Texto>
+      <Opciones etiqueta={titulo} opciones={opciones} valor={valor} onCambiar={onCambiar} />
+    </>
+  );
+}
+
 /** Paso 1: tipo → marca → línea del catálogo del Ministerio → año; o texto libre si no aparece. */
-export function PasoVehiculo({ formulario: f, errores, cambiar }: Props) {
+export function PasoVehiculo({ formulario: f, errores, cambiar }: Readonly<Props>) {
   const tema = useTema();
   const [textoMarca, setTextoMarca] = useState('');
   const [textoLinea, setTextoLinea] = useState('');
   const marcas = useMarcas(f.tipo, textoMarca, !f.manual && f.marcaId === null);
   const lineas = useLineas(f.manual || f.catalogoLineaId !== null ? null : f.marcaId, f.tipo, textoLinea);
+  const decisiones = decidirAtributos(f.manual ? null : f.atributosLinea, f.tipo);
+  const sinAtributos = { atributosLinea: null, combustible: null, transmision: null, traccion: null } as const;
 
-  const elegirLinea = (linea: LineaCatalogo) =>
+  const elegirLinea = (linea: LineaCatalogo) => {
+    const atributos = atributosDe(linea);
+    const decididos = decidirAtributos(atributos, f.tipo);
     cambiar({
       catalogoLineaId: linea.id,
       linea: linea.nombre,
       cilindradaCc: linea.cilindradaCc,
-      transmision: linea.transmision,
-      traccion: linea.traccion,
-      // El catálogo solo marca diésel, híbrido o eléctrico; sin pista se sugiere gasolina
-      combustible: linea.combustible ?? 'GASOLINA',
+      atributosLinea: atributos,
+      // Solo un dato conocido arranca respondido; nunca se rellena gasolina sin saberlo (RF-CAT-04)
+      combustible: valorInicial(decididos.combustible),
+      transmision: valorInicial(decididos.transmision),
+      traccion: valorInicial(decididos.traccion),
     });
+  };
 
   return (
     <View style={estilos.paso}>
@@ -78,7 +136,7 @@ export function PasoVehiculo({ formulario: f, errores, cambiar }: Props) {
         onCambiar={(tipo) => {
           setTextoMarca('');
           setTextoLinea('');
-          cambiar({ tipo, marcaId: null, marca: '', catalogoLineaId: null, linea: '', cilindradaCc: null });
+          cambiar({ tipo, marcaId: null, marca: '', catalogoLineaId: null, linea: '', cilindradaCc: null, ...sinAtributos });
         }}
       />
 
@@ -120,7 +178,7 @@ export function PasoVehiculo({ formulario: f, errores, cambiar }: Props) {
               texto={f.marca}
               onCambiar={() => {
                 setTextoLinea('');
-                cambiar({ marcaId: null, marca: '', catalogoLineaId: null, linea: '', cilindradaCc: null });
+                cambiar({ marcaId: null, marca: '', catalogoLineaId: null, linea: '', cilindradaCc: null, ...sinAtributos });
               }}
             />
           )}
@@ -146,7 +204,7 @@ export function PasoVehiculo({ formulario: f, errores, cambiar }: Props) {
               <Elegido
                 etiqueta="Línea"
                 texto={f.cilindradaCc ? `${f.linea} · ${f.cilindradaCc.toLocaleString('es-CO')} cc` : f.linea}
-                onCambiar={() => cambiar({ catalogoLineaId: null, linea: '', cilindradaCc: null })}
+                onCambiar={() => cambiar({ catalogoLineaId: null, linea: '', cilindradaCc: null, ...sinAtributos })}
               />
             ))}
         </>
@@ -157,8 +215,8 @@ export function PasoVehiculo({ formulario: f, errores, cambiar }: Props) {
         onPress={() =>
           cambiar(
             f.manual
-              ? { manual: false, marca: '', linea: '', marcaId: null, catalogoLineaId: null }
-              : { manual: true, marcaId: null, catalogoLineaId: null, cilindradaCc: null },
+              ? { manual: false, marca: '', linea: '', marcaId: null, catalogoLineaId: null, ...sinAtributos }
+              : { manual: true, marcaId: null, catalogoLineaId: null, cilindradaCc: null, ...sinAtributos },
           )
         }
         style={estilos.enlace}>
@@ -181,44 +239,33 @@ export function PasoVehiculo({ formulario: f, errores, cambiar }: Props) {
       {(f.catalogoLineaId !== null || f.manual) && (
         <View style={estilos.paso}>
           <Texto variante="seccion" tono="texto3">
-            Revisa lo que sugerimos
+            Sobre tu vehículo
           </Texto>
-          <Texto variante="fuerte">Combustible</Texto>
-          <Opciones
-            etiqueta="Combustible"
-            opciones={[
-              { valor: 'GASOLINA', texto: 'Gasolina' },
-              { valor: 'DIESEL', texto: 'Diésel' },
-              { valor: 'HIBRIDO', texto: 'Híbrido' },
-              { valor: 'ELECTRICO', texto: 'Eléctrico' },
-            ]}
+          <PreguntaAtributo
+            key={`combustible-${f.catalogoLineaId}`}
+            titulo="Combustible"
+            decision={decisiones.combustible}
+            todas={COMBUSTIBLES}
             valor={f.combustible}
             onCambiar={(combustible) => cambiar({ combustible })}
           />
-          <Texto variante="fuerte">Caja</Texto>
-          <Opciones
-            etiqueta="Caja"
-            opciones={[
-              { valor: 'MECANICA', texto: 'Mecánica' },
-              { valor: 'AUTOMATICA', texto: 'Automática' },
-            ]}
+          <PreguntaAtributo
+            key={`caja-${f.catalogoLineaId}`}
+            titulo="Caja"
+            decision={decisiones.transmision}
+            todas={TRANSMISIONES}
             valor={f.transmision}
             onCambiar={(transmision) => cambiar({ transmision })}
           />
-          {f.tipo === 'CARRO' && (
-            <>
-              <Texto variante="fuerte">Tracción</Texto>
-              <Opciones
-                etiqueta="Tracción"
-                opciones={[
-                  { valor: '4X2', texto: '4x2' },
-                  { valor: '4X4', texto: '4x4' },
-                  { valor: 'AWD', texto: 'AWD' },
-                ]}
-                valor={f.traccion}
-                onCambiar={(traccion) => cambiar({ traccion })}
-              />
-            </>
+          {decisiones.traccion && (
+            <PreguntaAtributo
+              key={`traccion-${f.catalogoLineaId}`}
+              titulo="Tracción"
+              decision={decisiones.traccion}
+              todas={TRACCIONES}
+              valor={f.traccion}
+              onCambiar={(traccion) => cambiar({ traccion })}
+            />
           )}
         </View>
       )}

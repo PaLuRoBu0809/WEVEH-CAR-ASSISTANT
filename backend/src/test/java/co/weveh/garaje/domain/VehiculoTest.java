@@ -183,13 +183,42 @@ class VehiculoTest {
     void editarCambiaSoloLoEditableYValida() {
         var prado = registrar(datos(190000, 2008, null, registroPrado()));
 
-        var editado = prado.editar("Mi Prado", "xyz-987", UsoVehiculo.CARRETERA, 2500, null, HOY);
+        var editado = prado.editar(edicion("Mi Prado", "xyz-987", UsoVehiculo.CARRETERA, 2500), HOY);
 
         assertThat(editado.alias()).isEqualTo("Mi Prado");
         assertThat(editado.placa()).isEqualTo("XYZ987");
         assertThat(editado.uso()).isEqualTo(UsoVehiculo.CARRETERA);
         assertThat(editado.km()).isEqualTo(prado.km());
-        assertThatThrownBy(() -> prado.editar(null, null, UsoVehiculo.MIXTO, 25000, null, HOY))
+        var demasiadosKm = edicion(null, null, UsoVehiculo.MIXTO, 25000);
+        assertThatThrownBy(() -> prado.editar(demasiadosKm, HOY))
                 .hasMessageContaining("kilómetros al mes");
+    }
+
+    @Test
+    void editarCorrigeCombustibleTransmisionYTraccion() {
+        var prado = registrar(datos(190000, 2008, null, registroPrado()));
+
+        var tras = new Vehiculo.DatosEdicion("La Prado", null, UsoVehiculo.MIXTO, 1000, null, Combustible.DIESEL,
+                Transmision.MECANICA, Traccion.TRACCION_4X2);
+        var editado = prado.editar(tras, HOY);
+
+        assertThat(editado.combustible()).isEqualTo(Combustible.DIESEL);
+        assertThat(editado.transmision()).isEqualTo(Transmision.MECANICA);
+        assertThat(editado.traccion()).isEqualTo(Traccion.TRACCION_4X2);
+    }
+
+    @Test
+    void editarSinCombustibleTransmisionNiTraccionConservaLosActuales() {
+        var prado = registrar(datos(190000, 2008, null, registroPrado()));
+
+        var editado = prado.editar(edicion("Mi Prado", null, UsoVehiculo.MIXTO, 1000), HOY);
+
+        assertThat(editado.transmision()).isEqualTo(Transmision.AUTOMATICA);
+        assertThat(editado.traccion()).isEqualTo(Traccion.TRACCION_4X4);
+        assertThat(editado.combustible()).isNull();
+    }
+
+    private static Vehiculo.DatosEdicion edicion(String alias, String placa, UsoVehiculo uso, int kmPromedioMes) {
+        return new Vehiculo.DatosEdicion(alias, placa, uso, kmPromedioMes, null, null, null, null);
     }
 }

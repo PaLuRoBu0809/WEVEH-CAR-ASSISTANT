@@ -54,9 +54,8 @@ class VehiculoController {
 
     @PutMapping("/{id}")
     VehiculoRespuesta editar(UsuarioId usuario, @PathVariable UUID id, @Valid @RequestBody EdicionSolicitud solicitud) {
-        var edicion = new Garaje.Edicion(solicitud.alias(), solicitud.placa(), solicitud.uso(),
-                solicitud.kmPromedioMes(), solicitud.fechaMatricula(), solicitud.versionFila());
-        return VehiculoRespuesta.desde(garaje.editar(usuario, id, edicion));
+        return VehiculoRespuesta.desde(garaje.editar(usuario, id,
+                new Garaje.Edicion(solicitud.aDatos(), solicitud.versionFila())));
     }
 
     @PutMapping("/{id}/registro")
@@ -94,8 +93,15 @@ class VehiculoController {
         }
     }
 
+    /** RF-GAR-03: combustible, transmisión y tracción son opcionales; si no llegan se conservan los actuales. */
     record EdicionSolicitud(String alias, String placa, @NotNull UsoVehiculo uso, @NotNull Integer kmPromedioMes,
-                            LocalDate fechaMatricula, @NotNull Integer versionFila) {
+                            LocalDate fechaMatricula, Combustible combustible, Transmision transmision,
+                            String traccion, @NotNull Integer versionFila) {
+
+        Vehiculo.DatosEdicion aDatos() {
+            return new Vehiculo.DatosEdicion(alias, placa, uso, kmPromedioMes, fechaMatricula, combustible,
+                    transmision, Traccion.desdeCodigo(traccion));
+        }
     }
 
     /** @param confirmado true cuando la persona ya confirmó un salto raro (respuesta 409 confirmacion-requerida) */

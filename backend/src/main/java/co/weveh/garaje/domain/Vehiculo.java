@@ -136,14 +136,33 @@ public record Vehiculo(
         return registroInicial.datosFaltantes();
     }
 
+    /**
+     * Lo que la persona puede corregir del vehículo (RF-GAR-03). Combustible, transmisión y tracción en null conservan
+     * el valor actual: la versión de la app que no los envía no los borra.
+     */
+    public record DatosEdicion(
+            String alias,
+            String placa,
+            UsoVehiculo uso,
+            int kmPromedioMes,
+            LocalDate fechaMatricula,
+            Combustible combustible,
+            Transmision transmision,
+            Traccion traccion) {
+    }
+
     /** RF-GAR-03: lo que se puede corregir sin cambiar de vehículo. El kilometraje va por su propio caso (RF-GAR-05). */
-    public Vehiculo editar(String nuevoAlias, String nuevaPlaca, UsoVehiculo nuevoUso, int nuevoKmPromedioMes,
-                           LocalDate nuevaFechaMatricula, LocalDate hoy) {
+    public Vehiculo editar(DatosEdicion datos, LocalDate hoy) {
         var editado = new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
-                combustible, transmision, traccion, nuevoAlias, nuevaPlaca, nuevaFechaMatricula, km, kmActualizadoEn,
-                nuevoUso, nuevoKmPromedioMes, registroInicial, versionFila);
+                nuevoOActual(datos.combustible(), combustible), nuevoOActual(datos.transmision(), transmision),
+                nuevoOActual(datos.traccion(), traccion), datos.alias(), datos.placa(), datos.fechaMatricula(), km,
+                kmActualizadoEn, datos.uso(), datos.kmPromedioMes(), registroInicial, versionFila);
         editado.validar(hoy);
         return editado;
+    }
+
+    private static <T> T nuevoOActual(T nuevo, T actual) {
+        return nuevo == null ? actual : nuevo;
     }
 
     public String nombreParaMostrar() {

@@ -59,8 +59,7 @@ class GarajeServicio implements Garaje, GarajeApi {
         if (actual.versionFila() != edicion.versionFila()) {
             throw conflicto();
         }
-        var editado = actual.editar(edicion.alias(), edicion.placa(), edicion.uso(), edicion.kmPromedioMes(),
-                edicion.fechaMatricula(), LocalDate.now(reloj));
+        var editado = actual.editar(edicion.datos(), LocalDate.now(reloj));
         if (!repositorio.actualizar(editado)) {
             throw conflicto();
         }

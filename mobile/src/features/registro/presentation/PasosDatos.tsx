@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Campo, Casilla, espacio, Opciones, Texto } from '@/shared/design-system';
+import { Campo, Casilla, espacio, Texto } from '@/shared/design-system';
 
 import { formatearMientrasEscribe } from '@/shared/fechas';
 import type { Errores, Formulario } from '../domain/formulario';
@@ -28,7 +28,10 @@ function CampoFecha(props: { etiqueta: string; valor: string; error?: string; ay
   );
 }
 
-/** Paso 2: kilometraje y uso. */
+/**
+ * Paso 2: el kilometraje del tablero. El uso y los km al mes no se preguntan aquí (RF-GAR-02, RNF-11):
+ * quedan "De todo un poco" y 1.000, y se cambian en el detalle del vehículo.
+ */
 export function PasoHoy({ formulario: f, errores, cambiar }: Props) {
   return (
     <View style={estilos.paso}>
@@ -39,25 +42,6 @@ export function PasoHoy({ formulario: f, errores, cambiar }: Props) {
         value={f.km}
         onChangeText={(km) => cambiar({ km: soloDigitos(km) })}
         error={errores.km}
-      />
-      <Texto variante="fuerte">¿Por dónde lo usas más?</Texto>
-      <Opciones
-        etiqueta="Uso"
-        opciones={[
-          { valor: 'CIUDAD', texto: 'Ciudad' },
-          { valor: 'CARRETERA', texto: 'Carretera' },
-          { valor: 'MIXTO', texto: 'De todo un poco' },
-        ]}
-        valor={f.uso}
-        onCambiar={(uso) => cambiar({ uso })}
-      />
-      <Campo
-        etiqueta="Kilómetros al mes (más o menos)"
-        keyboardType="number-pad"
-        value={f.kmMes}
-        onChangeText={(kmMes) => cambiar({ kmMes: soloDigitos(kmMes) })}
-        error={errores.kmMes}
-        ayuda="Si no sabes, déjalo en 1.000"
       />
     </View>
   );

@@ -14,6 +14,12 @@ const MAX_INTENTOS = 2;
 const TOCA_MOBILE = /^(mobile\/(src|app)\/|mobile\/(package(-lock)?\.json|tsconfig\.json|eslint\.config\.js|babel\.config\.js|jest\.config\.\w+)$|contracts\/vectores-)/;
 const TOCA_BACKEND = /^(backend\/(src\/|pom\.xml$|mvnw)|contracts\/vectores-)/;
 
+// Pausa explícita (por ejemplo, mientras varios agentes editan en paralelo): no corre nada y lo avisa.
+if (existsSync(path.join(root, '.claude', '.compuerta-pausa'))) {
+  console.log(JSON.stringify({ systemMessage: 'Verificación de WEVEH en pausa (.claude/.compuerta-pausa). Bórralo para volver a verificar.' }));
+  process.exit(0);
+}
+
 // ---------- 1. Reglas sobre lo que cambió desde el último commit ----------
 const { archivos, fallas, avisos } = revisarCambios({ root });
 if (archivos.length === 0) process.exit(0); // turno de solo lectura
@@ -49,21 +55,27 @@ const tareas = [];
 if (archivos.some((f) => TOCA_MOBILE.test(f))) {
   const m = path.join(root, 'mobile');
   if (existsSync(path.join(m, 'node_modules'))) {
-    tareas.push(
-      correr('mobile lint', 'npm', ['run', 'lint'], m),
-      correr('mobile typecheck', 'npm', ['run', 'typecheck'], m),
-      correr('mobile test', 'npm', ['test', '--', '--ci'], m),
-    );
+    // En serie: lint, tsc y jest en paralelo (más Maven) agotan la memoria
+    const enSerie = async () => {
+      const resultados = [];
+      resultados.push(await correr('mobile lint', 'npm', ['run', 'lint'], m));
+      resultados.push(await correr('mobile typecheck', 'npm', ['run', 'typecheck'], m));
+      resultados.push(await correr('mobile test', 'npm', ['test', '--', '--ci', '--maxWorkers=50%'], m));
+      return resultados;
+    };
+    tareas.push(enSerie());
   } else avisos.push('mobile/node_modules no existe: corre `npm ci` en mobile/. No corrí las pruebas de la app.');
 }
 if (archivos.some((f) => TOCA_BACKEND.test(f))) {
   const b = path.join(root, 'backend');
-  const dockerArriba = spawnSync('docker', ['info'], { stdio: 'ignore', shell: win, timeout: 20_000 }).status === 0;
+  const dockerArriba = (win
+    ? spawnSync('docker info', { stdio: 'ignore', shell: true, timeout: 20_000 })
+    : spawnSync('docker', ['info'], { stdio: 'ignore', timeout: 20_000 })).status === 0;
   if (!existsSync(path.join(b, win ? 'mvnw.cmd' : 'mvnw'))) avisos.push('No encontré backend/mvnw: no corrí las pruebas del backend.');
   else if (dockerArriba) tareas.push(correr('backend test', win ? 'mvnw.cmd' : './mvnw', ['-B', '-q', 'test'], b));
   else avisos.push('Docker no está corriendo: enciende Docker Desktop (Testcontainers lo necesita). No corrí las pruebas del backend.');
 }
-for (const r of await Promise.all(tareas)) {
+for (const r of (await Promise.all(tareas)).flat()) {
   if (r.ok) continue;
   const lineas = r.out.split('\n');
   const clave = lineas.filter((l) => /ERROR|FAIL|✕|error TS|Tests run:.*(Failures|Errors): [1-9]/.test(l));

@@ -1,2 +1,11 @@
 export { useLineas, useMarcas, useTextoConEspera } from './application/useCatalogo';
-export { nombreLinea, type LineaCatalogo, type MarcaCatalogo, type TipoVehiculo } from './domain/catalogo';
+export {
+  atributosDe,
+  nombreLinea,
+  type AtributoCatalogo,
+  type AtributosLinea,
+  type LineaCatalogo,
+  type MarcaCatalogo,
+  type OrigenAtributo,
+  type TipoVehiculo,
+} from './domain/catalogo';

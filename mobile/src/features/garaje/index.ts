@@ -7,6 +7,9 @@ export {
   useVehiculos,
 } from './application/useVehiculos';
 export {
+  COMBUSTIBLES,
+  TRACCIONES,
+  TRANSMISIONES,
   listaFaltantes,
   nombreParaMostrar,
   tituloFaltantes,

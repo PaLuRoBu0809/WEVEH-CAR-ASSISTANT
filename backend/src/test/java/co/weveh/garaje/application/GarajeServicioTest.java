@@ -100,7 +100,7 @@ class GarajeServicioTest {
         when(repositorio.actualizar(any())).thenReturn(true);
 
         servicio.editar(USUARIO, vehiculo.id(),
-                new Garaje.Edicion("Prado", "XYZ987", UsoVehiculo.CIUDAD, 1500, null, vehiculo.versionFila()));
+                new Garaje.Edicion(new Vehiculo.DatosEdicion("Prado", "XYZ987", UsoVehiculo.CIUDAD, 1500, null, null, null, null), vehiculo.versionFila()));
 
         verify(repositorio).actualizar(org.mockito.ArgumentMatchers.argThat(
                 v -> "Prado".equals(v.alias()) && "XYZ987".equals(v.placa()) && v.kmPromedioMes() == 1500));
@@ -111,7 +111,7 @@ class GarajeServicioTest {
         var vehiculo = guardado();
 
         assertThatThrownBy(() -> servicio.editar(USUARIO, vehiculo.id(),
-                new Garaje.Edicion("Prado", null, UsoVehiculo.MIXTO, 1000, null, vehiculo.versionFila() + 1)))
+                new Garaje.Edicion(new Vehiculo.DatosEdicion("Prado", null, UsoVehiculo.MIXTO, 1000, null, null, null, null), vehiculo.versionFila() + 1)))
                 .isInstanceOf(ConflictoException.class);
         verify(repositorio, never()).actualizar(any());
     }
@@ -122,7 +122,7 @@ class GarajeServicioTest {
         when(repositorio.actualizar(any())).thenReturn(false);
 
         assertThatThrownBy(() -> servicio.editar(USUARIO, vehiculo.id(),
-                new Garaje.Edicion("Prado", null, UsoVehiculo.MIXTO, 1000, null, vehiculo.versionFila())))
+                new Garaje.Edicion(new Vehiculo.DatosEdicion("Prado", null, UsoVehiculo.MIXTO, 1000, null, null, null, null), vehiculo.versionFila())))
                 .isInstanceOf(ConflictoException.class);
     }
 

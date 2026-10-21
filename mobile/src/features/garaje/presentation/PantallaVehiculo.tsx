@@ -26,7 +26,14 @@ import {
   useVehiculo,
 } from '../application/useVehiculos';
 import { aEdicion, aEntero, erroresEdicion, errorKilometraje, formularioDesde, type FormularioEdicion } from '../domain/edicion';
-import { listaFaltantes, nombreParaMostrar, type VehiculoResumen } from '../domain/vehiculo';
+import {
+  COMBUSTIBLES,
+  listaFaltantes,
+  nombreParaMostrar,
+  TRACCIONES,
+  TRANSMISIONES,
+  type VehiculoResumen,
+} from '../domain/vehiculo';
 import { EstadoError } from './EstadoError';
 
 type Props = Readonly<{
@@ -156,7 +163,7 @@ function SeccionKilometraje({ vehiculo }: { vehiculo: VehiculoResumen }) {
   );
 }
 
-/** RF-GAR-03: alias, placa, uso, km al mes y fecha de matrícula. */
+/** RF-GAR-03: alias, placa, uso, km al mes, fecha de matrícula, combustible, caja y tracción. */
 function SeccionDatos({ vehiculo }: { vehiculo: VehiculoResumen }) {
   const tema = useTema();
   const [formulario, setFormulario] = useState<FormularioEdicion>(() => formularioDesde(vehiculo));
@@ -173,7 +180,7 @@ function SeccionDatos({ vehiculo }: { vehiculo: VehiculoResumen }) {
       setMostrarErrores(true);
       return;
     }
-    editar.mutate(aEdicion(formulario, vehiculo.versionFila));
+    editar.mutate(aEdicion(formulario, vehiculo.versionFila, vehiculo.tipo));
   };
 
   return (
@@ -209,6 +216,16 @@ function SeccionDatos({ vehiculo }: { vehiculo: VehiculoResumen }) {
         error={errores.fechaMatricula}
         onChangeText={(texto) => cambiar({ fechaMatricula: formatearMientrasEscribe(texto) })}
       />
+      <Texto variante="fuerte">Combustible</Texto>
+      <Opciones etiqueta="Combustible" opciones={COMBUSTIBLES} valor={formulario.combustible} onCambiar={(combustible) => cambiar({ combustible })} />
+      <Texto variante="fuerte">Caja</Texto>
+      <Opciones etiqueta="Caja" opciones={TRANSMISIONES} valor={formulario.transmision} onCambiar={(transmision) => cambiar({ transmision })} />
+      {vehiculo.tipo === 'CARRO' && (
+        <>
+          <Texto variante="fuerte">Tracción</Texto>
+          <Opciones etiqueta="Tracción" opciones={TRACCIONES} valor={formulario.traccion} onCambiar={(traccion) => cambiar({ traccion })} />
+        </>
+      )}
       {editar.error && <AvisoError mensaje={mensajeParaPersona(editar.error)} />}
       {editar.isSuccess && (
         <Texto variante="nota" style={{ color: tema.okTinta }}>
