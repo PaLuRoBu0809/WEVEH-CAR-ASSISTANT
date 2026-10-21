@@ -30,7 +30,7 @@ Las reglas que una prueba no ve viven en [`../scripts/calidad/`](../scripts/cali
 | Hook de commit (`.claude/hooks/commit.mjs`) | Antes de `git commit` | Conventional Commits, archivos o llaves secretas y nada en `main` salvo `WEVEH_PERMITIR_MAIN=1`. |
 | CI, job `higiene` | Push a `main` o `dev/**` y PR | `node scripts/calidad/revisar.mjs origin/main`: las mismas reglas sobre lo commiteado. |
 
-Reglas: tabla nueva sin RLS, migración ya versionada editada, prompt o `WEVEH_IA_MODELO` cambiado sin `evals/results.md`, `domain` importando Spring/Jakarta/JDBC, llaves en el código y archivos `.env.*`/`.pem`. Avisos sin bloquear: código nuevo sin `tareas.md`, controlador sin `openapi.yaml`/`api.md`. Para añadir una regla de texto, edita `scripts/calidad/reglas.mjs`.
+Reglas: tabla nueva sin RLS, migración ya versionada editada, prompt o `WEVEH_IA_MODELO` cambiado sin `evals/results.md`, `domain` importando Spring/Jakarta/JDBC, llaves en el código y archivos `.env.*`/`.pem`. Avisos sin bloquear: código nuevo sin `tareas.md`, controlador sin `openapi.yaml`/`api.md`. Para añadir una regla de texto, edita `scripts/calidad/reglas.mjs`. Si varios agentes editan en paralelo, crea `.claude/.compuerta-pausa` para que el hook Stop no verifique trabajo a medias, y bórralo antes de la verificación final.
 
 ## Convención de estados
 

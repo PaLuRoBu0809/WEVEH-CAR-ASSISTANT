@@ -1,248 +1,170 @@
 {
-  "descripcion": "Salud 0-100. Puntos: AL_DIA 100, POR_VENCER 60, VENCIDO 10, SIN_DATO 50. Peso 2 si esSeguridad, 1 si no. bruto = Σ(peso·puntos)/Σ(peso), 100 si no hay piezas. Banda por el peor estado: pieza de seguridad VENCIDO o documento VENCIDO ⇒ ATENCION [0-39]; cualquier pieza VENCIDO ⇒ REVISAR [40-69]; pieza o documento POR_VENCER ⇒ PRONTO [70-89]; resto ⇒ AL_DIA [90-100]. puntaje = bruto redondeado half-up y acotado a la banda.",
+  "descripcion": "Salud 0-100. Puntos: AL_DIA 100, POR_VENCER 60, VENCIDO 10, SIN_DATO 50, SIN_DATO_REVISAR_YA 50. Peso 2 si esSeguridad, 1 si no. bruto = Σ(peso·puntos)/Σ(peso), 100 si no hay piezas. Banda por el peor estado: pieza de seguridad VENCIDO o documento VENCIDO ⇒ ATENCION [0-39]; cualquier pieza VENCIDO o SIN_DATO_REVISAR_YA ⇒ REVISAR [40-69]; pieza o documento POR_VENCER ⇒ PRONTO [70-89]; resto ⇒ AL_DIA [90-100]. puntaje = bruto redondeado half-up y acotado a la banda. datosSuficientes = no hay piezas, o más de la mitad de las piezas tiene dato (estado distinto de SIN_DATO y SIN_DATO_REVISAR_YA; D-02, RF-MAN-03). Si no hay datos suficientes: puntaje null y banda null, salvo que corresponda ATENCION, que se mantiene (un documento o una pieza de seguridad vencidos siempre se muestran).",
   "vectores": [
     {
       "caso": "todo al día",
       "entrada": {
         "piezas": [
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": true
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          }
+          { "estado": "AL_DIA", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
         ],
-        "documentos": [
-          "VIGENTE",
-          "VIGENTE"
-        ]
+        "documentos": ["VIGENTE", "VIGENTE"]
       },
-      "esperado": {
-        "puntaje": 100,
-        "banda": "AL_DIA"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 100, "banda": "AL_DIA" }
     },
     {
       "caso": "una pieza por vencer se acota a 89",
       "entrada": {
         "piezas": [
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": true
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          },
-          {
-            "estado": "POR_VENCER",
-            "esSeguridad": false
-          }
+          { "estado": "AL_DIA", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false },
+          { "estado": "POR_VENCER", "esSeguridad": false }
         ],
-        "documentos": [
-          "VIGENTE"
-        ]
+        "documentos": ["VIGENTE"]
       },
-      "esperado": {
-        "puntaje": 89,
-        "banda": "PRONTO"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 89, "banda": "PRONTO" }
     },
     {
       "caso": "por vencer con redondeo dentro de la banda",
       "entrada": {
         "piezas": [
-          {
-            "estado": "POR_VENCER",
-            "esSeguridad": false
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          }
+          { "estado": "POR_VENCER", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
         ],
         "documentos": []
       },
-      "esperado": {
-        "puntaje": 87,
-        "banda": "PRONTO"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 87, "banda": "PRONTO" }
     },
     {
       "caso": "pieza normal vencida se acota a 69",
       "entrada": {
         "piezas": [
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": true
-          },
-          {
-            "estado": "VENCIDO",
-            "esSeguridad": false
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          }
+          { "estado": "AL_DIA", "esSeguridad": true },
+          { "estado": "VENCIDO", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
         ],
-        "documentos": [
-          "VIGENTE"
-        ]
+        "documentos": ["VIGENTE"]
       },
-      "esperado": {
-        "puntaje": 69,
-        "banda": "REVISAR"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 69, "banda": "REVISAR" }
     },
     {
       "caso": "revisar con bruto bajo sube a 40",
       "entrada": {
         "piezas": [
-          {
-            "estado": "VENCIDO",
-            "esSeguridad": false
-          },
-          {
-            "estado": "VENCIDO",
-            "esSeguridad": false
-          },
-          {
-            "estado": "SIN_DATO",
-            "esSeguridad": false
-          }
+          { "estado": "VENCIDO", "esSeguridad": false },
+          { "estado": "VENCIDO", "esSeguridad": false },
+          { "estado": "SIN_DATO", "esSeguridad": false }
         ],
         "documentos": []
       },
-      "esperado": {
-        "puntaje": 40,
-        "banda": "REVISAR"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 40, "banda": "REVISAR" }
     },
     {
       "caso": "pieza de seguridad vencida nunca sale verde",
       "entrada": {
         "piezas": [
-          {
-            "estado": "VENCIDO",
-            "esSeguridad": true
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          }
+          { "estado": "VENCIDO", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
         ],
-        "documentos": [
-          "VIGENTE"
-        ]
+        "documentos": ["VIGENTE"]
       },
-      "esperado": {
-        "puntaje": 39,
-        "banda": "ATENCION"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 39, "banda": "ATENCION" }
     },
     {
       "caso": "documento vencido con piezas al día",
       "entrada": {
         "piezas": [
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": true
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          }
+          { "estado": "AL_DIA", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false }
         ],
-        "documentos": [
-          "VENCIDO"
-        ]
+        "documentos": ["VENCIDO"]
       },
-      "esperado": {
-        "puntaje": 39,
-        "banda": "ATENCION"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 39, "banda": "ATENCION" }
     },
     {
       "caso": "atención con bruto bajo se queda en su valor",
       "entrada": {
         "piezas": [
-          {
-            "estado": "VENCIDO",
-            "esSeguridad": true
-          },
-          {
-            "estado": "VENCIDO",
-            "esSeguridad": true
-          }
+          { "estado": "VENCIDO", "esSeguridad": true },
+          { "estado": "VENCIDO", "esSeguridad": true }
         ],
         "documentos": []
       },
-      "esperado": {
-        "puntaje": 10,
-        "banda": "ATENCION"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 10, "banda": "ATENCION" }
     },
     {
       "caso": "documento por vencer es PRONTO",
       "entrada": {
         "piezas": [
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": true
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          }
+          { "estado": "AL_DIA", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false }
         ],
-        "documentos": [
-          "POR_VENCER"
-        ]
+        "documentos": ["POR_VENCER"]
       },
-      "esperado": {
-        "puntaje": 89,
-        "banda": "PRONTO"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 89, "banda": "PRONTO" }
     },
     {
-      "caso": "sin dato de seguridad sin vencidos queda AL_DIA en 90",
+      "caso": "sin dato de seguridad pasado el margen queda como mucho en REVISAR",
       "entrada": {
         "piezas": [
-          {
-            "estado": "SIN_DATO",
-            "esSeguridad": true
-          },
-          {
-            "estado": "AL_DIA",
-            "esSeguridad": false
-          }
+          { "estado": "SIN_DATO_REVISAR_YA", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
         ],
-        "documentos": [
-          "VIGENTE"
-        ]
+        "documentos": ["VIGENTE"]
       },
-      "esperado": {
-        "puntaje": 90,
-        "banda": "AL_DIA"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 69, "banda": "REVISAR" }
+    },
+    {
+      "caso": "sin dato de seguridad bajo el margen no baja la banda",
+      "entrada": {
+        "piezas": [
+          { "estado": "SIN_DATO", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
+        ],
+        "documentos": ["VIGENTE"]
+      },
+      "esperado": { "datosSuficientes": true, "puntaje": 90, "banda": "AL_DIA" }
+    },
+    {
+      "caso": "exactamente la mitad con dato no alcanza para el puntaje",
+      "entrada": {
+        "piezas": [
+          { "estado": "SIN_DATO", "esSeguridad": true },
+          { "estado": "AL_DIA", "esSeguridad": false }
+        ],
+        "documentos": ["VIGENTE"]
+      },
+      "esperado": { "datosSuficientes": false, "puntaje": null, "banda": null }
+    },
+    {
+      "caso": "datos insuficientes sin nada vencido: sin puntaje ni banda",
+      "entrada": {
+        "piezas": [
+          { "estado": "SIN_DATO", "esSeguridad": true },
+          { "estado": "SIN_DATO", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
+        ],
+        "documentos": ["VIGENTE"]
+      },
+      "esperado": { "datosSuficientes": false, "puntaje": null, "banda": null }
+    },
+    {
+      "caso": "datos insuficientes con documento vencido sigue en ATENCION",
+      "entrada": {
+        "piezas": [
+          { "estado": "SIN_DATO", "esSeguridad": true },
+          { "estado": "SIN_DATO", "esSeguridad": false },
+          { "estado": "AL_DIA", "esSeguridad": false }
+        ],
+        "documentos": ["VENCIDO"]
+      },
+      "esperado": { "datosSuficientes": false, "puntaje": null, "banda": "ATENCION" }
     },
     {
       "caso": "sin piezas ni documentos",
@@ -250,10 +172,7 @@
         "piezas": [],
         "documentos": []
       },
-      "esperado": {
-        "puntaje": 100,
-        "banda": "AL_DIA"
-      }
+      "esperado": { "datosSuficientes": true, "puntaje": 100, "banda": "AL_DIA" }
     }
   ]
 }

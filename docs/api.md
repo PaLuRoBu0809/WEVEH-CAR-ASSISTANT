@@ -21,7 +21,7 @@ Todo se filtra por la persona: un recurso ajeno responde **404** (no 403), para 
 
 - JSON en UTF-8. Nombres de campos en `camelCase` y español (`anioModelo`, `kilometraje`).
 - Fechas en ISO `AAAA-MM-DD` (`"2026-06-30"`). Números sin separadores de miles.
-- Valores fijos en mayúsculas: `CARRO`, `MOTO`, `CIUDAD`, `CARRETERA`, `MIXTO`, `GASOLINA`, `DIESEL`, `HIBRIDO`, `ELECTRICO`, `AUTOMATICA`, `MECANICA`, `4X2`, `4X4`, `AWD`.
+- Valores fijos en mayúsculas: `CARRO`, `MOTO`, `CIUDAD`, `CARRETERA`, `MIXTO`, `GASOLINA`, `DIESEL`, `GAS`, `HIBRIDO`, `HIBRIDO_ENCHUFABLE`, `ELECTRICO`, `AUTOMATICA`, `MECANICA`, `4X2`, `4X4`, `AWD`.
 
 ### Errores (Problem Details, RFC 9457)
 
@@ -70,11 +70,24 @@ Líneas reales (sin genéricas) de la marca, ordenadas por nombre y cilindrada. 
 [{
   "id": 7811, "marcaId": 145, "nombre": "PRADO VX 5P AT", "clase": "CAMIONETAS Y CAMPEROS",
   "tipoVehiculo": "CARRO", "cilindradaCc": 3400, "potenciaKw": null,
-  "combustible": null, "transmision": "AUTOMATICA", "traccion": null, "puertas": 5
+  "combustible": null, "transmision": "AUTOMATICA", "traccion": null, "puertas": 5,
+  "atributos": {
+    "combustible": { "valores": ["GASOLINA"], "origen": "IA_WEB", "fuente": "https://www.toyota.com.co/prado" },
+    "transmision": { "valores": ["AUTOMATICA"], "origen": "CATALOGO", "fuente": null },
+    "traccion": { "valores": ["4X2", "4X4"], "origen": "IA_WEB", "fuente": "https://www.toyota.com.co/prado" }
+  }
 }]
 ```
 
-`combustible`, `transmision` y `traccion` son sugerencias inferidas del nombre (null = sin pista).
+`atributos` dice cada atributo y de dónde sale (RF-CAT-04, ADR 0021); es lo que debe usar la app. Cada uno es `null` cuando no hay dato, y entonces la app pregunta con "No sé".
+
+| `origen` | Qué significa | La app |
+|---|---|---|
+| `CATALOGO` | Lo dice el nombre de la línea del Ministerio | No pregunta; "Dato de WEVEH · Corregir" |
+| `IA_WEB` | Investigado por familia en la web, verificado y con `fuente` | No pregunta; "Dato de WEVEH · según [fuente] · Corregir" |
+| `EQUIPO` | Corregido por el equipo | Igual que `IA_WEB` |
+
+Varios `valores` significan que el modelo se vende en varias versiones: la app pregunta solo entre ellos. Gana el nombre de la línea; luego lo del equipo; luego lo de la web verificado. Los campos sueltos `combustible`, `transmision` y `traccion` se conservan por compatibilidad y solo traen lo deducido del nombre.
 
 ## Garaje ✅
 
@@ -120,7 +133,13 @@ Ver uno (200) o eliminarlo con todo lo suyo (204). Ajeno o inexistente → 404.
 
 ### `PUT /vehiculos/{id}`
 
-Edita `alias`, `placa`, `uso`, `kmPromedioMes` y `fechaMatricula`, enviando la `versionFila` que tenía la app. **Hoy** responde 409 si la versión cambió; **con ADR 0009** gana el cambio más reciente si cumple las reglas.
+Edita `alias`, `placa`, `uso`, `kmPromedioMes`, `fechaMatricula`, `combustible`, `transmision` y `traccion` (RF-GAR-03), enviando la `versionFila` que tenía la app. `combustible`, `transmision` y `traccion` son opcionales: si no llegan (o llegan en `null`) se conservan los actuales.
+
+```json
+{ "alias": "La Prado", "uso": "MIXTO", "kmPromedioMes": 1000, "combustible": "DIESEL", "traccion": "4X4", "versionFila": 3 }
+```
+
+ **Hoy** responde 409 si la versión cambió; **con ADR 0009** gana el cambio más reciente si cumple las reglas.
 
 ### `PUT /vehiculos/{id}/registro` (RF-GAR-02b)
 

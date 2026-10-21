@@ -2,6 +2,8 @@
 
 Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Política: [borrador 0.1](../legal/politica-tratamiento-datos-BORRADOR.md), que se usa en el flujo de consentimiento del MVP; la versión final se trabaja con asesoría legal **después del MVP**, antes de tener usuarios reales.
 
+> Actualizado el 2026-10-21: entran las reglas de privacidad para audio y fotos (RF-DAT-09, ADR 0018) y para los datos de terceros y la ubicación gruesa de la entrevista (RF-DAT-10).
+
 ## RF-DAT-01 Aceptar la política
 - Dado que creo mi cuenta
   Cuando veo la casilla "Acepto la política de tratamiento de datos personales"
@@ -50,3 +52,30 @@ Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Política: [borrado
 - Dado los registros técnicos (logs) y el monitoreo de errores
   Cuando se guardan
   Entonces no contienen nombre, correo, token ni llaves
+
+## RF-DAT-09 Audio y fotos
+Como dueño quiero saber qué pasa con mi voz y mis fotos.
+- Dado que uso el micrófono por primera vez
+  Cuando la app lo pide
+  Entonces me explica que un proveedor externo transcribe mi audio y que el audio no se guarda
+- Dado un audio ya transcrito
+  Cuando termina la transcripción
+  Entonces el audio se borra de inmediato y solo queda el texto que yo envié
+- Dado una foto de factura o del tablero
+  Cuando la guardo
+  Entonces solo la puedo ver yo, no se envía a ningún modelo de IA y se borra con mi vehículo o mi cuenta en menos de 24 horas
+- Dado la política de tratamiento de datos
+  Cuando la leo
+  Entonces declara el uso de audio y fotos, el proveedor de transcripción y la transferencia internacional (borrador, hasta la revisión legal)
+
+## RF-DAT-10 Datos de terceros y ubicación gruesa
+Como dueño quiero que WEVEH me pida solo lo necesario.
+- Dado cualquier pregunta de la entrevista o del registro de un servicio
+  Cuando la veo
+  Entonces no me pide nombre, cédula, teléfono ni dirección de nadie (vendedor, mecánico o dueños anteriores)
+- Dado que contesto con el municipio de uso
+  Cuando se guarda
+  Entonces solo queda el municipio
+- Dado la licencia de conducción
+  Cuando la registro
+  Entonces solo se guarda la fecha de vencimiento

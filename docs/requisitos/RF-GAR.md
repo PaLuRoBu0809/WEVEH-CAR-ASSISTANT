@@ -3,6 +3,8 @@
 Detalle de reglas: skill `weveh-dev:dominio-vehiculo` (§1 y §5). Ejemplo de referencia: Toyota Prado J95 VX 2008, 3.4 V6, 190.000 km.
 
 > RF-GAR-00 (identidad por dispositivo) quedó reemplazado por [RF-CTA](RF-CTA.md) (ADR 0005). Todo lo de este archivo es **de la cuenta** de la persona: un vehículo de otra cuenta responde 404.
+>
+> Actualizado el 2026-10-21: el kilometraje es siempre el que la persona confirma, nunca una estimación (RF-GAR-05, RF-GAR-07), y el registro no pregunta lo que el catálogo ya sabe (RF-CAT-04).
 
 ## RF-GAR-01 Ver mi garaje
 Como dueño quiero ver mis vehículos al abrir la app, aunque no tenga internet.
@@ -27,8 +29,11 @@ Como dueño quiero agregar mi carro o moto en menos de un minuto.
 - Dado que estoy en el registro
   Cuando avanzo
   Entonces en ningún momento se me pide el nivel de combustible
+- Dado que el catálogo ya conoce el combustible, la transmisión y la tracción de mi línea
+  Cuando avanzo en el registro
+  Entonces no se me pregunta ninguno de los tres (RF-CAT-04)
 
-**Obligatorios:** tipo, marca y línea (catálogo o texto libre), año modelo y kilometraje actual. **Opcionales en el registro** (se completan después, en la entrevista del agente o desde un recordatorio en Inicio): último cambio de aceite, SOAT, RTM, seguro todo riesgo, fecha de matrícula, uso, km por mes, alias y placa.
+**Obligatorios:** tipo, marca y línea (catálogo o texto libre), año modelo y kilometraje actual. **Opcionales en el registro** (se completan después, con las tarjetas de Inicio, la entrevista del agente o un recordatorio): último cambio de aceite, SOAT, RTM, seguro todo riesgo, fecha de matrícula, alias y placa. El uso, el entorno (RF-PER-07) y el km por mes no se preguntan en el registro, porque RNF-11 mide menos de un minuto: el uso queda en "Mixto" y el km por mes en 1.000 hasta que la persona los cambie (el km por mes solo sirve para detectar saltos raros, RF-GAR-05).
 
 ## RF-GAR-02b Completar lo que falta
 Como dueño quiero que la app me recuerde los datos que faltan para cuidar bien mi vehículo.
@@ -47,17 +52,20 @@ Como dueño quiero corregir los datos de mi vehículo.
 - Dado que otra sesión editó el mismo vehículo después de que yo lo abrí
   Cuando guardo
   Entonces queda el cambio más reciente, siempre que cumpla las reglas, y la app me muestra cómo quedó (ADR 0009)
+- Dado que cambio el combustible, la transmisión o la tracción de mi vehículo (por ejemplo, tras cambiarle el motor)
+  Cuando guardo
+  Entonces el plan se reconstruye con ese perfil y las piezas afectadas quedan en "Sin dato" hasta que yo informe lo que se hizo (RF-MAN-07)
 
-Se puede editar: alias, placa, uso, km por mes y fecha de matrícula. El kilometraje va por RF-GAR-05.
+Se puede editar: alias, placa, uso, entorno, km por mes, fecha de matrícula, combustible, transmisión y tracción. El kilometraje va por RF-GAR-05.
 
 ## RF-GAR-04 Eliminar vehículo
 Como dueño quiero eliminar un vehículo que ya no tengo.
 - Dado que confirmo "Eliminar La Prado"
   Cuando elimino
-  Entonces desaparece del garaje junto con su plan, historial, documentos, tanqueadas y conversaciones
+  Entonces desaparece del garaje junto con su plan, historial, fotos, documentos, tanqueadas y conversaciones
 
 ## RF-GAR-05 Actualizar kilometraje
-Como dueño quiero anotar el kilometraje actual para que el plan se recalcule.
+Como dueño quiero anotar el kilometraje real para que el plan y los avisos sean confiables.
 - Dado que mi vehículo tiene 190.000 km y escribo 191.200
   Cuando guardo
   Entonces el kilometraje queda en 191.200 y el plan se recalcula
@@ -67,6 +75,14 @@ Como dueño quiero anotar el kilometraje actual para que el plan se recalcule.
 - Dado que escribo un salto mayor a max(3 × km promedio diario × días desde la última lectura, 1.500)
   Cuando guardo
   Entonces la app me pide confirmar antes de guardarlo
+- Dado que la última lectura confirmada tiene más de 30 días
+  Cuando abro Inicio o el plan
+  Entonces veo "Kilometraje confirmado hace X días" con el botón "Actualizar", y los estados se calculan con ese kilometraje, sin sumarle ningún estimado
+- Dado que actualizo el kilometraje y adjunto una foto del tablero
+  Cuando guardo
+  Entonces la foto queda como evidencia de esa lectura y el valor es el que yo escribí; ningún modelo lee la foto (ADR 0018)
+
+El km promedio al mes no se usa para estimar el kilometraje de hoy; solo para detectar saltos raros. El plan nunca muestra fechas estimadas por kilómetros: muestra los kilómetros que faltan.
 
 ## RF-GAR-06 Cambios sin red
 Como dueño quiero anotar cosas aunque no tenga señal.
@@ -76,3 +92,15 @@ Como dueño quiero anotar cosas aunque no tenga señal.
 - Dado que el cambio guardado sin red rompe una regla (por ejemplo, baja el kilometraje)
   Cuando se sincroniza
   Entonces se rechaza y la app me avisa qué no se guardó
+
+## RF-GAR-07 Recordatorio de kilometraje
+Como dueño quiero que la app me pida el kilometraje cada cierto tiempo, para no depender de acordarme.
+- Dado que no actualicé el kilometraje en 15 días (se puede cambiar a 7, 15 o 30 en Perfil)
+  Cuando llega ese día
+  Entonces recibo una notificación local "¿Cuántos km marca hoy La Prado?" que abre la pantalla para escribirlo
+- Dado que actualicé el kilometraje, registré un servicio o una tanqueada con kilometraje
+  Cuando se guarda
+  Entonces el plazo del recordatorio vuelve a empezar
+- Dado que tengo las notificaciones desactivadas
+  Cuando abro Inicio
+  Entonces veo el aviso fijo de RF-DOC-04 para activarlas
