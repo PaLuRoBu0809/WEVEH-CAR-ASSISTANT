@@ -36,14 +36,14 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 
 ## Etapa 3b · Atributos del catálogo (RF-CAT-04, RF-CAT-05, RF-GAR-02, RF-GAR-03; ADR 0016, ADR 0021)
 
-- [ ] Migración V8: ampliar el CHECK de `catalogo.linea.combustible` **y** de `vehiculo.combustible` a gasolina, diésel, gas, híbrido, híbrido enchufable y eléctrico; tabla `catalogo.atributo_linea` (`linea_id`, atributo, valores, origen `CATALOGO`/`IA_WEB`/`EQUIPO`, URL, cita, tipo de fuente, verificada, lote) con RLS.
-- [ ] Backend: `GAS` e `HIBRIDO_ENCHUFABLE` en el enum `Combustible`; la búsqueda de líneas devuelve cada atributo con sus valores y su origen (catálogo, luego web verificada); editar combustible, transmisión y tracción (`PUT /vehiculos/{id}`).
-- [ ] Capa 0 en el importador: "TP" = automática y las cajas con nombre propio (S-TRONIC, TIPTRONIC, DSG…), códigos de motor de gasolina y diésel (TFSI, CDI, "120D"…), tracciones comerciales (QUATTRO, 4MATIC…); motos no eléctricas que no son motocarro = gasolina. Pruebas con nombres reales y el falso positivo "A8 D4".
-- [ ] Actualizar los atributos del catálogo en Supabase con un `UPDATE` por `id` (sin borrar ni recargar líneas, ADR 0014) y repetir la medición de cobertura.
-- [ ] App: no preguntar lo que viene del nombre; mostrar "Dato de WEVEH · según [fuente]" lo investigado; si hay varios valores, preguntar solo entre ellos; sin dato, preguntar con "No sé" sin nada marcado. Quitar el relleno de gasolina por defecto.
-- [ ] App: el uso sale del registro (queda "Mixto"); editar combustible, transmisión y tracción desde el vehículo; el plan se reconstruye cuando exista (RF-GAR-03).
-- [ ] Reporte de cobertura de atributos por tabla y por origen en cada importación, con la línea base del 2026-10-21 (carros: transmisión 51,1 %, tracción 11,8 %, combustible 3,6 %), y correcciones de las personas (RF-CAT-05).
-- [ ] Verificación: criterios de RF-CAT-04 y RF-CAT-05 con pruebas; `docs/api.md`, `docs/datos.md` y `contracts/openapi.yaml` al día.
+- [x] Migración V8: ampliar el CHECK de `catalogo.linea.combustible` **y** de `vehiculo.combustible` a gasolina, diésel, gas, híbrido, híbrido enchufable y eléctrico; tabla `catalogo.atributo_linea` (`linea_id`, atributo, valores, origen `CATALOGO`/`IA_WEB`/`EQUIPO`, URL, cita, tipo de fuente, verificada, lote) con RLS.
+- [x] Backend: `GAS` e `HIBRIDO_ENCHUFABLE` en el enum `Combustible`; la búsqueda de líneas devuelve cada atributo con sus valores y su origen (catálogo, luego web verificada); editar combustible, transmisión y tracción (`PUT /vehiculos/{id}`).
+- [x] Capa 0 en el importador: "TP" = automática y las cajas con nombre propio (S-TRONIC, TIPTRONIC, DSG…), códigos de motor de gasolina y diésel (TFSI, CDI, "120D"…), tracciones comerciales (QUATTRO, 4MATIC…); motos no eléctricas que no son motocarro = gasolina. Pruebas con nombres reales y el falso positivo "A8 D4".
+- [ ] Actualizar los atributos del catálogo en Supabase con un `UPDATE` por `id` (sin borrar ni recargar líneas, ADR 0014) y repetir la medición de cobertura. SQL listo en `datos/catalogo/2025/actualizar_atributos.sql` (esperado en carros: combustible 11,3 %, transmisión 62,6 %, tracción 15,0 %); se corre después de que Render despliegue V8.
+- [x] App: no preguntar lo que viene del nombre; mostrar "Dato de WEVEH · según [fuente]" lo investigado; si hay varios valores, preguntar solo entre ellos; sin dato, preguntar con "No sé" sin nada marcado. Quitar el relleno de gasolina por defecto.
+- [x] App: el uso sale del registro (queda "Mixto"); editar combustible, transmisión y tracción desde el vehículo; el plan se reconstruye cuando exista (RF-GAR-03).
+- [x] Reporte de cobertura de atributos por tabla y por origen en cada importación, con la línea base del 2026-10-21 (carros: transmisión 51,1 %, tracción 11,8 %, combustible 3,6 %), y correcciones de las personas (RF-CAT-05).
+- [x] Verificación: criterios de RF-CAT-04 y RF-CAT-05 con pruebas; `docs/api.md`, `docs/datos.md` y `contracts/openapi.yaml` al día.
 
 ## Etapa 3c · Enriquecimiento del catálogo por familia (ADR 0021, RF-CAT-05)
 
