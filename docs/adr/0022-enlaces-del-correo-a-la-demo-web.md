@@ -39,5 +39,5 @@ Supabase tiene **un solo** vencimiento para todos los enlaces del correo y no de
 - Las páginas de los correos son las de la demo web: un cambio en ellas se publica con el despliegue de Vercel.
 - Para probar en Expo Go, el correo lleva a la demo publicada, no al código local.
 - Redirect URLs de Supabase: `https://<demo>/**`, `weveh://**` y `exp://**`.
-- El arte de la franja del correo (sol y carretera) va después como PNG servido desde la demo; por ahora la franja es de color con la palabra "weveh".
+- La franja del correo (sol, carretera y la W del mockup) es un PNG servido desde la demo (`mobile/public/correo/cabecera.png`), porque Gmail y otros clientes no muestran SVG. Se regenera con una captura de `docs/correos/cabecera.html` a escala 2 (Chrome sin ventana). Si la imagen no carga, se ve la franja oscura con "weveh" como texto alternativo.
 - Si algún día hay dominio propio, se cambia la Site URL y el remitente sin tocar el código.

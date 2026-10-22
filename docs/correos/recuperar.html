@@ -18,9 +18,10 @@
       <td align="center" style="padding:24px 12px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:16px;overflow:hidden;">
           <tr>
-            <!-- Franja de la marca. El arte (sol y carretera) va después como PNG en mobile/public/ -->
-            <td style="background:#00120F;background-image:linear-gradient(#00120F,#00403A);height:96px;padding:0 24px;">
-              <span style="color:#FFFFFF;font-size:24px;font-weight:800;letter-spacing:-0.02em;">weveh</span>
+            <!-- Franja de la marca del mockup (sol, carretera y la W) en PNG: los clientes de correo no muestran SVG.
+                 Se sirve desde la demo (mobile/public/correo/cabecera.png) y se genera con docs/correos/cabecera.html -->
+            <td style="background:#00120F;">
+              <img src="{{ .SiteURL }}/correo/cabecera.png" width="520" height="120" alt="weveh" style="display:block;width:100%;max-width:520px;height:auto;border:0;background:#00120F;color:#FFFFFF;font-size:24px;font-weight:800;line-height:120px;text-indent:24px;">
             </td>
           </tr>
           <tr>

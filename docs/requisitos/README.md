@@ -52,7 +52,7 @@ Archivos: [RF-CTA](RF-CTA.md) · [RF-DAT](RF-DAT.md) · [RF-GAR](RF-GAR.md) · [
 
 ## Fuera del MVP
 
-Directorio de talleres, grúas y servicios (pestaña Servicios del mockup), push del servidor (los avisos son notificaciones locales), pagos, RUNT y consulta automática del SIMIT, OBD, versión web para usuarios, rol administrador, agendamiento en talleres aliados, lectura automática de fotos con modelos de visión (tablero, testigos y facturas) y ajustar o entrenar modelos con lo que dice el mecánico.
+Directorio de talleres, grúas y servicios (pestaña Servicios del mockup), push del servidor (los avisos son notificaciones locales), pagos, RUNT y consulta automática del SIMIT, OBD, versión web para usuarios, rol administrador, agendamiento en talleres aliados, análisis de fotos y videos con IA (tablero, testigos, facturas; previsto para después del MVP, ADR 0018) y ajustar o entrenar modelos con lo que dice el mecánico.
 
 Entran al MVP con la aprobación del 2026-10-21: voz (solo transcripción de audio, ADR 0018), fotos de factura y tablero solo como evidencia, y el botón "¿Tu mecánico te dijo otra cosa?" como información (RF-MIA-09, RF-MIA-11).
 

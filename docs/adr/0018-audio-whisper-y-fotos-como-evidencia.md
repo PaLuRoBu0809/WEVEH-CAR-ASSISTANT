@@ -28,3 +28,27 @@ La voz estaba fuera del MVP. Para registrar servicios y preguntar al Mecánico I
 - RNF-31 (tiempo de transcripción), RNF-33 (medios), RNF-36 (cupo gratuito).
 - El límite de uso gratuito de Groq se verificó solo en una fuente secundaria: confirmar en la consola de Groq antes de la demo.
 - Cambia la lista "Fuera del MVP": entran la voz (transcripción) y los audios; las fotos se guardan sin ser leídas.
+
+## Evolución prevista (después del MVP)
+
+"Solo evidencia" es una decisión **del MVP**, no un límite del producto. La meta es que el Mecánico IA también
+analice **fotos** (tablero con testigos, facturas, la pieza) y **videos cortos**, porque así muestra mejor el problema
+quien no sabe de mecánica.
+
+- **El audio es y seguirá siendo solo voz**: lo que la persona dice, transcrito. WEVEH no analiza sonidos del
+  vehículo (ruidos del motor, frenos, etc.).
+- **El agente orienta, no da certeza**: lo que saque de una foto o un video es una guía, nunca un diagnóstico
+  seguro. Siempre lo dice así y manda al mecánico cuando corresponde.
+
+Para eso hace falta, cada vez con su ADR:
+
+- Un proveedor de modelos multimodales que cumpla CLAUDE.md §8 (gratuito o aprobado por el equipo) detrás de un
+  puerto de `application`, con evals propios.
+- Quitar o tapar los datos personales antes de enviar (placa, nombre y NIT en la factura).
+- Autorización explícita de la persona y política de datos actualizada (proveedor, transferencia internacional,
+  conservación), que se acepta como versión nueva (RF-DAT-03).
+- La regla de seguridad sigue ganando: lo que el modelo vea en una foto o un video nunca baja la gravedad que fija el
+  código.
+
+Por eso los textos de la app y de la política dicen "por ahora" y prometen pedir permiso antes de analizar fotos o
+videos, sin cerrar la puerta.

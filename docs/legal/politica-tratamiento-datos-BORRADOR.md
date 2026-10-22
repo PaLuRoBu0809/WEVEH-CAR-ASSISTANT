@@ -16,7 +16,7 @@
 | Identificación y contacto | Nombre y correo electrónico | Sí, para tener una cuenta |
 | Datos del vehículo | Tipo, marca, línea, año, kilometraje, uso, fechas de SOAT, revisión técnico-mecánica y seguro, historial de mantenimiento, fallas, tanqueadas; alias y placa (opcionales) | Marca, línea, año y kilometraje; lo demás es opcional |
 | Consultas al Mecánico IA | Lo que la persona escribe y las respuestas | Solo si usa el asistente |
-| Fotos | Facturas y tablero que la persona decida subir; se guardan solo como evidencia y ningún modelo de IA las lee | No |
+| Fotos | Facturas y tablero que la persona decida subir; en esta versión se guardan solo como respaldo. Si una versión futura analiza fotos o videos con IA para orientar a la persona, se pedirá autorización antes | No |
 | Datos técnicos | Registros de errores y de funcionamiento, sin nombre, correo ni credenciales | Automático |
 
 **No tratamos** cédula, teléfono, ubicación, datos de pago ni datos sensibles. La placa es opcional y nunca se comparte con terceros ni con modelos de IA.

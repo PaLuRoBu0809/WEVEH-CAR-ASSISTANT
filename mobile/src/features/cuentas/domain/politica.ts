@@ -37,7 +37,7 @@ export const POLITICA = {
             'Identificación y contacto: nombre y correo electrónico. Obligatorios para tener una cuenta.',
             'Datos del vehículo: tipo, marca, línea, año, kilometraje, uso, fechas de SOAT, revisión técnico-mecánica y seguro, historial de mantenimiento, fallas, tanqueadas; alias y placa (opcionales). Son obligatorios marca, línea, año y kilometraje; lo demás es opcional.',
             'Consultas al Mecánico IA: lo que la persona escribe y las respuestas. Solo si usa el asistente.',
-            'Fotos: facturas y tablero que la persona decida subir; se guardan solo como evidencia y ningún modelo de IA las lee. Opcionales.',
+            'Fotos: facturas y tablero que la persona decida subir; en esta versión se guardan solo como respaldo. Si una versión futura analiza fotos o videos con IA para orientar a la persona, se pedirá autorización antes. Opcionales.',
             'Datos técnicos: registros de errores y de funcionamiento, sin nombre, correo ni credenciales. Automáticos.',
           ],
         },
@@ -152,9 +152,12 @@ export const POLITICA = {
   ] satisfies readonly SeccionPolitica[],
 } as const;
 
-/** Resumen de la pantalla "Antes de entrar" (mockup 7). Las fotos son solo evidencia (docs/adr/0018). */
+/**
+ * Resumen de la pantalla "Antes de entrar" (mockup 7). En el MVP las fotos son solo respaldo; analizar fotos o videos
+ * con IA es una fase posterior que pedirá permiso antes. El audio es solo voz (docs/adr/0018).
+ */
 export const RESUMEN_POLITICA: readonly string[] = [
   'Usamos tus datos de cuenta y de tu vehículo para avisarte de mantenimientos y responder tus dudas.',
-  'Las fotos que subas, como facturas o el tablero, se guardan solo como evidencia: ninguna inteligencia artificial las lee.',
+  'Por ahora, las fotos que subas, como facturas o el tablero, se guardan como respaldo. Si más adelante WEVEH analiza fotos o videos para orientarte, te pediremos permiso antes.',
   'Puedes ver, corregir o borrar tus datos cuando quieras.',
 ];

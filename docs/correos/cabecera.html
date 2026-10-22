@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@800&display=block" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; width: 520px; height: 120px; overflow: hidden; background: #00120F; }
+  .mban { position: relative; width: 520px; height: 120px; overflow: hidden; }
+  .mban svg.ms { position: absolute; inset: 0; }
+  .wb { position: absolute; left: 24px; top: 20px; display: flex; align-items: center; gap: 8px; color: #fff;
+        font-family: Manrope, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.02em; z-index: 2; }
+</style>
+</head>
+<body>
+<div class="mban">
+  <svg class="ms" width="520" height="120" viewBox="0 0 520 120" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="mk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00120F"/><stop offset="1" stop-color="#00403A"/></linearGradient>
+      <radialGradient id="mg" cx="260" cy="92" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFB000" stop-opacity=".55"/><stop offset="1" stop-color="#FFB000" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="520" height="120" fill="url(#mk)"/>
+    <circle cx="260" cy="92" r="150" fill="url(#mg)"/>
+    <rect y="92" width="520" height="28" fill="#031513"/>
+    <polygon points="250,92 270,92 330,120 190,120" fill="#0A2623"/>
+    <circle cx="260" cy="92" r="11" fill="#FFB000"/>
+  </svg>
+  <div class="wb">
+    <svg width="30" height="30" viewBox="0 0 64 64" fill="none">
+      <path d="M17.5 27 L24.75 46 L32 33 L39.25 46 L46.5 27" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="32" cy="18" r="5" fill="#FFB000"/>
+    </svg>
+    <span>weveh</span>
+  </div>
+</div>
+</body>
+</html>
