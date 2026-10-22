@@ -16,18 +16,18 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [x] Catálogo: repositorio con fragmento personalizado para la búsqueda dinámica.
 - [x] Verificación: 84 pruebas en verde (las 82 de antes + 2 de integración nuevas: edición con `@Version` y consultas con `jsonb`), sin cambios en dominio ni API.
 
-## Etapa 2 · Cuentas y tratamiento de datos (ADR 0005, RF-CTA, RF-DAT)
+## Etapa 2 · Cuentas y tratamiento de datos (ADR 0005, RF-CTA, RF-DAT) ✅ 2026-10-22
 
 - [x] Borrador de la política de tratamiento de datos ([v0.1](legal/politica-tratamiento-datos-BORRADOR.md)); el flujo de consentimiento registra la versión `0.1-borrador`.
-- [x] Configurar Supabase Auth: correo con verificación, Google (credenciales en Google Cloud) y llave service_role en el backend. El enlace mágico y la dirección de retorno `weveh://` van con la parte 2.
+- [x] Configurar Supabase Auth: correo con verificación, Google (credenciales en Google Cloud) y llave service_role en el backend. La dirección de retorno `weveh://` va con la parte 2 (el enlace mágico salió del MVP).
 - [x] Backend: módulo `cuentas`, Spring Security con validación del token (JWKS), `usuario_id` en vez de `dispositivo_id`, 401/404, tablas `usuario` y `consentimiento`, `DELETE /cuenta`.
 - [x] Migración que borra los vehículos de prueba y cambia la identidad (V5).
 - [x] App (parte 1): portada con dos botones, crear cuenta e iniciar sesión con correo y contraseña, sesión en SecureStore, cerrar sesión, nombre y correo en Perfil.
 - [x] App (parte 2a, [ADR 0022](adr/0022-enlaces-del-correo-a-la-demo-web.md)): "Continuar con Google" con PKCE y "Antes de entrar" (`medio = APP_GOOGLE`, V9), recuperar contraseña, "Revisa tu correo" y "Cuenta confirmada" en la demo web, leer la política desde la casilla. Plantillas en `docs/correos/`.
-- [ ] Configurar en Supabase (Pablo): Site URL y Redirect URLs, plantillas de `docs/correos/`, Email OTP expiration = 3600, SMTP de Brevo, proveedor Google; aplicar V9.
-- [ ] App (parte 2b): diseño completo del mockup (trama de W, dial y arte del correo en PNG), enlace mágico, "Mis datos" y "Eliminar mi cuenta" en Perfil.
-- [ ] App propia (development build con EAS) y emulador de Android Studio para probar Google y el enlace mágico (ADR 0011).
-- [ ] Verificación: criterios de RF-CTA y RF-DAT con pruebas; RNF-08, 10, 24, 25, 26.
+- [x] Configurar en Supabase (Pablo): Site URL y Redirect URLs, plantillas de `docs/correos/`, Email OTP expiration = 3600, "Confirm email" activo, SMTP de Brevo (usuario = el login SMTP `…@smtp-brevo.com`, clave `xsmtpsib-`), proveedor Google; V9 aplicada por Render.
+- [x] App (parte 2b): Perfil → "Mis datos" (RF-DAT-04), cambiar nombre, correo (dos enlaces, `/correo-cambiado`) y contraseña (RF-CTA-07), confirmar la identidad (RF-CTA-05) y "Eliminar mi cuenta" (RF-DAT-06/07). El enlace mágico sale del MVP.
+- [ ] Supabase (Pablo): plantilla "Change email address" con `docs/correos/cambiar-correo.html` (asunto "Confirma el cambio de correo en WEVEH").
+- [x] Verificación: criterios de RF-CTA y RF-DAT con pruebas; RNF-08 (regla de arquitectura: `mecanicoia` no depende de `cuentas`), 10, 24, 25 y 26; probado en el emulador de Android con Expo Go (2026-10-22). El diseño del mockup en cuenta y la app propia con EAS pasan a "Antes de la demo".
 
 ## Etapa 3 · Registro mínimo y edición (RF-GAR-02, 02b, 03, 05) ✅ 2026-10-15
 
@@ -148,6 +148,8 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [ ] Confirmar en la consola de Groq y de Brave los cupos gratuitos vigentes.
 - [ ] Despertar el backend de Render y probar a la hora de la demo.
 - [ ] Prueba de registro con 3 personas (RNF-11) y en un celular real (RNF-18).
+- [ ] Diseño completo del mockup en las pantallas de cuenta (trama de W que se enciende y dial que se llena).
+- [ ] App propia (development build con EAS) para probar Google y el regreso por `weveh://` fuera de Expo Go (ADR 0011).
 
 ## Después del MVP
 

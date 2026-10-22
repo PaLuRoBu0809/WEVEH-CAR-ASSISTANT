@@ -22,7 +22,7 @@ Competencia conocida: Garage Hub (asistente similar), Drivoo (enfocado en gastos
 ## 2. Alcance del MVP (vigente)
 
 **Entra:**
-1. **Cuentas** con Supabase Auth (correo + contraseña, Google, enlace mágico) y **tratamiento de datos** según la Ley 1581 (ADR 0005, RF-CTA, RF-DAT). Un solo rol: usuario.
+1. **Cuentas** con Supabase Auth (correo + contraseña y Google; el enlace mágico queda para después del MVP) y **tratamiento de datos** según la Ley 1581 (ADR 0005, RF-CTA, RF-DAT). Un solo rol: usuario.
 2. **Garaje**: crear, editar y eliminar vehículos (ver §6), y verlos sin red (SQLite, ADR 0009).
 3. **Registro guiado en dos tiempos**: datos mínimos (menos de 1 min) y luego **"Completar perfil con WEVEH"**: un agente que investiga el modelo exacto en la web y entrevista al usuario (correa de distribución, fallas, piezas cambiadas...).
 4. **Plan de mantenimiento por pieza**, armado por perfil del vehículo y en capas (ADR 0016), y **salud del vehículo** (el puntaje solo con datos suficientes).
@@ -55,7 +55,7 @@ No fijes versiones de memoria: usa las que generen `start.spring.io` y `create-e
 
 ## 4. Orden de construcción
 
-El plan vivo con el estado de cada paso está en **`docs/tareas.md`**. No saltes de etapa sin cerrar la anterior (pruebas y CI en verde). Hechas: fase 0, diseño de los mockups, la primera parte de la fase 1, la persistencia con Spring Data JDBC, las cuentas (backend y login con correo) y el garaje en línea (registro mínimo, editar, completar datos y kilometraje). Siguen, en orden: atributos del catálogo (etapa 3b: no preguntar lo que el catálogo sabe y enriquecerlo por familia con fuentes, ADR 0021), el resto de cuentas y datos (Google, enlace mágico, Mis datos, eliminar desde la app), sin red, resiliencia y monitoreo, Mecánico IA conversacional, fase 2 (mantenimiento y documentos), fase 4 (completar perfil), fase 5 (combustible) y catálogo por año fiscal.
+El plan vivo con el estado de cada paso está en **`docs/tareas.md`**. No saltes de etapa sin cerrar la anterior (pruebas y CI en verde). Hechas: fase 0, diseño de los mockups, la primera parte de la fase 1, la persistencia con Spring Data JDBC, las cuentas y el tratamiento de datos (correo y contraseña, Google, recuperar y confirmar, Mis datos y eliminar la cuenta, ADR 0022) y el garaje en línea (registro mínimo, editar, completar datos y kilometraje). Siguen, en orden: atributos del catálogo (etapa 3b: no preguntar lo que el catálogo sabe y enriquecerlo por familia con fuentes, ADR 0021), sin red, resiliencia y monitoreo, Mecánico IA conversacional, fase 2 (mantenimiento y documentos), fase 4 (completar perfil), fase 5 (combustible) y catálogo por año fiscal.
 
 ## 5. Comandos (una vez creados los proyectos)
 

@@ -9,8 +9,8 @@ Estado revisado el 2026-10-10. Ampliación propuesta el 2026-10-19 y aprobada el
 | ID | Requisito | Fase | Estado | Nota |
 |---|---|---|---|---|
 | ~~RF-GAR-00~~ | ~~Identidad por dispositivo~~ | 0 | 🔁 | Reemplazado por RF-CTA (ADR 0005) |
-| RF-CTA-01..07 | [Cuentas](RF-CTA.md) | 1 | 🟡 | 01, 02 (correo y contraseña), 04 y 06 hechos; el backend de 05 y 07 también. Faltan Google, enlace mágico, 03 y las pantallas de 05 y 07 |
-| RF-DAT-01..08 | [Tratamiento de datos](RF-DAT.md) | 1 | 🟡 | 08: ya no van placa, alias ni identificador al modelo; falta el aviso en Preguntar y lo de nombre y correo |
+| RF-CTA-01..07 | [Cuentas](RF-CTA.md) | 1 | ✅ | Correo y contraseña, Google, recuperar, confirmar, Mis datos (nombre, correo, contraseña) y confirmar la identidad. El enlace mágico salió del MVP |
+| RF-DAT-01..08 | [Tratamiento de datos](RF-DAT.md) | 1 | 🟡 | 01, 02 y 04 a 07 hechos (política, autorización con medio, Mis datos, corregir, eliminar = revocar). 03 se activa cuando cambie la política. 08: nada personal llega al modelo; falta el aviso en Preguntar (va con el Mecánico IA) |
 | RF-DAT-09..10 | Audio, fotos, terceros y ubicación gruesa | 2 | ⬜ | Reglas de privacidad para los medios y la entrevista |
 | RF-GAR-01 | Ver mi garaje | 0 / 1 | 🟡 | Falta ver sin red (ADR 0009) |
 | RF-GAR-02 | Registrar vehículo (datos mínimos) | 1 | 🔁 | Hecho; cambia: no pregunta lo que el catálogo ya sabe (RF-CAT-04) y el uso sale del registro (queda "Mixto") |
@@ -52,7 +52,7 @@ Archivos: [RF-CTA](RF-CTA.md) · [RF-DAT](RF-DAT.md) · [RF-GAR](RF-GAR.md) · [
 
 ## Fuera del MVP
 
-Directorio de talleres, grúas y servicios (pestaña Servicios del mockup), push del servidor (los avisos son notificaciones locales), pagos, RUNT y consulta automática del SIMIT, OBD, versión web para usuarios, rol administrador, agendamiento en talleres aliados, análisis de fotos y videos con IA (tablero, testigos, facturas; previsto para después del MVP, ADR 0018) y ajustar o entrenar modelos con lo que dice el mecánico.
+Enlace mágico (entrar solo con un enlace al correo; hay correo y contraseña y Google), directorio de talleres, grúas y servicios (pestaña Servicios del mockup), push del servidor (los avisos son notificaciones locales), pagos, RUNT y consulta automática del SIMIT, OBD, versión web para usuarios, rol administrador, agendamiento en talleres aliados, análisis de fotos y videos con IA (tablero, testigos, facturas; previsto para después del MVP, ADR 0018) y ajustar o entrenar modelos con lo que dice el mecánico.
 
 Entran al MVP con la aprobación del 2026-10-21: voz (solo transcripción de audio, ADR 0018), fotos de factura y tablero solo como evidencia, y el botón "¿Tu mecánico te dijo otra cosa?" como información (RF-MIA-09, RF-MIA-11).
 

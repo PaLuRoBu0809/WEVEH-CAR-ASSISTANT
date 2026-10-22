@@ -7,28 +7,37 @@ import { supabase } from '../infrastructure/supabase';
  * Los enlaces del correo abren páginas de la demo web con token_hash (docs/adr/0022): se verifican con verifyOtp,
  * que sirve en cualquier equipo. El código PKCE solo serviría en el navegador o celular que pidió el correo.
  */
-export type TipoEnlace = 'recovery' | 'email';
+export type TipoEnlace = 'recovery' | 'email' | 'email_change';
 
 /**
- * RF-CTA-03 y RF-CTA-04: verifica el enlace del correo una sola vez (una consulta, aunque la página se monte dos
- * veces). Un enlace vencido o ya usado termina en error.
- * Al confirmar el correo se cierra la sesión que abre el enlace: el perfil se crea al iniciar sesión.
+ * Cambiar el correo pide abrir dos enlaces, uno en cada correo ("Secure email change"): el primero queda a medias.
+ */
+export type ResultadoEnlace = 'listo' | 'falta-otro-enlace';
+
+/**
+ * RF-CTA-03, RF-CTA-04 y RF-CTA-07: verifica el enlace del correo una sola vez (una consulta, aunque la página se
+ * monte dos veces). Un enlace vencido o ya usado termina en error.
+ * Al confirmar el correo, o terminar de cambiarlo, se cierra la sesión que abre el enlace: se entra de nuevo por el
+ * camino de siempre (y ahí se crea el perfil si falta).
  */
 export function useVerificarEnlace(tipo: TipoEnlace, tokenHash: string | undefined) {
   return useQuery({
     queryKey: ['enlace-correo', tipo, tokenHash],
-    queryFn: async () => {
+    queryFn: async (): Promise<ResultadoEnlace> => {
       if (!tokenHash) {
         throw new Error(mensajeDeAuth({ code: 'otp_expired', status: 403, message: '' }));
       }
-      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: tipo });
+      const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: tipo });
       if (error) {
         throw new Error(mensajeDeAuth(error));
       }
-      if (tipo === 'email') {
+      if (tipo === 'email_change' && !data.session) {
+        return 'falta-otro-enlace';
+      }
+      if (tipo !== 'recovery') {
         await supabase.auth.signOut({ scope: 'local' });
       }
-      return true;
+      return 'listo';
     },
     retry: false,
     staleTime: Infinity,
@@ -67,13 +76,14 @@ export function useReenviarVerificacion() {
 
 /** RF-CTA-03: guarda la contraseña nueva y cierra las demás sesiones abiertas (otros celulares o navegadores). */
 export function useGuardarNuevaContrasena() {
-  return useMutation({
-    mutationFn: async (contrasena: string) => {
-      const { error } = await supabase.auth.updateUser({ password: contrasena });
-      if (error) {
-        throw new Error(mensajeDeAuth(error));
-      }
-      await supabase.auth.signOut({ scope: 'others' });
-    },
-  });
+  return useMutation({ mutationFn: guardarContrasena });
+}
+
+/** También la usa "Cambiar contraseña" en Mis datos (application/gestionCuenta.ts). */
+export async function guardarContrasena(contrasena: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password: contrasena });
+  if (error) {
+    throw new Error(mensajeDeAuth(error));
+  }
+  await supabase.auth.signOut({ scope: 'others' });
 }

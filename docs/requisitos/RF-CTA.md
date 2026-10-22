@@ -22,9 +22,6 @@ Como dueño quiero entrar de la forma que me resulte más cómoda.
 - Dado que toco "Continuar con Google"
   Cuando apruebo en Google
   Entonces entro con mi cuenta
-- Dado que pido un enlace mágico a mi correo
-  Cuando abro el enlace en el celular
-  Entonces entro sin contraseña
 - Dado un correo o contraseña incorrectos
   Cuando toco "Entrar"
   Entonces veo "Correo o contraseña incorrectos" sin decir cuál de los dos
@@ -67,7 +64,11 @@ Como dueño quiero que nadie más use mi cuenta.
 ## RF-CTA-05 Confirmar identidad en acciones delicadas
 - Dado que voy a eliminar mi cuenta o cambiar mi correo
   Cuando confirmo
-  Entonces se me pide volver a verificar mi identidad
+  Entonces se me pide volver a verificar mi identidad: mi contraseña actual, o entrar otra vez con Google si así
+  entro; la confirmación vale unos minutos (el backend exige una sesión de máximo 5)
+- Dado que voy a cambiar mi contraseña
+  Cuando la cambio
+  Entonces se me pide la actual
 
 ## RF-CTA-06 Cerrar sesión
 - Dado que cierro sesión
@@ -75,6 +76,16 @@ Como dueño quiero que nadie más use mi cuenta.
   Entonces los datos guardados en el celular se borran
 
 ## RF-CTA-07 Gestionar mi cuenta
-- Dado que abro Perfil
-  Cuando edito mi nombre o mi correo
-  Entonces se actualizan (el correo nuevo se verifica)
+- Dado que abro Perfil → Mis datos
+  Cuando edito mi nombre
+  Entonces se actualiza
+- Dado que cambio mi correo
+  Cuando confirmo mi identidad y escribo uno nuevo, válido y distinto del actual
+  Entonces me llega un enlace al correo actual y otro al nuevo, y el cambio queda cuando abro los dos; si uno vence,
+  veo "Este enlace venció"
+- Dado que cambio mi contraseña
+  Cuando escribo la actual y la nueva dos veces (8 caracteres o más)
+  Entonces queda guardada y se cierran mis demás sesiones
+- Dado que entro con Google
+  Cuando abro Mis datos
+  Entonces no se me ofrece cambiar correo ni contraseña: los administra Google

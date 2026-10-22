@@ -21,19 +21,22 @@ const OPCIONES: readonly { modo: ModoTema; texto: string }[] = [
   { modo: 'oscuro', texto: 'Oscuro' },
 ];
 
-/** Mockup Garaje → Perfil: la cuenta (ADR 0005), cerrar sesión (RF-CTA-06) y el tema. */
-export function PantallaPerfil() {
+type Props = Readonly<{ onMisDatos: () => void }>;
+
+/** Mockup Garaje → Perfil: la cuenta (ADR 0005), "Mis datos" (RF-DAT-04), cerrar sesión (RF-CTA-06) y el tema. */
+export function PantallaPerfil({ onMisDatos }: Props) {
   const tema = useTema();
   const cuenta = useCuenta();
   const cerrarSesion = useCerrarSesion();
   const margenes = useSafeAreaInsets();
-  const modo = useEstadoTema((estado) => estado.modo);
-  const cambiarModo = useEstadoTema((estado) => estado.cambiarModo);
+  const modo = useEstadoTema(estado => estado.modo);
+  const cambiarModo = useEstadoTema(estado => estado.cambiarModo);
 
   return (
     <ScrollView
       style={{ backgroundColor: tema.fondo }}
-      contentContainerStyle={[estilos.contenido, { paddingTop: margenes.top + espacio.s }]}>
+      contentContainerStyle={[estilos.contenido, { paddingTop: margenes.top + espacio.s }]}
+    >
       <View>
         <Texto variante="nota" tono="texto3">
           Tu cuenta
@@ -43,19 +46,24 @@ export function PantallaPerfil() {
         </Texto>
       </View>
 
-      <Tarjeta>
-        <View style={estilos.fila}>
-          <View style={[estilos.icono, { backgroundColor: tema.primarioTinte }]}>
-            <IconoPerfil color={tema.primarioTinta} tamano={22} />
+      <Pressable accessibilityRole="button" accessibilityLabel="Mis datos" onPress={onMisDatos}>
+        <Tarjeta>
+          <View style={estilos.fila}>
+            <View style={[estilos.icono, { backgroundColor: tema.primarioTinte }]}>
+              <IconoPerfil color={tema.primarioTinta} tamano={22} />
+            </View>
+            <View style={estilos.crece}>
+              <Texto variante="fuerte">{cuenta.data?.nombre ?? 'Tu cuenta'}</Texto>
+              <Texto variante="nota" tono="texto2">
+                {cuenta.data?.correo ?? (cuenta.isError ? 'No pudimos cargar tus datos' : 'Cargando…')}
+              </Texto>
+              <Texto variante="fuerte" tono="primarioTinta">
+                Mis datos
+              </Texto>
+            </View>
           </View>
-          <View style={estilos.crece}>
-            <Texto variante="fuerte">{cuenta.data?.nombre ?? 'Tu cuenta'}</Texto>
-            <Texto variante="nota" tono="texto2">
-              {cuenta.data?.correo ?? (cuenta.isError ? 'No pudimos cargar tus datos' : 'Cargando…')}
-            </Texto>
-          </View>
-        </View>
-      </Tarjeta>
+        </Tarjeta>
+      </Pressable>
       <Boton
         variante="secundario"
         texto={cerrarSesion.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
@@ -67,7 +75,7 @@ export function PantallaPerfil() {
         Apariencia
       </Texto>
       <View style={estilos.chips} accessibilityRole="radiogroup" accessibilityLabel="Apariencia">
-        {OPCIONES.map((opcion) => {
+        {OPCIONES.map(opcion => {
           const activo = modo === opcion.modo;
           return (
             <Pressable
@@ -81,10 +89,9 @@ export function PantallaPerfil() {
                   borderColor: activo ? tema.primario : tema.campo,
                   backgroundColor: activo ? tema.primarioTinte : tema.fondo,
                 },
-              ]}>
-              <Texto style={{ fontFamily: fuentes.semi, color: activo ? tema.primarioTinta : tema.texto2 }}>
-                {opcion.texto}
-              </Texto>
+              ]}
+            >
+              <Texto style={{ fontFamily: fuentes.semi, color: activo ? tema.primarioTinta : tema.texto2 }}>{opcion.texto}</Texto>
             </Pressable>
           );
         })}

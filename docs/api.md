@@ -188,7 +188,7 @@ Respuesta **200**:
 
 ## Cuentas y datos ✅ (ADR 0005, RF-CTA, RF-DAT)
 
-El registro, el inicio de sesión, Google, el enlace mágico y la recuperación los hace la app directo con **Supabase Auth**. La API agrega:
+El registro, el inicio de sesión, Google, la recuperación y el cambio de correo y contraseña los hace la app directo con **Supabase Auth**. La API agrega:
 
 | Endpoint | Para qué |
 |---|---|

@@ -31,6 +31,9 @@ export type ResultadoEntrada =
 
 export const CLAVE_CUENTA = ['cuenta'] as const;
 
+/** Si la sesión se abrió hace poco: las acciones delicadas lo piden (RF-CTA-05, application/gestionCuenta.ts). */
+export const CLAVE_SESION_RECIENTE = ['sesion-reciente'] as const;
+
 /** Ruta a la que vuelve Google (app/(onboarding)/auth/callback.tsx). */
 const RUTA_REGRESO_GOOGLE = 'auth/callback';
 
@@ -146,12 +149,13 @@ export function useIniciarSesion() {
 /**
  * RF-CTA-02: entra con Google. En la web la página se va a Google y vuelve a /auth/callback; en el celular se abre
  * una ventana del navegador que vuelve a la app con el código.
+ * Con `siguiente`, sirve para confirmar la identidad (RF-CTA-05): en la web, /auth/callback devuelve a esa pantalla.
  */
 export function useEntrarConGoogle() {
   const consultas = useQueryClient();
   return useMutation({
-    mutationFn: async (): Promise<ResultadoEntrada> => {
-      const redirectTo = urlDeRetorno(RUTA_REGRESO_GOOGLE);
+    mutationFn: async (siguiente?: string): Promise<ResultadoEntrada> => {
+      const redirectTo = urlDeRetorno(RUTA_REGRESO_GOOGLE, siguiente ? { siguiente } : undefined);
       const enLaWeb = Platform.OS === 'web';
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -170,7 +174,11 @@ export function useEntrarConGoogle() {
       }
       return entrarConEnlace(new URL(ventana.url).searchParams);
     },
-    onSuccess: (resultado) => guardarCuenta(consultas, resultado),
+    onSuccess: (resultado) => {
+      guardarCuenta(consultas, resultado);
+      // Con una sesión nueva, la identidad queda confirmada (RF-CTA-05)
+      void consultas.invalidateQueries({ queryKey: CLAVE_SESION_RECIENTE });
+    },
   });
 }
 

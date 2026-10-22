@@ -29,7 +29,8 @@ Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Política: [borrado
 ## RF-DAT-04 Consultar mis datos
 - Dado que abro Perfil
   Cuando toco "Mis datos"
-  Entonces veo qué datos personales tiene WEVEH de mí y para qué se usan
+  Entonces veo mi nombre y correo, qué datos guarda WEVEH y para qué se usan, qué no guarda, y cuándo acepté la
+  política, qué versión y por qué medio, con el enlace a la política completa
 
 ## RF-DAT-05 Corregir mis datos
 - Dado que mi nombre o correo están mal
@@ -37,7 +38,10 @@ Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Política: [borrado
   Entonces quedan corregidos (RF-CTA-07)
 
 ## RF-DAT-06 Eliminar mi cuenta
-- Dado que toco "Eliminar mi cuenta" y confirmo mi identidad
+- Dado que toco "Eliminar mi cuenta"
+  Cuando la abro
+  Entonces veo qué se borra y que no se puede deshacer
+- Dado que confirmo mi identidad (RF-CTA-05) y escribo ELIMINAR
   Cuando confirmo
   Entonces se borran mi cuenta, mis vehículos, conversaciones, historial y demás datos en menos de 24 horas, y se cierra la sesión en el celular
 

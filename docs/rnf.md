@@ -30,12 +30,12 @@ Organizados por las características de calidad de ISO/IEC 25010. Cada uno es me
 |---|---|---|---|
 | RNF-06 | Cero secretos en el binario de la app y en el repo; configuración solo por variables de entorno | Job `higiene` de la CI; revisión del bundle | ✅ |
 | RNF-07 | RLS activado en el 100 % de las tablas, sin políticas para `anon` ni `authenticated` | Advisors de Supabase en cada migración | ✅ |
-| RNF-08 | Al modelo de IA no llega nombre, correo, identificador de usuario, placa, alias, fotos ni audio | Prueba unitaria del armado del contexto | 🟡 placa, alias e identificador ✅; nombre y correo cuando existan cuentas |
+| RNF-08 | Al modelo de IA no llega nombre, correo, identificador de usuario, placa, alias, fotos ni audio | Prueba unitaria del armado del contexto + regla de arquitectura | ✅ placa, alias e identificador en `ConsultarMecanicoServicioTest`; nombre y correo: `mecanicoia` no puede depender de `cuentas` (`ModularidadTest`) |
 | RNF-09 | **Cada modelo de la lista** saca Crítico con `requires_mechanic` en el 100 % de los casos críticos de `evals/`; el que falle sale de la lista | Evaluador por modelo | 🟡 el primero 7/7; los demás sin evaluar |
 | RNF-10 | Un recurso de **otro usuario** responde 404 | Prueba de integración por endpoint | ✅ |
 | RNF-24 | La sesión usa un token firmado que expira; un token ausente, vencido o alterado responde 401 | Prueba de integración | ✅ |
-| RNF-25 | Eliminar la cuenta o cambiar el correo piden volver a confirmar la identidad | Prueba de la app | ❌ |
-| RNF-26 | Al eliminar la cuenta, todos sus datos se borran en < 24 h, incluido lo guardado en el celular | Prueba de integración + verificación en la base | ❌ |
+| RNF-25 | Eliminar la cuenta o cambiar el correo piden volver a confirmar la identidad | Prueba de la app | ✅ `gestionCuenta.test.tsx`, `PantallasMisDatos.test.tsx`; el backend exige sesión de máximo 5 min |
+| RNF-26 | Al eliminar la cuenta, todos sus datos se borran en < 24 h, incluido lo guardado en el celular | Prueba de integración + verificación en la base | ✅ `CuentaIntegracionTest` (se borra al instante) y `useEliminarCuenta` (cierra la sesión y limpia la caché); la base local de la etapa 4 también se borrará |
 | RNF-23 | Los logs y el monitoreo nunca contienen nombre, correo, token ni llaves | Revisión de configuración de Sentry y logs | ⚠️ |
 | RNF-33 | El audio se borra apenas se transcribe; las fotos pesan menos de 1 MB tras reducirlas, solo las ve su dueña o dueño, pasan siempre por la API, nunca llegan a un modelo y se borran con el vehículo o la cuenta en menos de 24 h (RF-DAT-09, ADR 0018) | Prueba de integración + verificación en el almacenamiento | 🔜 |
 | RNF-35 | El plazo del diagnóstico (No manejar, hoy, esta semana, próximo servicio) lo fija código; en el 100 % de los casos críticos de `evals/` el plazo es "No manejes" u "hoy", sin importar lo que diga el modelo, y ninguna pregunta de mantenimiento sin síntoma recibe "No manejes" (RF-MIA-08) | Evaluador por modelo + vectores compartidos | 🔜 |

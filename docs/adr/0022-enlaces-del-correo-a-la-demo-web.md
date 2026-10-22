@@ -18,7 +18,7 @@ Supabase tiene **un solo** vencimiento para todos los enlaces del correo y no de
 
 ## Decisión
 
-1. **Los enlaces del correo abren páginas de la demo web**: `/nueva-contrasena` y `/cuenta-confirmada`. Site URL de Supabase = la demo.
+1. **Los enlaces del correo abren páginas de la demo web**: `/nueva-contrasena`, `/cuenta-confirmada` y `/correo-cambiado` (cambio de correo, RF-CTA-07: con "Secure email change" llegan dos enlaces, uno a cada correo, y el cambio queda al abrir los dos). Site URL de Supabase = la demo.
 2. **Las plantillas llevan `token_hash`**, no `{{ .ConfirmationURL }}`: `{{ .SiteURL }}/nueva-contrasena?token_hash={{ .TokenHash }}&type=recovery`. La página lo verifica con `verifyOtp`, que funciona en cualquier equipo y no lo gastan los antivirus de correo que abren los enlaces (la verificación la hace el JavaScript de la página, no la visita). Plantillas en `docs/correos/`.
 3. **Google con PKCE** (`flowType: 'pkce'`): ida y vuelta pasan en el mismo equipo. En la web, Google vuelve a `/auth/callback`; en el celular, `expo-web-browser` abre una ventana que vuelve a la app (`weveh://auth/callback` o `exp://…/--/auth/callback`) y la app canjea el código.
 4. Vencimiento de los enlaces: **1 hora** (Email OTP expiration = 3600), igual para confirmar y recuperar. "Reenviar" se bloquea 60 segundos.

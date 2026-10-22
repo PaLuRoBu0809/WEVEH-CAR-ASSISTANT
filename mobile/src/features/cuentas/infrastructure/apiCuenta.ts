@@ -22,3 +22,13 @@ export function obtenerCuenta(): Promise<Cuenta> {
 export function crearPerfil(datos: CreacionPerfil): Promise<Cuenta> {
   return pedir<Cuenta>(RUTA, { method: 'POST', body: JSON.stringify(datos) });
 }
+
+/** RF-CTA-07 / RF-DAT-05. */
+export function editarNombre(nombre: string): Promise<Cuenta> {
+  return pedir<Cuenta>(RUTA, { method: 'PUT', body: JSON.stringify({ nombre }) });
+}
+
+/** RF-DAT-06: borra la cuenta aquí y en Supabase Auth. Exige una sesión de máximo 5 minutos (RF-CTA-05). */
+export function eliminarCuenta(): Promise<void> {
+  return pedir<void>(RUTA, { method: 'DELETE' });
+}

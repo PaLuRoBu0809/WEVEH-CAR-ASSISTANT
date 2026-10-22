@@ -148,3 +148,24 @@ describe('useGuardarNuevaContrasena (RF-CTA-03)', () => {
     expect(auth.signOut).not.toHaveBeenCalled();
   });
 });
+
+describe('useVerificarEnlace con cambio de correo (RF-CTA-07)', () => {
+  test('el primer enlace deja el cambio a medias y no cierra nada', async () => {
+    auth.verifyOtp.mockResolvedValue({ data: { session: null }, error: null });
+
+    const { result } = await renderHook(() => useVerificarEnlace('email_change', 'h1'), { wrapper: envoltorio });
+
+    await waitFor(() => expect(result.current.data).toBe('falta-otro-enlace'));
+    expect(auth.signOut).not.toHaveBeenCalled();
+  });
+
+  test('el segundo termina el cambio y cierra la sesión del enlace', async () => {
+    auth.verifyOtp.mockResolvedValue({ data: { session: { access_token: 't' } }, error: null });
+
+    const { result } = await renderHook(() => useVerificarEnlace('email_change', 'h2'), { wrapper: envoltorio });
+
+    await waitFor(() => expect(result.current.data).toBe('listo'));
+    expect(auth.verifyOtp).toHaveBeenCalledWith({ token_hash: 'h2', type: 'email_change' });
+    expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+});
