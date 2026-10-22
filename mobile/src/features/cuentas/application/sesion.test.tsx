@@ -1,6 +1,7 @@
 import { notifyManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 
 import { configurarSesion, ErrorApi } from '@/shared/http';
 
@@ -20,6 +21,7 @@ import {
   useFaltaPerfil,
   useIniciarSesion,
   usePrepararSesion,
+  useUsuarioDeSesion,
 } from './sesion';
 
 jest.mock('@/shared/http', () => {
@@ -405,5 +407,44 @@ describe('useFaltaPerfil', () => {
     const { result } = await renderHook(() => useFaltaPerfil(), { wrapper: envoltorio });
 
     await waitFor(() => expect(result.current).toBe(true));
+  });
+});
+
+describe('useEntrarConGoogle (demo web)', () => {
+  test('la página se va a Google y no abre ninguna ventana', async () => {
+    jest.replaceProperty(Platform, 'OS', 'web');
+    auth.signInWithOAuth.mockResolvedValue({ data: { url: 'https://supabase/authorize' }, error: null });
+    const { result } = await renderHook(() => useEntrarConGoogle(), { wrapper: envoltorio });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync()).resolves.toEqual({ tipo: 'cancelada' });
+    });
+
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: 'weveh://auth/callback', skipBrowserRedirect: false },
+    });
+    expect(mockAbrirVentana).not.toHaveBeenCalled();
+    jest.restoreAllMocks();
+  });
+
+  test('si Supabase no deja empezar, muestra el error', async () => {
+    auth.signInWithOAuth.mockResolvedValue({ data: { url: null }, error: { code: 'unexpected_failure', status: 500, message: '' } });
+    const { result } = await renderHook(() => useEntrarConGoogle(), { wrapper: envoltorio });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync()).rejects.toThrow('No pudimos completar la acción');
+    });
+  });
+});
+
+describe('useUsuarioDeSesion', () => {
+  test('dice con qué correo entró y si fue con Google', async () => {
+    conSesionDe(USUARIO_GOOGLE);
+    await renderHook(() => usePrepararSesion(), { wrapper: envoltorio });
+
+    const { result } = await renderHook(() => useUsuarioDeSesion(), { wrapper: envoltorio });
+
+    await waitFor(() => expect(result.current).toEqual({ correo: 'laura@gmail.com', conGoogle: true }));
   });
 });
