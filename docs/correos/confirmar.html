@@ -37,8 +37,8 @@
               </table>
               <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Este enlace vence en <b>1 hora</b>. Si vence, desde la página puedes pedir otro.</p>
               <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Si no creaste una cuenta, ignora este correo.</p>
-              <p style="margin:0;font-size:14px;line-height:1.5;color:#41554F;">Si el botón no funciona, copia este enlace en tu navegador:<br>
-                <span style="font-family:'JetBrains Mono',Consolas,monospace;font-size:13px;color:#005F54;word-break:break-all;">{{ .SiteURL }}/cuenta-confirmada?token_hash={{ .TokenHash }}&amp;type=email</span>
+              <p style="margin:0;font-size:14px;line-height:1.5;color:#41554F;">Si el botón no funciona, usa este enlace:
+                <a href="{{ .SiteURL }}/cuenta-confirmada?token_hash={{ .TokenHash }}&amp;type=email" style="color:#005F54;font-weight:800;text-decoration:underline;">Confirmar mi correo</a>
               </p>
             </td>
           </tr>

@@ -37,8 +37,8 @@
               </table>
               <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Este enlace vence en <b>1 hora</b> y solo sirve una vez.</p>
               <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Si no fuiste tú, ignora este correo: tu contraseña no cambia.</p>
-              <p style="margin:0;font-size:14px;line-height:1.5;color:#41554F;">Si el botón no funciona, copia este enlace en tu navegador:<br>
-                <span style="font-family:'JetBrains Mono',Consolas,monospace;font-size:13px;color:#005F54;word-break:break-all;">{{ .SiteURL }}/nueva-contrasena?token_hash={{ .TokenHash }}&amp;type=recovery</span>
+              <p style="margin:0;font-size:14px;line-height:1.5;color:#41554F;">Si el botón no funciona, usa este enlace:
+                <a href="{{ .SiteURL }}/nueva-contrasena?token_hash={{ .TokenHash }}&amp;type=recovery" style="color:#005F54;font-weight:800;text-decoration:underline;">Crear nueva contraseña</a>
               </p>
             </td>
           </tr>
