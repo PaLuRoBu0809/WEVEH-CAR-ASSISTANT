@@ -1,4 +1,4 @@
-import { mensajeDeAuth } from './mensajes';
+import { esLimiteDeEnvios, mensajeDeAuth } from './mensajes';
 
 describe('mensajeDeAuth', () => {
   test('credenciales malas no dicen cuál de los dos datos falló (RF-CTA-02)', () => {
@@ -15,6 +15,19 @@ describe('mensajeDeAuth', () => {
     expect(mensajeDeAuth({ code: 'user_already_exists', status: 422, message: '' })).toBe(
       'Ya existe una cuenta con ese correo. Inicia sesión.',
     );
+  });
+
+  test('un enlace vencido o ya usado pide otro (RF-CTA-03, RF-CTA-04)', () => {
+    expect(mensajeDeAuth({ code: 'otp_expired', status: 403, message: '' })).toBe('Este enlace venció o ya se usó. Pide otro.');
+  });
+
+  test('la nueva contraseña no puede ser la misma de antes', () => {
+    expect(mensajeDeAuth({ code: 'same_password', status: 422, message: '' })).toContain('ya tenías');
+  });
+
+  test('solo el límite de envíos cuenta como límite', () => {
+    expect(esLimiteDeEnvios({ code: 'over_email_send_rate_limit', status: 429, message: '' })).toBe(true);
+    expect(esLimiteDeEnvios({ code: 'user_not_found', status: 400, message: '' })).toBe(false);
   });
 
   test('sin red se dice sin jerga', () => {

@@ -11,6 +11,10 @@ Decisión: [ADR 0005](../adr/0005-cuentas-supabase-auth.md). Política: [borrado
 - Dado la casilla
   Cuando toco "política de tratamiento"
   Entonces puedo leerla completa
+- Dado que entro por primera vez con Google
+  Cuando Google me devuelve a WEVEH
+  Entonces veo "Antes de entrar" con un resumen, el enlace a la política completa y la casilla sin marcar; sin
+  marcarla no puedo continuar, y puedo salir sin crear la cuenta (el medio queda `APP_GOOGLE`)
 
 ## RF-DAT-02 Registro de la autorización
 - Dado que acepto la política

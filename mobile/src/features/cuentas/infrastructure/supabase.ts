@@ -20,6 +20,7 @@ if (!urlConfigurada || !llaveConfigurada) {
  * La llave publishable es pública por diseño: las tablas tienen RLS sin políticas.
  * Con un placeholder cuando falta la llave: createClient revienta de forma síncrona con string
  * vacío, lo que tumbaba toda la navegación en vez de solo la pantalla de cuentas.
+ * PKCE para entrar con Google (docs/adr/0022): el código que vuelve en la URL solo sirve en el equipo que lo pidió.
  */
 export const supabase = createClient(
   urlConfigurada || 'https://placeholder.supabase.co',
@@ -30,6 +31,7 @@ export const supabase = createClient(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
+      flowType: 'pkce',
     },
   },
 );

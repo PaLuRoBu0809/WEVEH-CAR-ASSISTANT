@@ -32,13 +32,31 @@ Como dueño quiero entrar de la forma que me resulte más cómoda.
 ## RF-CTA-03 Recuperar contraseña
 - Dado que olvidé mi contraseña
   Cuando la pido de nuevo con mi correo
-  Entonces me llega un enlace para crear una nueva
+  Entonces me llega un enlace para crear una nueva, que vence en 1 hora y sirve una sola vez
+- Dado que pido el enlace con cualquier correo
+  Cuando WEVEH responde
+  Entonces veo "Enlace enviado" con el mismo texto exista o no la cuenta (solo se avisa si hice demasiados intentos),
+  y "Reenviar" se bloquea 60 segundos
+- Dado que abro el enlace, en el celular o en un computador
+  Cuando escribo la nueva contraseña dos veces (8 caracteres o más) y toco "Guardar"
+  Entonces queda guardada, se cierran mis demás sesiones y veo "Listo, ya puedes entrar"
+- Dado un enlace vencido o ya usado
+  Cuando lo abro
+  Entonces veo "Este enlace venció" y puedo pedir otro
 
 ## RF-CTA-04 Sesión segura
 Como dueño quiero que nadie más use mi cuenta.
 - Dado que mi correo no está verificado
   Cuando intento usar la app
   Entonces se me pide verificarlo
+- Dado que acabo de crear la cuenta con correo
+  Cuando se crea
+  Entonces veo "Revisa tu correo" con la dirección a la que llegó, puedo reenviarlo (bloqueado 60 segundos) o usar
+  otro correo
+- Dado el correo de confirmación
+  Cuando toco "Confirmar", en el celular o en un computador
+  Entonces veo "Cuenta confirmada" con "Abrir WEVEH" e "Iniciar sesión"; si el enlace venció o ya se usó, veo
+  "Este enlace venció" y puedo pedir otro con mi correo
 - Dado que mi sesión expiró
   Cuando abro la app
   Entonces se renueva sola o se me pide iniciar sesión de nuevo

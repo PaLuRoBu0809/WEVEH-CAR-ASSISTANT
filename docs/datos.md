@@ -47,7 +47,7 @@ La búsqueda usa un índice de similitud de texto (`pg_trgm`) sobre el nombre no
 | Tabla | Qué guarda | Decisión |
 |---|---|---|
 | `usuario` | `id` (el de Supabase Auth), `nombre`, `creado_en`. El correo vive en Supabase Auth | ADR 0005 · ✅ V5 |
-| `consentimiento` | `usuario_id`, `version_politica`, `aceptado_en`, `medio` (`APP_REGISTRO`, `APP_NUEVA_VERSION`) | RF-DAT-02 · ✅ V5 |
+| `consentimiento` | `usuario_id`, `version_politica`, `aceptado_en`, `medio` (`APP_REGISTRO`, `APP_NUEVA_VERSION`, `APP_GOOGLE`) | RF-DAT-02 · ✅ V5, `APP_GOOGLE` en V9 |
 | `conversacion` + `mensaje` | Conversaciones del Mecánico IA por vehículo; cada mensaje con su rol, texto, diagnóstico, modelo y prompt; resumen compactado de lo viejo | RF-MIA-02 |
 | `cupo_consultas` | Balde por cuenta: consultas disponibles y última recarga | RF-MIA-07 |
 | `event_publication` | Eventos entre módulos pendientes y completados | ADR 0007 |

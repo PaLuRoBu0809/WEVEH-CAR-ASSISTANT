@@ -192,7 +192,7 @@ El registro, el inicio de sesión, Google, el enlace mágico y la recuperación 
 
 | Endpoint | Para qué |
 |---|---|
-| `POST /cuenta` | Crear el perfil con el nombre y la aceptación de la política (RF-DAT-02). Idempotente: la app lo llama en el primer inicio de sesión. 201 |
+| `POST /cuenta` | Crear el perfil con el nombre y la aceptación de la política (RF-DAT-02). Idempotente: la app lo llama en el primer inicio de sesión. `{ nombre, versionPolitica, aceptadoEn?, medio? }`: `medio` es `APP_REGISTRO` (por defecto, casilla del registro con correo) o `APP_GOOGLE` (casilla de "Antes de entrar" la primera vez con Google); otro valor responde 400. 201 |
 | `GET /cuenta` | Nombre, correo (sale del token) y consentimientos (RF-DAT-04). 404 si aún no hay perfil |
 | `PUT /cuenta` | Corregir el nombre (RF-DAT-05) |
 | `POST /cuenta/consentimientos` | Registrar la aceptación de una versión de la política (RF-DAT-02/03) |

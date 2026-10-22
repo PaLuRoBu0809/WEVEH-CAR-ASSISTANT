@@ -23,7 +23,9 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 - [x] Backend: módulo `cuentas`, Spring Security con validación del token (JWKS), `usuario_id` en vez de `dispositivo_id`, 401/404, tablas `usuario` y `consentimiento`, `DELETE /cuenta`.
 - [x] Migración que borra los vehículos de prueba y cambia la identidad (V5).
 - [x] App (parte 1): portada con dos botones, crear cuenta e iniciar sesión con correo y contraseña, sesión en SecureStore, cerrar sesión, nombre y correo en Perfil.
-- [ ] App (parte 2): diseño completo del mockup (trama de W, dial), Google, enlace mágico, recuperar contraseña, leer la política desde la casilla, "Mis datos" y "Eliminar mi cuenta" en Perfil.
+- [x] App (parte 2a, [ADR 0022](adr/0022-enlaces-del-correo-a-la-demo-web.md)): "Continuar con Google" con PKCE y "Antes de entrar" (`medio = APP_GOOGLE`, V9), recuperar contraseña, "Revisa tu correo" y "Cuenta confirmada" en la demo web, leer la política desde la casilla. Plantillas en `docs/correos/`.
+- [ ] Configurar en Supabase (Pablo): Site URL y Redirect URLs, plantillas de `docs/correos/`, Email OTP expiration = 3600, SMTP de Brevo, proveedor Google; aplicar V9.
+- [ ] App (parte 2b): diseño completo del mockup (trama de W, dial y arte del correo en PNG), enlace mágico, "Mis datos" y "Eliminar mi cuenta" en Perfil.
 - [ ] App propia (development build con EAS) y emulador de Android Studio para probar Google y el enlace mágico (ADR 0011).
 - [ ] Verificación: criterios de RF-CTA y RF-DAT con pruebas; RNF-08, 10, 24, 25, 26.
 

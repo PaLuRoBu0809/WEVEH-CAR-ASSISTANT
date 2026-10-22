@@ -16,6 +16,7 @@
 | Identificación y contacto | Nombre y correo electrónico | Sí, para tener una cuenta |
 | Datos del vehículo | Tipo, marca, línea, año, kilometraje, uso, fechas de SOAT, revisión técnico-mecánica y seguro, historial de mantenimiento, fallas, tanqueadas; alias y placa (opcionales) | Marca, línea, año y kilometraje; lo demás es opcional |
 | Consultas al Mecánico IA | Lo que la persona escribe y las respuestas | Solo si usa el asistente |
+| Fotos | Facturas y tablero que la persona decida subir; se guardan solo como evidencia y ningún modelo de IA las lee | No |
 | Datos técnicos | Registros de errores y de funcionamiento, sin nombre, correo ni credenciales | Automático |
 
 **No tratamos** cédula, teléfono, ubicación, datos de pago ni datos sensibles. La placa es opcional y nunca se comparte con terceros ni con modelos de IA.
@@ -63,7 +64,7 @@ La persona puede:
 
 ## 7. Autorización
 
-Se pide al crear la cuenta con una **casilla sin marcar**: "Acepto la política de tratamiento de datos personales". Sin aceptarla no se puede crear la cuenta. Se guarda la fecha, la versión de esta política y el medio (RF-DAT-01, 02). Si la política cambia, se pide aceptar la nueva versión al entrar (RF-DAT-03).
+Se pide al crear la cuenta con una **casilla sin marcar**: "Acepto la política de tratamiento de datos personales". Quien entra con Google la acepta con la misma casilla la primera vez, en la pantalla "Antes de entrar". Sin aceptarla no se puede crear la cuenta. Se guarda la fecha, la versión de esta política y el medio (RF-DAT-01, 02). Si la política cambia, se pide aceptar la nueva versión al entrar (RF-DAT-03).
 
 ## 8. Seguridad
 

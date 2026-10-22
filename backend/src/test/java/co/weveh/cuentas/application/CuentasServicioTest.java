@@ -31,6 +31,7 @@ class CuentasServicioTest {
     static final Instant AHORA = Instant.parse("2026-10-15T15:00:00Z");
     static final UsuarioId LAURA = new UsuarioId(UUID.fromString("3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11"));
     static final String POLITICA = "0.1-borrador";
+    static final MedioConsentimiento REGISTRO = MedioConsentimiento.APP_REGISTRO;
 
     final RepositorioEnMemoria repositorio = new RepositorioEnMemoria();
     final ProveedorFalso identidad = new ProveedorFalso();
@@ -40,7 +41,7 @@ class CuentasServicioTest {
     void crearGuardaElPerfilYLaAceptacionDeLaPolitica() {
         var marcoLaCasilla = AHORA.minusSeconds(90);
 
-        var cuenta = servicio.crear(LAURA, "  Laura  ", POLITICA, marcoLaCasilla);
+        var cuenta = servicio.crear(LAURA, "  Laura  ", POLITICA, marcoLaCasilla, REGISTRO);
 
         assertThat(cuenta.usuario().nombre()).isEqualTo("Laura");
         assertThat(cuenta.consentimientos()).singleElement().satisfies(c -> {
@@ -51,10 +52,25 @@ class CuentasServicioTest {
     }
 
     @Test
-    void crearDosVecesNoDuplicaNada() {
-        servicio.crear(LAURA, "Laura", POLITICA, AHORA);
+    void quienEntraConGoogleQuedaConEseMedio() {
+        var cuenta = servicio.crear(LAURA, "Laura", POLITICA, AHORA, MedioConsentimiento.APP_GOOGLE);
 
-        var otraVez = servicio.crear(LAURA, "Otro nombre", POLITICA, AHORA);
+        assertThat(cuenta.consentimientos()).singleElement()
+                .satisfies(c -> assertThat(c.medio()).isEqualTo(MedioConsentimiento.APP_GOOGLE));
+    }
+
+    @Test
+    void unaVersionNuevaNoSirveParaCrearLaCuenta() {
+        assertThatThrownBy(() -> servicio.crear(LAURA, "Laura", POLITICA, AHORA, MedioConsentimiento.APP_NUEVA_VERSION))
+                .isInstanceOf(DatoInvalidoException.class);
+        assertThat(repositorio.buscar(LAURA)).isEmpty();
+    }
+
+    @Test
+    void crearDosVecesNoDuplicaNada() {
+        servicio.crear(LAURA, "Laura", POLITICA, AHORA, REGISTRO);
+
+        var otraVez = servicio.crear(LAURA, "Otro nombre", POLITICA, AHORA, REGISTRO);
 
         assertThat(otraVez.usuario().nombre()).isEqualTo("Laura");
         assertThat(otraVez.consentimientos()).hasSize(1);
@@ -62,14 +78,14 @@ class CuentasServicioTest {
 
     @Test
     void unaFechaDeAceptacionEnElFuturoSeCambiaPorLaDelServidor() {
-        var cuenta = servicio.crear(LAURA, "Laura", POLITICA, AHORA.plus(Duration.ofDays(3)));
+        var cuenta = servicio.crear(LAURA, "Laura", POLITICA, AHORA.plus(Duration.ofDays(3)), REGISTRO);
 
         assertThat(cuenta.consentimientos().getFirst().aceptadoEn()).isEqualTo(AHORA);
     }
 
     @Test
     void sinNombreNoSeCreaLaCuenta() {
-        assertThatThrownBy(() -> servicio.crear(LAURA, "   ", POLITICA, AHORA))
+        assertThatThrownBy(() -> servicio.crear(LAURA, "   ", POLITICA, AHORA, REGISTRO))
                 .isInstanceOf(DatoInvalidoException.class)
                 .hasMessage("Escribe tu nombre");
     }
@@ -81,14 +97,14 @@ class CuentasServicioTest {
 
     @Test
     void editarElNombre() {
-        servicio.crear(LAURA, "Laura", POLITICA, AHORA);
+        servicio.crear(LAURA, "Laura", POLITICA, AHORA, REGISTRO);
 
         assertThat(servicio.editarNombre(LAURA, "Laura Gómez").usuario().nombre()).isEqualTo("Laura Gómez");
     }
 
     @Test
     void aceptarUnaVersionNuevaDeLaPolitica() {
-        servicio.crear(LAURA, "Laura", POLITICA, AHORA);
+        servicio.crear(LAURA, "Laura", POLITICA, AHORA, REGISTRO);
 
         var cuenta = servicio.aceptarPolitica(LAURA, "1.0");
 
@@ -98,7 +114,7 @@ class CuentasServicioTest {
 
     @Test
     void eliminarConSesionRecienteBorraAquiYEnSupabase() {
-        servicio.crear(LAURA, "Laura", POLITICA, AHORA);
+        servicio.crear(LAURA, "Laura", POLITICA, AHORA, REGISTRO);
 
         servicio.eliminar(LAURA, AHORA.minus(Duration.ofMinutes(2)));
 
@@ -108,7 +124,7 @@ class CuentasServicioTest {
 
     @Test
     void eliminarConUnaSesionViejaPideConfirmarLaIdentidad() {
-        servicio.crear(LAURA, "Laura", POLITICA, AHORA);
+        servicio.crear(LAURA, "Laura", POLITICA, AHORA, REGISTRO);
 
         assertThatThrownBy(() -> servicio.eliminar(LAURA, AHORA.minus(Duration.ofMinutes(30))))
                 .isInstanceOf(IdentidadNoConfirmadaException.class);
@@ -118,7 +134,7 @@ class CuentasServicioTest {
 
     @Test
     void siSupabaseFallaElErrorLlegaParaDeshacerElBorrado() {
-        servicio.crear(LAURA, "Laura", POLITICA, AHORA);
+        servicio.crear(LAURA, "Laura", POLITICA, AHORA, REGISTRO);
         identidad.disponible = false;
 
         assertThatThrownBy(() -> servicio.eliminar(LAURA, AHORA)).isInstanceOf(ServicioNoDisponibleException.class);
