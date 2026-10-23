@@ -69,14 +69,17 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 
 ## Etapa 5 · Resiliencia y monitoreo (ADR 0010)
 
-- [ ] Interruptor por módulo (`WEVEH_MODULO_<NOMBRE>`).
-- [ ] Cortacircuitos y compartimento para OpenRouter (Resilience4j); "mucha demanda" en la app.
-- [ ] Salud por módulo en Actuator.
-- [ ] Sentry en backend y app, sin datos personales.
+- [x] Interruptor por módulo (`WEVEH_MODULO_<NOMBRE>=inactivo`): 503 `modulo-inactivo` y "en mantenimiento" en la app (garaje, catálogo, Mecánico IA).
+- [x] Cortacircuitos y compartimento para OpenRouter (núcleo de Resilience4j): 3 fallas → 60 s de respuesta segura al instante; máximo 10 consultas de IA a la vez → 503 `mucha-demanda` y "Hay mucha demanda" en la app.
+- [x] Salud por módulo en Actuator (`modulos`, `openrouter`, base de datos), siempre UP.
+- [x] Sentry en el backend y en la app sin datos personales (organización `weveh-group`); se activa con `SENTRY_DSN` y `EXPO_PUBLIC_SENTRY_DSN`.
+- [x] Proyectos `weveh-app` y `weveh-backend` creados en Sentry; error de prueba de la app recibido en `desarrollo` (2026-10-23).
+- [ ] Pablo: DSN del backend en `backend/.env` y Render, y DSN de la app en Vercel (`EXPO_PUBLIC_SENTRY_ENTORNO=produccion`); probar un error del backend.
 - [x] JaCoCo y `jest --coverage` con SonarCloud en la CI (job `sonar`, `sonar-project.properties`) (RNF-17).
-- [ ] Crear el proyecto en sonarcloud.io, agregar el secreto `SONAR_TOKEN` en GitHub y fijar el umbral de 80 % en su Quality Gate para que el job deje de fallar por falta de configuración.
-- [x] Despliegue del backend en Render (ADR 0008) y web de demo en Vercel (ADR 0015).
-- [ ] Contrato OpenAPI generado y vigilado en la CI (ADR 0012).
+- [x] Proyecto en sonarcloud.io con `SONAR_TOKEN` y Quality Gate de 80 % (funcionando desde el PR #12).
+- [x] Despliegue del backend en Render (ADR 0008) y web de demo en Vercel (ADR 0015). Pool de conexiones en 7 por backend (`WEVEH_DB_POOL`, nota del ADR 0008).
+- [x] Contrato OpenAPI generado y vigilado en la CI (ADR 0012): `ContratoOpenApiTest` y `contracts/openapi.yaml`.
+- [ ] Pablo: cambiar la rama de producción de Vercel de `dev/pablo` a `main`.
 
 ## Etapa 6 · Mecánico IA conversacional (ADR 0004, RF-MIA)
 

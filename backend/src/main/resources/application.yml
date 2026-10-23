@@ -13,6 +13,9 @@ spring:
     url: ${WEVEH_DB_URL:}
     username: ${WEVEH_DB_USUARIO:}
     password: ${WEVEH_DB_CLAVE:}
+    # El pooler de Supabase en modo sesión acepta 15 conexiones en total; en un despliegue conviven dos instancias (ADR 0008)
+    hikari:
+      maximum-pool-size: ${WEVEH_DB_POOL:7}
   flyway:
     locations: classpath:db/migration
   mvc:
@@ -45,8 +48,27 @@ weveh:
     # Solo para probar la app en el navegador del PC (ej. http://localhost:8081). Vacío en producción.
     origenes: ${WEVEH_CORS_ORIGENES:}
 
+sentry:
+  # ADR 0010 y RNF-23: sin DSN no se envía nada; nunca datos personales (FiltroSentry borra lo que quede)
+  dsn: ${SENTRY_DSN:}
+  environment: ${SENTRY_ENVIRONMENT:local}
+  send-default-pii: false
+  traces-sample-rate: 0
+
+springdoc:
+  # ADR 0012: el contrato se genera en la prueba ContratoOpenApiTest (contracts/openapi.yaml). Apagado en producción.
+  api-docs:
+    enabled: ${WEVEH_OPENAPI:false}
+  writer-with-order-by-keys: true
+
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+  endpoint:
+    health:
+      # ADR 0010: salud por módulo (módulos encendidos o apagados, cortacircuitos de la IA, base de datos).
+      # Los detalles no llevan datos de personas ni llaves.
+      show-components: always
+      show-details: always

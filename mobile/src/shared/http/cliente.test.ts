@@ -93,4 +93,19 @@ describe('pedir', () => {
 
     expect(mensajeParaPersona(error)).toBe('Tuvimos un problema de nuestro lado. Inténtalo en un momento.');
   });
+
+  test.each([
+    ['modulo-inactivo', 'Esta función está en mantenimiento'],
+    ['mucha-demanda', 'Hay mucha demanda en este momento'],
+  ])('un 503 %s dice lo que pasa (ADR 0010)', (tipo, texto) => {
+    const error = new ErrorApi(503, { type: `https://weveh.co/problemas/${tipo}` });
+
+    expect(mensajeParaPersona(error)).toContain(texto);
+  });
+
+  test('otro 503 sigue con el texto común', () => {
+    expect(mensajeParaPersona(new ErrorApi(503, { type: 'https://weveh.co/problemas/no-disponible' }))).toBe(
+      'Tuvimos un problema de nuestro lado. Inténtalo en un momento.',
+    );
+  });
 });

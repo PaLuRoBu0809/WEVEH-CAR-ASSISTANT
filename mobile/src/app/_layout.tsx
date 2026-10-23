@@ -16,9 +16,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { usePrepararSesion } from '@/features/cuentas';
 import { prepararCambiosSinRed } from '@/features/garaje';
 import { useEstadoTema, useTema } from '@/shared/design-system';
+import { iniciarMonitoreo } from '@/shared/monitoreo';
 import { conectarDetectorDeRed, EDAD_MAXIMA_MS, opcionesPersistencia } from '@/shared/sinRed';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
+iniciarMonitoreo();
 conectarDetectorDeRed();
 
 /**
