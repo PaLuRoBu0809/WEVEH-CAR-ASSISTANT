@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Boton, espacio, Texto, useTema } from '@/shared/design-system';
 import { mensajeParaPersona } from '@/shared/http';
+import { AvisoSinConexion } from '@/shared/sinRed';
 
 import { useVehiculos } from '../application/useVehiculos';
 import { EstadoError } from './EstadoError';
@@ -17,7 +18,7 @@ type Props = {
 export function PantallaGaraje({ onAgregar, onAbrir }: Props) {
   const tema = useTema();
   const margenes = useSafeAreaInsets();
-  const { data, error, isPending, refetch } = useVehiculos();
+  const { data, error, isPending, refetch, dataUpdatedAt } = useVehiculos();
   const cantidad = data?.length ?? 0;
 
   return (
@@ -32,6 +33,7 @@ export function PantallaGaraje({ onAgregar, onAbrir }: Props) {
           Mi garaje
         </Texto>
       </View>
+      <AvisoSinConexion actualizadoEn={dataUpdatedAt} />
       {isPending && <ActivityIndicator color={tema.primario} accessibilityLabel="Cargando tu garaje" />}
       {error && <EstadoError mensaje={mensajeParaPersona(error)} onReintentar={() => refetch()} />}
       {data && data.length === 0 && <GarajeVacio onAgregar={onAgregar} />}

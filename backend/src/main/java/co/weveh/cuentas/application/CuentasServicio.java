@@ -5,6 +5,7 @@ import co.weveh.cuentas.application.puertos.UsuarioRepositorio;
 import co.weveh.cuentas.domain.Consentimiento;
 import co.weveh.cuentas.domain.MedioConsentimiento;
 import co.weveh.cuentas.domain.Usuario;
+import co.weveh.shared.domain.DatoInvalidoException;
 import co.weveh.shared.domain.IdentidadNoConfirmadaException;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
 import co.weveh.shared.domain.UsuarioId;
@@ -33,11 +34,14 @@ class CuentasServicio implements Cuentas {
     }
 
     @Override
-    public Cuenta crear(UsuarioId usuario, String nombre, String versionPolitica, Instant aceptadoEn) {
+    public Cuenta crear(UsuarioId usuario, String nombre, String versionPolitica, Instant aceptadoEn,
+                        MedioConsentimiento medio) {
+        if (!medio.sirveParaCrearCuenta()) {
+            throw new DatoInvalidoException("La cuenta se crea con la casilla del registro o al entrar con Google");
+        }
         var ahora = reloj.instant();
         var cuando = aceptadoEn == null || aceptadoEn.isAfter(ahora) ? ahora : aceptadoEn;
-        var consentimiento = new Consentimiento(UUID.randomUUID(), usuario, versionPolitica, cuando,
-                MedioConsentimiento.APP_REGISTRO);
+        var consentimiento = new Consentimiento(UUID.randomUUID(), usuario, versionPolitica, cuando, medio);
         if (repositorio.insertar(new Usuario(usuario, nombre))) {
             repositorio.guardar(consentimiento);
         }

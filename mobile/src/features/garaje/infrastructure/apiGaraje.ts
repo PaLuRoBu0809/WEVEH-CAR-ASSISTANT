@@ -20,11 +20,29 @@ export function editarVehiculo(id: string, edicion: EdicionVehiculo): Promise<Ve
   return pedir<VehiculoResumen>(`${RUTA}/${id}`, { method: 'PUT', body: JSON.stringify(edicion) });
 }
 
-/** RF-GAR-05: con un salto raro responde 409 confirmacion-requerida; se reenvía con confirmado. */
-export function actualizarKilometraje(id: string, kilometraje: number, confirmado: boolean): Promise<VehiculoResumen> {
+/**
+ * RF-GAR-05: con un salto raro responde 409 confirmacion-requerida; se reenvía con confirmado.
+ * RF-GAR-06: la clave hace que el cambio se guarde una sola vez aunque se envíe de nuevo, y leidoEn es el día en que
+ * se anotó sin red (ADR 0009).
+ */
+export function actualizarKilometraje(
+  id: string,
+  kilometraje: number,
+  confirmado: boolean,
+  envio: Readonly<{ clave?: string; leidoEn?: string }> = {},
+): Promise<VehiculoResumen> {
   return pedir<VehiculoResumen>(`${RUTA}/${id}/kilometraje`, {
     method: 'PUT',
-    body: JSON.stringify({ kilometraje, confirmado }),
+    headers: envio.clave ? { 'Idempotency-Key': envio.clave } : undefined,
+    body: JSON.stringify({ kilometraje, confirmado, leidoEn: envio.leidoEn }),
+  });
+}
+
+/** ADR 0023: baja la última lectura, en sus primeros 7 días y sin quedar por debajo de la anterior. Solo con red. */
+export function corregirKilometraje(id: string, kilometraje: number): Promise<VehiculoResumen> {
+  return pedir<VehiculoResumen>(`${RUTA}/${id}/kilometraje/correccion`, {
+    method: 'PUT',
+    body: JSON.stringify({ kilometraje }),
   });
 }
 

@@ -1,5 +1,6 @@
 export {
   CLAVE_VEHICULOS,
+  prepararCambiosSinRed,
   useCompletarRegistro,
   useEliminarVehiculo,
   useRegistrarVehiculo,
@@ -7,6 +8,9 @@ export {
   useVehiculos,
 } from './application/useVehiculos';
 export {
+  COMBUSTIBLES,
+  TRACCIONES,
+  TRANSMISIONES,
   listaFaltantes,
   nombreParaMostrar,
   tituloFaltantes,

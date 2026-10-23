@@ -1,5 +1,5 @@
 import { aEdicion, erroresEdicion, errorKilometraje, formularioDesde } from './edicion';
-import { listaFaltantes, tituloFaltantes, type VehiculoResumen } from './vehiculo';
+import { listaFaltantes, puedeCorregirKilometraje, tituloFaltantes, type VehiculoResumen } from './vehiculo';
 
 const HOY = new Date(2026, 9, 15);
 
@@ -40,6 +40,9 @@ describe('editar el vehículo', () => {
       uso: 'MIXTO',
       kmMes: '1000',
       fechaMatricula: '15/03/2008',
+      combustible: null,
+      transmision: 'AUTOMATICA',
+      traccion: '4X4',
     });
   });
 
@@ -47,9 +50,11 @@ describe('editar el vehículo', () => {
     expect(erroresEdicion(formularioDesde(PRADO), HOY)).toEqual({});
   });
 
+  const SIN_ATRIBUTOS = { combustible: null, transmision: null, traccion: null } as const;
+
   test('placa, km al mes y fecha de matrícula se validan con textos claros', () => {
     const errores = erroresEdicion(
-      { alias: '', placa: 'AB', uso: 'CIUDAD', kmMes: '25000', fechaMatricula: '01/01/2030' },
+      { alias: '', placa: 'AB', uso: 'CIUDAD', kmMes: '25000', fechaMatricula: '01/01/2030', ...SIN_ATRIBUTOS },
       HOY,
     );
 
@@ -59,7 +64,10 @@ describe('editar el vehículo', () => {
   });
 
   test('arma la solicitud con la versión que tenía la app', () => {
-    const edicion = aEdicion({ alias: '  ', placa: 'xyz-987', uso: 'CARRETERA', kmMes: '2.500', fechaMatricula: '' }, 3);
+    const edicion = aEdicion(
+      { alias: '  ', placa: 'xyz-987', uso: 'CARRETERA', kmMes: '2.500', fechaMatricula: '', ...SIN_ATRIBUTOS },
+      3,
+    );
 
     expect(edicion).toEqual({
       alias: null,
@@ -67,8 +75,21 @@ describe('editar el vehículo', () => {
       uso: 'CARRETERA',
       kmPromedioMes: 2500,
       fechaMatricula: null,
+      combustible: null,
+      transmision: null,
+      traccion: null,
       versionFila: 3,
     });
+  });
+
+  test('se corrigen combustible, caja y tracción, por ejemplo tras un cambio de motor (RF-GAR-03)', () => {
+    const edicion = aEdicion({ ...formularioDesde(PRADO), combustible: 'DIESEL', transmision: 'MECANICA' }, 3);
+
+    expect(edicion).toMatchObject({ combustible: 'DIESEL', transmision: 'MECANICA', traccion: '4X4' });
+  });
+
+  test('una moto no envía tracción', () => {
+    expect(aEdicion(formularioDesde(PRADO), 3, 'MOTO').traccion).toBeNull();
   });
 });
 
@@ -89,5 +110,17 @@ describe('kilometraje y datos que faltan', () => {
   test('si faltan papeles el aviso lo dice así; si solo falta el aceite, es un dato', () => {
     expect(tituloFaltantes('La Prado', ['SOAT', 'ACEITE'])).toBe('Te faltan los papeles de La Prado');
     expect(tituloFaltantes('La Prado', ['ACEITE'])).toBe('Te falta un dato de La Prado');
+  });
+});
+
+describe('corregir el kilometraje (ADR 0023)', () => {
+  test('la última lectura se puede corregir hasta 7 días después', () => {
+    expect(puedeCorregirKilometraje('2026-10-15', '2026-10-15')).toBe(true);
+    expect(puedeCorregirKilometraje('2026-10-15', '2026-10-22')).toBe(true);
+  });
+
+  test('después de 7 días o con una fecha rara ya no', () => {
+    expect(puedeCorregirKilometraje('2026-10-15', '2026-10-23')).toBe(false);
+    expect(puedeCorregirKilometraje('no es fecha', '2026-10-23')).toBe(false);
   });
 });

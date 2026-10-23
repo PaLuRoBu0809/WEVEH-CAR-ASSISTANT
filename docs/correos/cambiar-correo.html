@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+  Supabase → Authentication → Emails → Change email address (RF-CTA-07).
+  Asunto: Confirma el cambio de correo en WEVEH
+  Con "Secure email change" activo, Supabase manda esta plantilla dos veces: al correo actual y al nuevo, cada una con
+  su token. El cambio queda cuando se abren los dos (página /correo-cambiado).
+  El enlace lleva token_hash a la página de la demo web y no a {{ .ConfirmationURL }} (docs/adr/0022): así sirve en
+  cualquier equipo y los antivirus de correo que abren enlaces no lo gastan. Site URL = la demo en Vercel.
+  Vence en 1 hora: Supabase tiene un solo vencimiento para todos los enlaces.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirma el cambio de correo en WEVEH</title>
+</head>
+<body style="margin:0;padding:0;background:#F3F6F5;font-family:Manrope,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0E1F1D;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F6F5;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:16px;overflow:hidden;">
+          <tr>
+            <!-- Franja de la marca del mockup (sol, carretera y la W) en PNG: los clientes de correo no muestran SVG.
+                 Se sirve desde la demo (mobile/public/correo/cabecera.png) y se genera con docs/correos/cabecera.html -->
+            <td style="background:#00120F;">
+              <img src="{{ .SiteURL }}/correo/cabecera.png" width="520" height="120" alt="weveh" style="display:block;width:100%;max-width:520px;height:auto;border:0;background:#00120F;color:#FFFFFF;font-size:24px;font-weight:800;line-height:120px;text-indent:24px;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 28px 8px;">
+              <h1 style="margin:0 0 14px;font-size:24px;line-height:1.2;font-weight:800;">Confirma el cambio de correo</h1>
+              <p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#41554F;">Hola{{ if .Data.nombre }}, {{ .Data.nombre }}{{ end }}. Pediste cambiar el correo de tu cuenta de WEVEH de <b>{{ .Email }}</b> a <b>{{ .NewEmail }}</b>. Te enviamos un enlace a cada correo: ábrelos los dos para terminar.</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+                <tr>
+                  <td style="background:#005F54;border-radius:14px;">
+                    <a href="{{ .SiteURL }}/correo-cambiado?token_hash={{ .TokenHash }}&amp;type=email_change" style="display:inline-block;padding:14px 26px;color:#FFFFFF;font-size:16px;font-weight:800;text-decoration:none;">Confirmar el cambio</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Este enlace vence en <b>1 hora</b> y sirve una sola vez.</p>
+              <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Si no pediste este cambio, ignora este correo: tu correo sigue igual. Por seguridad, cambia tu contraseña.</p>
+              <p style="margin:0;font-size:14px;line-height:1.5;color:#41554F;">Si el botón no funciona, usa este enlace:
+                <a href="{{ .SiteURL }}/correo-cambiado?token_hash={{ .TokenHash }}&amp;type=email_change" style="color:#005F54;font-weight:800;text-decoration:underline;">Confirmar el cambio</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 26px;color:#5A6E6A;font-size:14px;line-height:1.5;border-top:1px solid #DCE5E3;">
+              Enviado por WEVEH. Colombia.<br>Este es un correo automático: no respondas a este mensaje.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

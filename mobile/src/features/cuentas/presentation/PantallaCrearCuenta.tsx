@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { Boton, Campo, Casilla, Texto } from '@/shared/design-system';
 
-import { useCrearCuenta } from '../application/sesion';
+import { useCrearCuenta, useEntrarConGoogle } from '../application/sesion';
 import {
   CREAR_CUENTA_INICIAL,
   datosQueFaltan,
@@ -12,37 +12,39 @@ import {
   textoQueFalta,
   type DatosCrearCuenta,
 } from '../domain/formularios';
-import { AvisoError, Enlace, Formulario } from './Formulario';
+import { BotonGoogle } from './BotonGoogle';
+import { AvisoError, Enlace, Formulario, Separador } from './Formulario';
+import { seguirEntrada, type DestinosEntrada } from './seguirEntrada';
 
-type Props = Readonly<{
-  onVolver: () => void;
-  onIniciarSesion: () => void;
-  onCuentaLista: () => void;
-}>;
+type Props = DestinosEntrada &
+  Readonly<{
+    onVolver: () => void;
+    onIniciarSesion: () => void;
+    onRevisarCorreo: (correo: string) => void;
+    onLeerPolitica: () => void;
+  }>;
 
-/** Mockup Portada → Crear cuenta (RF-CTA-01, RF-DAT-01). La casilla de la política nunca viene marcada. */
-export function PantallaCrearCuenta({ onVolver, onIniciarSesion, onCuentaLista }: Props) {
+/**
+ * Mockup Portada → Crear cuenta (RF-CTA-01, RF-DAT-01). La casilla de la política nunca viene marcada. Con Google
+ * no hay casilla aquí: la política se acepta después, en "Antes de entrar".
+ */
+export function PantallaCrearCuenta({ onVolver, onIniciarSesion, onRevisarCorreo, onLeerPolitica, ...destinos }: Props) {
   const [datos, setDatos] = useState<DatosCrearCuenta>(CREAR_CUENTA_INICIAL);
   const crear = useCrearCuenta();
+  const google = useEntrarConGoogle();
   const faltan = datosQueFaltan(datos);
   const errores = erroresCrearCuenta(datos);
+  const error = crear.error ?? google.error;
   const cambiar = (cambio: Partial<DatosCrearCuenta>) => setDatos((actual) => ({ ...actual, ...cambio }));
-
-  if (crear.data?.requiereVerificarCorreo) {
-    return (
-      <Formulario titulo="Revisa tu correo" bajada={`Te enviamos un enlace a ${crear.data.correo}.`} onVolver={onVolver}>
-        <Texto tono="texto2">Ábrelo para confirmar tu cuenta y luego inicia sesión. Si no lo ves, busca en correo no deseado.</Texto>
-        <Boton texto="Ir a iniciar sesión" onPress={onIniciarSesion} />
-      </Formulario>
-    );
-  }
 
   return (
     <Formulario titulo="Crea tu cuenta" bajada="Tarda menos de un minuto. Cada dato enciende una luz." onVolver={onVolver}>
+      <BotonGoogle ocupado={google.isPending} onPress={() => google.mutate(undefined, { onSuccess: (r) => seguirEntrada(r, destinos) })} />
+      <Separador texto="o con tu correo" />
       <Texto variante="fuerte" tono="primarioTinta" accessibilityLiveRegion="polite">
         {textoQueFalta(faltan)}
       </Texto>
-      {crear.isError && <AvisoError error={crear.error} />}
+      {error && <AvisoError error={error} />}
       <Campo
         etiqueta="Nombre"
         placeholder="Laura"
@@ -79,11 +81,16 @@ export function PantallaCrearCuenta({ onVolver, onIniciarSesion, onCuentaLista }
         marcada={datos.aceptaPolitica}
         onCambiar={(aceptaPolitica) => cambiar({ aceptaPolitica })}
       />
+      <Enlace accion="Leer la política" onPress={onLeerPolitica} />
       <View>
         <Boton
           texto={crear.isPending ? 'Creando tu cuenta…' : 'Crear cuenta'}
           deshabilitado={faltan > 0 || crear.isPending}
-          onPress={() => crear.mutate(datos, { onSuccess: (r) => !r.requiereVerificarCorreo && onCuentaLista() })}
+          onPress={() =>
+            crear.mutate(datos, {
+              onSuccess: (r) => (r.requiereVerificarCorreo ? onRevisarCorreo(r.correo) : destinos.onSesionIniciada()),
+            })
+          }
         />
       </View>
       <Enlace pregunta="¿Ya tienes cuenta?" accion="Inicia sesión" onPress={onIniciarSesion} />

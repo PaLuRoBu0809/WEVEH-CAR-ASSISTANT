@@ -7,7 +7,10 @@ export default function CrearCuenta() {
     <PantallaCrearCuenta
       onVolver={() => (router.canGoBack() ? router.back() : router.replace('/portada'))}
       onIniciarSesion={() => router.replace('/iniciar-sesion')}
-      onCuentaLista={() => router.replace('/garaje')}
+      onRevisarCorreo={(correo) => router.push({ pathname: '/revisa-correo', params: { correo } })}
+      onLeerPolitica={() => router.push('/politica')}
+      onSesionIniciada={() => router.replace('/garaje')}
+      onFaltaPolitica={() => router.replace('/aceptar-politica')}
     />
   );
 }

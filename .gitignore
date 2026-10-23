@@ -2,6 +2,7 @@
 node_modules/
 target/
 dist/
+coverage/
 build/
 .expo/
 .gradle/
@@ -14,13 +15,27 @@ build/
 .env.*
 !.env.example
 
+# Claude Code: permisos personales y estado local del hook de verificación
+.claude/settings.local.json
+.claude/.compuerta.json
+.claude/.compuerta-pausa
+
+# Salidas de ejecución local
+*.log
+
+# OpenCode: config local con llaves y encargos delegados
+.opencode.json
+.opencode/
+.delegacion/
+
 # Editor y sistema
 .idea/
 .vscode/
 *.iml
 .DS_Store
 
-# Datos de entrada que no se versionan
+# Datos de entrada que no se versionan (los Excel del Ministerio van en datos/mintransporte/<año>/)
 datos/
+/Tabla *.xlsx
 salida_catalogo/
 __pycache__/

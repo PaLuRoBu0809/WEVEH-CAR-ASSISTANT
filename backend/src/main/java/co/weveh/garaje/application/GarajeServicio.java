@@ -4,6 +4,7 @@ import co.weveh.garaje.GarajeApi;
 import co.weveh.garaje.KilometrajeActualizado;
 import co.weveh.garaje.VehiculoEliminado;
 import co.weveh.garaje.VehiculoRegistrado;
+import co.weveh.garaje.application.puertos.LecturasKilometraje;
 import co.weveh.garaje.application.puertos.VehiculoRepositorio;
 import co.weveh.garaje.domain.RegistroInicial;
 import co.weveh.garaje.domain.Vehiculo;
@@ -24,11 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
 class GarajeServicio implements Garaje, GarajeApi {
 
     private final VehiculoRepositorio repositorio;
+    private final LecturasKilometraje lecturas;
     private final ApplicationEventPublisher eventos;
     private final Clock reloj;
 
-    GarajeServicio(VehiculoRepositorio repositorio, ApplicationEventPublisher eventos, Clock reloj) {
+    GarajeServicio(VehiculoRepositorio repositorio, LecturasKilometraje lecturas, ApplicationEventPublisher eventos,
+                   Clock reloj) {
         this.repositorio = repositorio;
+        this.lecturas = lecturas;
         this.eventos = eventos;
         this.reloj = reloj;
     }
@@ -49,6 +53,7 @@ class GarajeServicio implements Garaje, GarajeApi {
     public Vehiculo registrar(UsuarioId usuario, Vehiculo.DatosRegistro datos) {
         var vehiculo = Vehiculo.registrar(UUID.randomUUID(), usuario, datos, LocalDate.now(reloj));
         repositorio.insertar(vehiculo);
+        lecturas.anotar(vehiculo.id(), vehiculo.km().valor(), vehiculo.kmActualizadoEn());
         eventos.publishEvent(new VehiculoRegistrado(vehiculo.id()));
         return vehiculo;
     }
@@ -59,8 +64,7 @@ class GarajeServicio implements Garaje, GarajeApi {
         if (actual.versionFila() != edicion.versionFila()) {
             throw conflicto();
         }
-        var editado = actual.editar(edicion.alias(), edicion.placa(), edicion.uso(), edicion.kmPromedioMes(),
-                edicion.fechaMatricula(), LocalDate.now(reloj));
+        var editado = actual.editar(edicion.datos(), LocalDate.now(reloj));
         if (!repositorio.actualizar(editado)) {
             throw conflicto();
         }
@@ -80,12 +84,33 @@ class GarajeServicio implements Garaje, GarajeApi {
     }
 
     @Override
-    public Vehiculo actualizarKilometraje(UsuarioId usuario, UUID vehiculoId, int kilometraje, boolean confirmado) {
+    public Vehiculo actualizarKilometraje(UsuarioId usuario, UUID vehiculoId, int kilometraje, boolean confirmado,
+                                         LocalDate leidoEn) {
         var actual = obtener(usuario, vehiculoId);
-        var actualizado = actual.actualizarKilometraje(kilometraje, confirmado, LocalDate.now(reloj));
+        var hoy = LocalDate.now(reloj);
+        // Un cambio hecho sin red que llega después de otro más nuevo no se aplica (ADR 0009)
+        if (leidoEn != null && actual.lecturaSuperada(kilometraje, leidoEn)) {
+            return actual;
+        }
+        var dia = leidoEn == null || leidoEn.isAfter(hoy) ? hoy : leidoEn;
+        var actualizado = actual.actualizarKilometraje(kilometraje, confirmado, dia);
         if (!repositorio.actualizar(actualizado)) {
             throw conflicto();
         }
+        lecturas.anotar(vehiculoId, kilometraje, dia);
+        eventos.publishEvent(new KilometrajeActualizado(vehiculoId, kilometraje));
+        return obtener(usuario, vehiculoId);
+    }
+
+    @Override
+    public Vehiculo corregirKilometraje(UsuarioId usuario, UUID vehiculoId, int kilometraje) {
+        var actual = obtener(usuario, vehiculoId);
+        var piso = lecturas.anteriorALaUltima(vehiculoId).orElse(0);
+        var corregido = actual.corregirKilometraje(kilometraje, piso, LocalDate.now(reloj));
+        if (!repositorio.actualizar(corregido)) {
+            throw conflicto();
+        }
+        lecturas.corregirUltima(vehiculoId, kilometraje);
         eventos.publishEvent(new KilometrajeActualizado(vehiculoId, kilometraje));
         return obtener(usuario, vehiculoId);
     }

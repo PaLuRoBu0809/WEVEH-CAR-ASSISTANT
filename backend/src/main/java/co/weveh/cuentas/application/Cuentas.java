@@ -1,6 +1,7 @@
 package co.weveh.cuentas.application;
 
 import co.weveh.cuentas.domain.Consentimiento;
+import co.weveh.cuentas.domain.MedioConsentimiento;
 import co.weveh.cuentas.domain.Usuario;
 import co.weveh.shared.domain.UsuarioId;
 import java.time.Instant;
@@ -15,8 +16,12 @@ public interface Cuentas {
     /**
      * Crea el perfil y registra la aceptación de la política (RF-DAT-02). Si el perfil ya existe lo devuelve sin
      * cambios: la app puede reintentar sin duplicar nada.
+     *
+     * @param medio {@code APP_REGISTRO} (casilla del registro con correo) o {@code APP_GOOGLE} (primer ingreso con
+     *              Google)
      */
-    Cuenta crear(UsuarioId usuario, String nombre, String versionPolitica, Instant aceptadoEn);
+    Cuenta crear(UsuarioId usuario, String nombre, String versionPolitica, Instant aceptadoEn,
+                 MedioConsentimiento medio);
 
     Cuenta obtener(UsuarioId usuario);
 

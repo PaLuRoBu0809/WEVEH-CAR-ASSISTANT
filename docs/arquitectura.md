@@ -38,7 +38,7 @@ flowchart LR
 | API | Reglas de negocio, seguridad, coordina la base y la IA | ✅ |
 | Supabase PostgreSQL | Guarda los datos; nadie de afuera la lee (RLS sin políticas) | ✅ |
 | OpenRouter | Modelos gratuitos para el Mecánico IA, con lista de respaldo | ✅ |
-| Supabase Auth | Cuentas: correo, Google, enlace mágico | 🟡 correo y contraseña · Google y enlace mágico en la app pendientes |
+| Supabase Auth | Cuentas: correo y contraseña, Google | ✅ en la app (ADR 0022); el enlace mágico quedó fuera del MVP |
 | SQLite | Último estado y cola de cambios sin red | ⬜ ADR 0009 |
 | Brave Search API | Búsqueda del agente perfilador | 🔜 fase 4 |
 | Sentry | Avisos de errores | ⬜ ADR 0010 |

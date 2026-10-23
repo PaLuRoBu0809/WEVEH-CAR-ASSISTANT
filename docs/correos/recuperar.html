@@ -1,0 +1,55 @@
+<!doctype html>
+<!--
+  Supabase → Authentication → Email Templates → Reset password (RF-CTA-03, mockup 2).
+  Asunto: Crea una nueva contraseña para WEVEH
+  El enlace lleva token_hash a la página de la demo web y no a {{ .ConfirmationURL }} (docs/adr/0022): así sirve en
+  cualquier equipo y los antivirus de correo que abren enlaces no lo gastan. Site URL = la demo en Vercel.
+  Vence en 1 hora: Supabase → Email OTP expiration = 3600.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crea una nueva contraseña para WEVEH</title>
+</head>
+<body style="margin:0;padding:0;background:#F3F6F5;font-family:Manrope,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0E1F1D;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F6F5;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:16px;overflow:hidden;">
+          <tr>
+            <!-- Franja de la marca del mockup (sol, carretera y la W) en PNG: los clientes de correo no muestran SVG.
+                 Se sirve desde la demo (mobile/public/correo/cabecera.png) y se genera con docs/correos/cabecera.html -->
+            <td style="background:#00120F;">
+              <img src="{{ .SiteURL }}/correo/cabecera.png" width="520" height="120" alt="weveh" style="display:block;width:100%;max-width:520px;height:auto;border:0;background:#00120F;color:#FFFFFF;font-size:24px;font-weight:800;line-height:120px;text-indent:24px;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 28px 8px;">
+              <h1 style="margin:0 0 14px;font-size:24px;line-height:1.2;font-weight:800;">Hola{{ if .Data.nombre }}, {{ .Data.nombre }}{{ end }}</h1>
+              <p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#41554F;">Recibimos una solicitud para cambiar la contraseña de tu cuenta de WEVEH. Toca el botón para crear una nueva.</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+                <tr>
+                  <td style="background:#005F54;border-radius:14px;">
+                    <a href="{{ .SiteURL }}/nueva-contrasena?token_hash={{ .TokenHash }}&amp;type=recovery" style="display:inline-block;padding:14px 26px;color:#FFFFFF;font-size:16px;font-weight:800;text-decoration:none;">Crear nueva contraseña</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Este enlace vence en <b>1 hora</b> y solo sirve una vez.</p>
+              <p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:#41554F;">Si no fuiste tú, ignora este correo: tu contraseña no cambia.</p>
+              <p style="margin:0;font-size:14px;line-height:1.5;color:#41554F;">Si el botón no funciona, usa este enlace:
+                <a href="{{ .SiteURL }}/nueva-contrasena?token_hash={{ .TokenHash }}&amp;type=recovery" style="color:#005F54;font-weight:800;text-decoration:underline;">Crear nueva contraseña</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 26px;color:#5A6E6A;font-size:14px;line-height:1.5;border-top:1px solid #DCE5E3;">
+              Enviado por WEVEH. Colombia.<br>Este es un correo automático: no respondas a este mensaje.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

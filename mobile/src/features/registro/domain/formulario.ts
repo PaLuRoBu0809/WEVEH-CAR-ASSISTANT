@@ -1,3 +1,4 @@
+import type { AtributosLinea } from '@/features/catalogo';
 import type {
   Combustible,
   SolicitudRegistro,
@@ -8,6 +9,8 @@ import type {
 } from '@/features/garaje';
 
 import { aFechaIso, hoyIso } from '@/shared/fechas';
+
+import { NO_SE, type NoSe } from './atributosLinea';
 
 /**
  * Registro básico por pasos (skill dominio-vehiculo §1). Cada paso completo enciende una W.
@@ -21,11 +24,15 @@ export type Formulario = {
   linea: string;
   cilindradaCc: number | null;
   manual: boolean;
+  /** Lo que el catálogo sabe de la línea elegida; decide qué se pregunta (RF-CAT-04). */
+  atributosLinea: AtributosLinea | null;
   anio: string;
-  combustible: Combustible | null;
-  transmision: Transmision | null;
-  traccion: Traccion | null;
+  /** `null` = sin responder; `NO_SE` = la persona tocó "No sé". Los dos se envían sin dato (RF-CAT-04). */
+  combustible: Combustible | NoSe | null;
+  transmision: Transmision | NoSe | null;
+  traccion: Traccion | NoSe | null;
   km: string;
+  /** RF-GAR-02: no se preguntan en el registro; quedan "Mixto" y 1.000 hasta que la persona los cambie. */
   uso: UsoVehiculo;
   kmMes: string;
   aceiteNoSe: boolean;
@@ -53,6 +60,7 @@ export const FORMULARIO_INICIAL: Formulario = {
   linea: '',
   cilindradaCc: null,
   manual: false,
+  atributosLinea: null,
   anio: '',
   combustible: null,
   transmision: null,
@@ -117,8 +125,6 @@ export function erroresDelPaso(paso: number, f: Formulario, ahora: Date = new Da
     const km = aEntero(f.km);
     if (km === null) errores.km = 'Escribe los kilómetros del tablero';
     else if (km > 2_000_000) errores.km = 'El kilometraje no puede pasar de 2.000.000 km';
-    const kmMes = aEntero(f.kmMes);
-    if (kmMes === null || kmMes > 20_000) errores.kmMes = 'Escribe un número entre 0 y 20.000';
   }
   if (paso === PASO_ACEITE && !f.aceiteNoSe && !f.aceiteDespues) {
     const aceiteKm = aEntero(f.aceiteKm);
@@ -157,6 +163,8 @@ export function pasoCompleto(paso: number, f: Formulario, ahora?: Date): boolean
 
 const opcional = (texto: string): string | null => (texto.trim() ? texto.trim() : null);
 
+const sinNoSe = <T extends string>(valor: T | NoSe | null): T | null => (valor === NO_SE ? null : valor);
+
 export function aSolicitud(f: Formulario): SolicitudRegistro {
   const aceiteConocido = !f.aceiteNoSe && !f.aceiteDespues;
   const papeles = !f.papelesDespues;
@@ -167,9 +175,9 @@ export function aSolicitud(f: Formulario): SolicitudRegistro {
     linea: f.linea.trim(),
     cilindradaCc: f.cilindradaCc,
     anioModelo: aEntero(f.anio) ?? 0,
-    combustible: f.combustible,
-    transmision: f.transmision,
-    traccion: f.traccion,
+    combustible: sinNoSe(f.combustible),
+    transmision: sinNoSe(f.transmision),
+    traccion: f.tipo === 'CARRO' ? sinNoSe(f.traccion) : null,
     kilometraje: aEntero(f.km) ?? 0,
     uso: f.uso,
     kmPromedioMes: aEntero(f.kmMes) ?? 1000,

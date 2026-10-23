@@ -1,6 +1,6 @@
 # ADR 0013 — Búsqueda web del agente perfilador desde el backend
 
-- **Estado:** aceptada (se construye en la fase 4)
+- **Estado:** aceptada (se construye en la fase 4) · ampliada por el [ADR 0019](0019-conocimiento-por-intencion.md)
 - **Fecha:** 2026-10-10
 - **Autores:** Isaac Cano, Pablo Rodríguez
 

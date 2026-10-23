@@ -96,4 +96,19 @@ describe('formulario de registro', () => {
   test('un vehículo escrito a mano no lleva línea del catálogo', () => {
     expect(aSolicitud({ ...PRADO, manual: true }).catalogoLineaId).toBeNull();
   });
+
+  test('el uso y los km al mes no se preguntan: van "Mixto" y 1.000 (RF-GAR-02)', () => {
+    expect(pasoCompleto(1, { ...PRADO, kmMes: '' }, AHORA)).toBe(true);
+    expect(aSolicitud(FORMULARIO_INICIAL)).toMatchObject({ uso: 'MIXTO', kmPromedioMes: 1000 });
+  });
+
+  test('"No sé" y sin responder se envían sin dato; nunca se rellena gasolina (RF-CAT-04)', () => {
+    const solicitud = aSolicitud({ ...PRADO, combustible: 'NO_SE', transmision: null, traccion: '4X4' });
+    expect(solicitud).toMatchObject({ combustible: null, transmision: null, traccion: '4X4' });
+    expect(aSolicitud(FORMULARIO_INICIAL).combustible).toBeNull();
+  });
+
+  test('una moto no envía tracción', () => {
+    expect(aSolicitud({ ...PRADO, tipo: 'MOTO', traccion: '4X4' }).traccion).toBeNull();
+  });
 });

@@ -5,7 +5,8 @@ import java.math.BigDecimal;
 
 /**
  * Línea comercial tal como la publica el Ministerio ("PRADO VX 5P AT"). Combustible, transmisión y tracción son
- * inferidos del nombre y pueden ser null (sin pista): la app los muestra como sugerencia editable.
+ * inferidos del nombre y pueden ser null (sin pista); {@code atributos} los completa con lo investigado y revisado y
+ * dice de dónde sale cada uno (RF-CAT-04, ADR 0021).
  */
 public record LineaCatalogo(
         long id,
@@ -18,5 +19,6 @@ public record LineaCatalogo(
         String combustible,
         String transmision,
         String traccion,
-        Integer puertas) {
+        Integer puertas,
+        AtributosLinea atributos) {
 }

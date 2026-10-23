@@ -1,8 +1,11 @@
 import { notifyManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 
 import { configurarSesion, ErrorApi } from '@/shared/http';
+
+import { openAuthSessionAsync } from 'expo-web-browser';
 
 import { crearPerfil, obtenerCuenta } from '../infrastructure/apiCuenta';
 import { supabase } from '../infrastructure/supabase';
@@ -12,8 +15,13 @@ import {
   useCrearCuenta,
   useCuenta,
   useEstadoSesion,
+  useAceptarPolitica,
+  useEntradaDesdeEnlace,
+  useEntrarConGoogle,
+  useFaltaPerfil,
   useIniciarSesion,
   usePrepararSesion,
+  useUsuarioDeSesion,
 } from './sesion';
 
 jest.mock('@/shared/http', () => {
@@ -21,6 +29,7 @@ jest.mock('@/shared/http', () => {
   return { ErrorApi: real.ErrorApi, configurarSesion: jest.fn(), pedir: jest.fn() };
 });
 
+jest.mock('@/shared/sinRed', () => ({ borrarDatosLocales: jest.fn() }));
 jest.mock('../infrastructure/apiCuenta', () => ({ obtenerCuenta: jest.fn(), crearPerfil: jest.fn() }));
 
 jest.mock('../infrastructure/supabase', () => ({
@@ -30,14 +39,21 @@ jest.mock('../infrastructure/supabase', () => ({
       onAuthStateChange: jest.fn(),
       signUp: jest.fn(),
       signInWithPassword: jest.fn(),
+      signInWithOAuth: jest.fn(),
+      exchangeCodeForSession: jest.fn(),
       signOut: jest.fn(),
     },
   },
 }));
 
+jest.mock('../infrastructure/urlDeRetorno', () => ({ urlDeRetorno: (ruta: string) => `weveh://${ruta}` }));
+
+jest.mock('expo-web-browser', () => ({ openAuthSessionAsync: jest.fn() }));
+
 const auth = supabase.auth as unknown as Record<string, jest.Mock>;
 const mockObtenerCuenta = obtenerCuenta as jest.Mock;
 const mockCrearPerfil = crearPerfil as jest.Mock;
+const mockAbrirVentana = openAuthSessionAsync as jest.Mock;
 
 const CUENTA = { nombre: 'Ana', correo: 'ana@correo.co', consentimientos: [] };
 const DATOS = { nombre: ' Ana ', correo: ' ana@correo.co ', contrasena: 'secreta123', aceptaPolitica: true };
@@ -46,7 +62,18 @@ const USUARIO_CON_POLITICA = {
   identities: [{}],
   user_metadata: { nombre: 'Ana', version_politica: '0.1-borrador', politica_aceptada_en: '2026-10-01T00:00:00Z' },
 };
+const USUARIO_GOOGLE = {
+  id: 'u2',
+  email: 'laura@gmail.com',
+  identities: [{}],
+  app_metadata: { provider: 'google' },
+  user_metadata: { full_name: 'Laura Gómez', name: 'Laura' },
+};
 const NO_ENCONTRADO = new ErrorApi(404, { title: 'No existe' });
+
+function conSesionDe(usuario: unknown) {
+  auth.getSession.mockResolvedValue({ data: { session: { access_token: 't', user: usuario } } });
+}
 
 let consultas: QueryClient;
 
@@ -161,6 +188,7 @@ describe('useCrearCuenta', () => {
       nombre: 'Ana',
       versionPolitica: '0.1-borrador',
       aceptadoEn: '2026-10-01T00:00:00Z',
+      medio: 'APP_REGISTRO',
     });
   });
 
@@ -198,7 +226,7 @@ describe('useIniciarSesion', () => {
     auth.signInWithPassword.mockResolvedValue({ data: { user: USUARIO_CON_POLITICA }, error: null });
     mockObtenerCuenta.mockResolvedValue(CUENTA);
 
-    await expect(iniciar()).resolves.toEqual(CUENTA);
+    await expect(iniciar()).resolves.toEqual({ tipo: 'lista', cuenta: CUENTA });
 
     expect(auth.signInWithPassword).toHaveBeenCalledWith({ email: 'ana@correo.co', password: 'secreta123' });
     expect(consultas.getQueryData(CLAVE_CUENTA)).toEqual(CUENTA);
@@ -210,23 +238,25 @@ describe('useIniciarSesion', () => {
     mockObtenerCuenta.mockRejectedValue(NO_ENCONTRADO);
     mockCrearPerfil.mockResolvedValue(CUENTA);
 
-    await expect(iniciar()).resolves.toEqual(CUENTA);
+    await expect(iniciar()).resolves.toEqual({ tipo: 'lista', cuenta: CUENTA });
 
     expect(mockCrearPerfil).toHaveBeenCalledWith({
       nombre: 'Sin nombre',
       versionPolitica: '0.1-borrador',
       aceptadoEn: undefined,
+      medio: 'APP_REGISTRO',
     });
   });
 
-  test('sin política aceptada no crea el perfil y cierra la sesión', async () => {
+  test('sin política aceptada no crea el perfil y lleva a "Antes de entrar" con la sesión abierta', async () => {
     auth.signInWithPassword.mockResolvedValue({ data: { user: { ...USUARIO_CON_POLITICA, user_metadata: {} } }, error: null });
     mockObtenerCuenta.mockRejectedValue(NO_ENCONTRADO);
 
-    await expect(iniciar()).rejects.toThrow('debes aceptar la política');
+    await expect(iniciar()).resolves.toEqual({ tipo: 'falta-politica' });
 
     expect(mockCrearPerfil).not.toHaveBeenCalled();
-    expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    expect(auth.signOut).not.toHaveBeenCalled();
+    expect(consultas.getQueryData(CLAVE_CUENTA)).toBeUndefined();
   });
 
   test('un error de la API distinto de 404 cierra la sesión y se propaga', async () => {
@@ -258,5 +288,164 @@ describe('useCerrarSesion', () => {
 
     expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
     expect(consultas.getQueryData(CLAVE_CUENTA)).toBeUndefined();
+  });
+});
+
+describe('useEntrarConGoogle (celular)', () => {
+  async function entrar() {
+    const { result } = await renderHook(() => useEntrarConGoogle(), { wrapper: envoltorio });
+    let promesa!: Promise<unknown>;
+    await act(async () => {
+      promesa = result.current.mutateAsync();
+      await promesa.catch(() => undefined);
+    });
+    return promesa;
+  }
+
+  beforeEach(() => {
+    auth.signInWithOAuth.mockResolvedValue({ data: { url: 'https://supabase/authorize' }, error: null });
+  });
+
+  test('abre Google y vuelve a la app con PKCE; sin perfil ni política pide aceptarla', async () => {
+    mockAbrirVentana.mockResolvedValue({ type: 'success', url: 'weveh://auth/callback?code=abc' });
+    auth.exchangeCodeForSession.mockResolvedValue({ error: null });
+    conSesionDe(USUARIO_GOOGLE);
+    mockObtenerCuenta.mockRejectedValue(NO_ENCONTRADO);
+
+    await expect(entrar()).resolves.toEqual({ tipo: 'falta-politica' });
+
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: 'weveh://auth/callback', skipBrowserRedirect: true },
+    });
+    expect(mockAbrirVentana).toHaveBeenCalledWith('https://supabase/authorize', 'weveh://auth/callback');
+    expect(auth.exchangeCodeForSession).toHaveBeenCalledWith('abc');
+    expect(mockCrearPerfil).not.toHaveBeenCalled();
+  });
+
+  test('con perfil existente entra directo', async () => {
+    mockAbrirVentana.mockResolvedValue({ type: 'success', url: 'weveh://auth/callback?code=abc' });
+    auth.exchangeCodeForSession.mockResolvedValue({ error: null });
+    conSesionDe(USUARIO_GOOGLE);
+    mockObtenerCuenta.mockResolvedValue(CUENTA);
+
+    await expect(entrar()).resolves.toEqual({ tipo: 'lista', cuenta: CUENTA });
+    expect(consultas.getQueryData(CLAVE_CUENTA)).toEqual(CUENTA);
+  });
+
+  test('si la persona cierra la ventana no pasa nada', async () => {
+    mockAbrirVentana.mockResolvedValue({ type: 'cancel' });
+
+    await expect(entrar()).resolves.toEqual({ tipo: 'cancelada' });
+    expect(auth.exchangeCodeForSession).not.toHaveBeenCalled();
+  });
+});
+
+describe('useEntradaDesdeEnlace (/auth/callback)', () => {
+  test('un error en la URL no intenta canjear nada', async () => {
+    const { result } = await renderHook(() => useEntradaDesdeEnlace({ error_code: 'otp_expired' }), {
+      wrapper: envoltorio,
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe('Este enlace venció o ya se usó. Pide otro.');
+    expect(auth.exchangeCodeForSession).not.toHaveBeenCalled();
+  });
+
+  test('si el código ya se canjeó pero hay sesión, sigue (Android entrega el enlace dos veces)', async () => {
+    auth.exchangeCodeForSession.mockResolvedValue({ error: { code: 'flow_state_not_found', status: 404, message: '' } });
+    conSesionDe(USUARIO_GOOGLE);
+    mockObtenerCuenta.mockResolvedValue(CUENTA);
+
+    const { result } = await renderHook(() => useEntradaDesdeEnlace({ code: 'abc' }), { wrapper: envoltorio });
+
+    await waitFor(() => expect(result.current.data).toEqual({ tipo: 'lista', cuenta: CUENTA }));
+  });
+
+  test('sin sesión después de canjear muestra el error', async () => {
+    auth.exchangeCodeForSession.mockResolvedValue({ error: { code: 'flow_state_expired', status: 400, message: '' } });
+    auth.getSession.mockResolvedValue({ data: { session: null } });
+
+    const { result } = await renderHook(() => useEntradaDesdeEnlace({ code: 'viejo' }), { wrapper: envoltorio });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useAceptarPolitica', () => {
+  test('con Google crea el perfil con el nombre de Google y medio APP_GOOGLE (RF-DAT-02)', async () => {
+    conSesionDe(USUARIO_GOOGLE);
+    mockCrearPerfil.mockResolvedValue(CUENTA);
+    const { result } = await renderHook(() => useAceptarPolitica(), { wrapper: envoltorio });
+
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+
+    expect(mockCrearPerfil).toHaveBeenCalledWith(
+      expect.objectContaining({ nombre: 'Laura Gómez', versionPolitica: '0.1-borrador', medio: 'APP_GOOGLE' }),
+    );
+    expect(consultas.getQueryData(CLAVE_CUENTA)).toEqual(CUENTA);
+  });
+
+  test('sin sesión no crea nada', async () => {
+    auth.getSession.mockResolvedValue({ data: { session: null } });
+    const { result } = await renderHook(() => useAceptarPolitica(), { wrapper: envoltorio });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync()).rejects.toThrow('Tu sesión terminó');
+    });
+    expect(mockCrearPerfil).not.toHaveBeenCalled();
+  });
+});
+
+describe('useFaltaPerfil', () => {
+  test('con sesión y sin perfil en WEVEH es verdadero', async () => {
+    conSesionDe(USUARIO_GOOGLE);
+    mockObtenerCuenta.mockRejectedValue(NO_ENCONTRADO);
+    await renderHook(() => usePrepararSesion(), { wrapper: envoltorio });
+
+    const { result } = await renderHook(() => useFaltaPerfil(), { wrapper: envoltorio });
+
+    await waitFor(() => expect(result.current).toBe(true));
+  });
+});
+
+describe('useEntrarConGoogle (demo web)', () => {
+  test('la página se va a Google y no abre ninguna ventana', async () => {
+    jest.replaceProperty(Platform, 'OS', 'web');
+    auth.signInWithOAuth.mockResolvedValue({ data: { url: 'https://supabase/authorize' }, error: null });
+    const { result } = await renderHook(() => useEntrarConGoogle(), { wrapper: envoltorio });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync()).resolves.toEqual({ tipo: 'cancelada' });
+    });
+
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: 'weveh://auth/callback', skipBrowserRedirect: false },
+    });
+    expect(mockAbrirVentana).not.toHaveBeenCalled();
+    jest.restoreAllMocks();
+  });
+
+  test('si Supabase no deja empezar, muestra el error', async () => {
+    auth.signInWithOAuth.mockResolvedValue({ data: { url: null }, error: { code: 'unexpected_failure', status: 500, message: '' } });
+    const { result } = await renderHook(() => useEntrarConGoogle(), { wrapper: envoltorio });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync()).rejects.toThrow('No pudimos completar la acción');
+    });
+  });
+});
+
+describe('useUsuarioDeSesion', () => {
+  test('dice con qué correo entró y si fue con Google', async () => {
+    conSesionDe(USUARIO_GOOGLE);
+    await renderHook(() => usePrepararSesion(), { wrapper: envoltorio });
+
+    const { result } = await renderHook(() => useUsuarioDeSesion(), { wrapper: envoltorio });
+
+    await waitFor(() => expect(result.current).toEqual({ correo: 'laura@gmail.com', conGoogle: true }));
   });
 });

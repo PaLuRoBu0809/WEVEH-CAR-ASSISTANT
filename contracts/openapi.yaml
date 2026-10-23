@@ -12,6 +12,7 @@ servers:
 
 tags:
   - name: garaje
+  - name: catalogo
 
 paths:
   /api/v1/vehiculos:
@@ -34,6 +35,60 @@ paths:
               example: []
         '400':
           $ref: '#/components/responses/DispositivoInvalido'
+
+  /api/v1/catalogo/marcas/{marcaId}/lineas:
+    get:
+      tags: [catalogo]
+      operationId: buscarLineas
+      summary: Líneas reales de una marca con sus atributos y de dónde sale cada uno
+      description: "Requisitos: RF-CAT-02, RF-CAT-04 (ADR 0021). Máximo 50, sin genéricas."
+      parameters:
+        - name: marcaId
+          in: path
+          required: true
+          schema: {type: integer, format: int64}
+        - name: tipo
+          in: query
+          schema: {type: string, enum: [CARRO, MOTO]}
+        - name: q
+          in: query
+          schema: {type: string}
+      responses:
+        '200':
+          description: Líneas encontradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LineaCatalogo'
+
+  /api/v1/vehiculos/{id}:
+    put:
+      tags: [garaje]
+      operationId: editarVehiculo
+      summary: Corrige lo editable del vehículo
+      description: "Requisito: RF-GAR-03. Combustible, transmisión y tracción omitidos conservan el valor actual."
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdicionVehiculo'
+      responses:
+        '200':
+          description: Vehículo editado
+        '400':
+          description: Un dato no cumple las reglas
+        '404':
+          description: No existe o es de otra persona
+        '409':
+          description: La versión cambió (otra edición ganó)
 
 components:
   parameters:
@@ -101,3 +156,67 @@ components:
         kilometraje:
           type: integer
           minimum: 0
+
+    Combustible:
+      type: string
+      enum: [GASOLINA, DIESEL, GAS, HIBRIDO, HIBRIDO_ENCHUFABLE, ELECTRICO]
+
+    AtributoLinea:
+      type: object
+      description: "Un atributo de la línea y su origen (ADR 0021). Varios valores: el modelo se vende en varias versiones y la app pregunta solo entre ellos."
+      required: [valores, origen]
+      properties:
+        valores:
+          type: array
+          minItems: 1
+          items: {type: string}
+        origen:
+          type: string
+          enum: [CATALOGO, IA_WEB, EQUIPO]
+          description: "CATALOGO = deducido del nombre; IA_WEB = investigado con fuente y verificado; EQUIPO = corregido por el equipo"
+        fuente:
+          type: [string, 'null']
+          format: uri
+
+    LineaCatalogo:
+      type: object
+      required: [id, marcaId, nombre, clase, tipoVehiculo, atributos]
+      properties:
+        id: {type: integer, format: int64}
+        marcaId: {type: integer, format: int64}
+        nombre: {type: string, example: PRADO VX 5P AT}
+        clase: {type: string}
+        tipoVehiculo: {type: string, enum: [CARRO, MOTO]}
+        cilindradaCc: {type: [integer, 'null']}
+        potenciaKw: {type: [number, 'null']}
+        combustible:
+          type: [string, 'null']
+          description: Solo lo deducido del nombre; se conserva por compatibilidad. Usar `atributos`.
+        transmision: {type: [string, 'null']}
+        traccion: {type: [string, 'null']}
+        puertas: {type: [integer, 'null']}
+        atributos:
+          type: object
+          description: Cada atributo es null cuando no hay dato (la app pregunta con "No sé").
+          properties:
+            combustible:
+              oneOf: [{$ref: '#/components/schemas/AtributoLinea'}, {type: 'null'}]
+            transmision:
+              oneOf: [{$ref: '#/components/schemas/AtributoLinea'}, {type: 'null'}]
+            traccion:
+              oneOf: [{$ref: '#/components/schemas/AtributoLinea'}, {type: 'null'}]
+
+    EdicionVehiculo:
+      type: object
+      required: [uso, kmPromedioMes, versionFila]
+      properties:
+        alias: {type: [string, 'null']}
+        placa: {type: [string, 'null']}
+        uso: {type: string, enum: [CIUDAD, CARRETERA, MIXTO]}
+        kmPromedioMes: {type: integer, minimum: 0, maximum: 20000}
+        fechaMatricula: {type: [string, 'null'], format: date}
+        combustible:
+          oneOf: [{$ref: '#/components/schemas/Combustible'}, {type: 'null'}]
+        transmision: {type: [string, 'null'], enum: [AUTOMATICA, MECANICA, null]}
+        traccion: {type: [string, 'null'], enum: ['4X2', '4X4', AWD, null]}
+        versionFila: {type: integer}

@@ -80,6 +80,20 @@ class CuentaIntegracionTest {
     }
 
     @Test
+    void quienEntraConGoogleQuedaConMedioAppGoogle() throws Exception {
+        var laura = UUID.randomUUID().toString();
+
+        mockMvc.perform(post("/api/v1/cuenta").with(como(laura))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"Laura\",\"versionPolitica\":\"0.1-borrador\",\"medio\":\"APP_GOOGLE\"}"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/v1/cuenta").with(como(laura)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.consentimientos[0].medio").value("APP_GOOGLE"));
+    }
+
+    @Test
     void sinPerfilLaCuentaResponde404() throws Exception {
         mockMvc.perform(get("/api/v1/cuenta").with(como(UUID.randomUUID().toString())))
                 .andExpect(status().isNotFound());

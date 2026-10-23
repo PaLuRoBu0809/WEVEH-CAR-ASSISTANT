@@ -47,6 +47,8 @@ public record Vehiculo(
     /** RF-GAR-05: un salto hasta este tamaño nunca pide confirmación. */
     public static final int SALTO_KM_SIN_CONFIRMAR = 1_500;
     /** RF-GAR-05: se confirma un salto mayor a este múltiplo de lo que suele andar en esos días. */
+    /** ADR 0023: días en que la última lectura todavía se puede corregir hacia abajo. */
+    public static final int DIAS_PARA_CORREGIR = 7;
     private static final int MULTIPLO_SALTO_NORMAL = 3;
     private static final double DIAS_POR_MES = 30.0;
     private static final Locale COLOMBIA = Locale.forLanguageTag("es-CO");
@@ -121,6 +123,38 @@ public record Vehiculo(
                 versionFila);
     }
 
+    /**
+     * ADR 0023: la última lectura se puede corregir hacia abajo durante sus primeros días, sin quedar por debajo de
+     * la lectura anterior. Para subir el kilometraje se anota una lectura nueva. El día de la lectura no cambia.
+     *
+     * @param piso el kilometraje de la lectura anterior (0 si la última es la primera)
+     */
+    public Vehiculo corregirKilometraje(int nuevoKm, int piso, LocalDate hoy) {
+        if (ChronoUnit.DAYS.between(kmActualizadoEn, hoy) > DIAS_PARA_CORREGIR) {
+            throw new DatoInvalidoException("Solo puedes corregir una lectura en los " + DIAS_PARA_CORREGIR
+                    + " días siguientes a anotarla");
+        }
+        if (nuevoKm >= km.valor()) {
+            throw new DatoInvalidoException("Para subir el kilometraje, anótalo como una lectura nueva");
+        }
+        if (nuevoKm < piso) {
+            throw new DatoInvalidoException("No puede quedar por debajo de la lectura anterior: " + miles(piso) + " km");
+        }
+        return new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo, combustible,
+                transmision, traccion, alias, placa, fechaMatricula, new Kilometraje(nuevoKm), kmActualizadoEn, uso,
+                kmPromedioMes, registroInicial, versionFila);
+    }
+
+    /**
+     * ADR 0009, "gana lo último": una lectura anotada sin red que llega tarde se descarta si ya hay una más nueva
+     * (de un día posterior) o una igual o mayor. Así una lectura vieja nunca produce el error de "no puede bajar".
+     *
+     * @param leidoEn el día en que la persona anotó la lectura
+     */
+    public boolean lecturaSuperada(int nuevoKm, LocalDate leidoEn) {
+        return leidoEn.isBefore(kmActualizadoEn) || nuevoKm <= km.valor();
+    }
+
     /** max(3 × km promedio diario × días desde la última lectura, 1.500) (RF-GAR-05). */
     public int saltoEsperadoMaximo(LocalDate hoy) {
         var dias = Math.max(0, ChronoUnit.DAYS.between(kmActualizadoEn, hoy));
@@ -136,14 +170,33 @@ public record Vehiculo(
         return registroInicial.datosFaltantes();
     }
 
+    /**
+     * Lo que la persona puede corregir del vehículo (RF-GAR-03). Combustible, transmisión y tracción en null conservan
+     * el valor actual: la versión de la app que no los envía no los borra.
+     */
+    public record DatosEdicion(
+            String alias,
+            String placa,
+            UsoVehiculo uso,
+            int kmPromedioMes,
+            LocalDate fechaMatricula,
+            Combustible combustible,
+            Transmision transmision,
+            Traccion traccion) {
+    }
+
     /** RF-GAR-03: lo que se puede corregir sin cambiar de vehículo. El kilometraje va por su propio caso (RF-GAR-05). */
-    public Vehiculo editar(String nuevoAlias, String nuevaPlaca, UsoVehiculo nuevoUso, int nuevoKmPromedioMes,
-                           LocalDate nuevaFechaMatricula, LocalDate hoy) {
+    public Vehiculo editar(DatosEdicion datos, LocalDate hoy) {
         var editado = new Vehiculo(id, usuario, tipo, catalogoLineaId, marca, linea, cilindradaCc, anioModelo,
-                combustible, transmision, traccion, nuevoAlias, nuevaPlaca, nuevaFechaMatricula, km, kmActualizadoEn,
-                nuevoUso, nuevoKmPromedioMes, registroInicial, versionFila);
+                nuevoOActual(datos.combustible(), combustible), nuevoOActual(datos.transmision(), transmision),
+                nuevoOActual(datos.traccion(), traccion), datos.alias(), datos.placa(), datos.fechaMatricula(), km,
+                kmActualizadoEn, datos.uso(), datos.kmPromedioMes(), registroInicial, versionFila);
         editado.validar(hoy);
         return editado;
+    }
+
+    private static <T> T nuevoOActual(T nuevo, T actual) {
+        return nuevo == null ? actual : nuevo;
     }
 
     public String nombreParaMostrar() {

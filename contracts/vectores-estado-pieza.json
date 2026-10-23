@@ -1,5 +1,5 @@
 {
-  "descripcion": "Consumo y estado de una pieza del plan. consumo = max(porKm, porTiempo), null si no hay ninguno. porTiempo usa mesesEntre(desde, hasta) = meses calendario completos (semántica de ChronoUnit.MONTHS) + días restantes / días del mes siguiente al ancla. Estados: < 0.85 AL_DIA, < 1 POR_VENCER, >= 1 VENCIDO. Comparar consumo con tolerancia 1e-4.",
+  "descripcion": "Consumo y estado de una pieza del plan. consumo = max(porKm, porTiempo), null si no hay ninguno. porTiempo usa mesesEntre(desde, hasta) = meses calendario completos (semántica de ChronoUnit.MONTHS) + días restantes / días del mes siguiente al ancla. Estados: < 0.85 AL_DIA, < 1 POR_VENCER, >= 1 VENCIDO. Comparar consumo con tolerancia 1e-4. Sin dato (consumo null): SIN_DATO_REVISAR_YA si esSeguridad, no hay último servicio (ni km ni fecha), hay intervaloKm y kmActual >= margenKm (margenKm = el margen del fabricante; si es null, el 100 % de intervaloKm, D-04); en cualquier otro caso SIN_DATO. Los campos esSeguridad (por defecto false) y margenKm (por defecto null) son opcionales: los vectores que no los traen usan esos valores. Una pieza solo con intervalo en meses y sin último servicio queda SIN_DATO, porque sin fecha no hay cómo medir el tiempo.",
   "vectores": [
     {
       "caso": "aceite al día por km",
@@ -194,6 +194,142 @@
       "esperado": {
         "consumo": 0.9643,
         "estado": "POR_VENCER"
+      }
+    },
+    {
+      "caso": "distribución de seguridad sin dato pasó el intervalo: revisar ya",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null,
+        "esSeguridad": true,
+        "margenKm": null
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO_REVISAR_YA"
+      }
+    },
+    {
+      "caso": "borde: km igual al margen es revisar ya",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 100000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null,
+        "esSeguridad": true,
+        "margenKm": null
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO_REVISAR_YA"
+      }
+    },
+    {
+      "caso": "seguridad sin dato por debajo del intervalo sigue SIN_DATO",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 60000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null,
+        "esSeguridad": true,
+        "margenKm": null
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO"
+      }
+    },
+    {
+      "caso": "el margen del fabricante reemplaza al intervalo",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 120000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null,
+        "esSeguridad": true,
+        "margenKm": 150000
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO"
+      }
+    },
+    {
+      "caso": "pasado el margen del fabricante es revisar ya",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 150000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null,
+        "esSeguridad": true,
+        "margenKm": 150000
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO_REVISAR_YA"
+      }
+    },
+    {
+      "caso": "pieza que no es de seguridad sin dato nunca es revisar ya",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 5000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null,
+        "esSeguridad": false,
+        "margenKm": null
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO"
+      }
+    },
+    {
+      "caso": "seguridad solo con intervalo en meses y sin último servicio es SIN_DATO",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": null,
+        "intervaloMeses": 24,
+        "ultimoServicioKm": null,
+        "ultimoServicioFecha": null,
+        "esSeguridad": true,
+        "margenKm": null
+      },
+      "esperado": {
+        "consumo": null,
+        "estado": "SIN_DATO"
+      }
+    },
+    {
+      "caso": "seguridad con último servicio usa el consumo normal",
+      "entrada": {
+        "hoy": "2026-10-08",
+        "kmActual": 190000,
+        "intervaloKm": 100000,
+        "intervaloMeses": null,
+        "ultimoServicioKm": 80000,
+        "ultimoServicioFecha": null,
+        "esSeguridad": true,
+        "margenKm": null
+      },
+      "esperado": {
+        "consumo": 1.1,
+        "estado": "VENCIDO"
       }
     }
   ]

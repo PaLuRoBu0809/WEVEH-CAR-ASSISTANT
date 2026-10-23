@@ -1,9 +1,32 @@
 /** Igual a VehiculoRespuesta del backend (contracts/openapi.yaml). */
 export type TipoVehiculo = 'CARRO' | 'MOTO';
 export type UsoVehiculo = 'CIUDAD' | 'CARRETERA' | 'MIXTO';
-export type Combustible = 'GASOLINA' | 'DIESEL' | 'HIBRIDO' | 'ELECTRICO';
+export type Combustible = 'GASOLINA' | 'DIESEL' | 'GAS' | 'HIBRIDO' | 'HIBRIDO_ENCHUFABLE' | 'ELECTRICO';
 export type Transmision = 'AUTOMATICA' | 'MECANICA';
 export type Traccion = '4X2' | '4X4' | 'AWD';
+
+type OpcionAtributo<T extends string> = Readonly<{ valor: T; texto: string }>;
+
+/** Textos de UI de cada valor, en el orden en que se ofrecen (RF-CAT-04, RF-GAR-03). */
+export const COMBUSTIBLES: readonly OpcionAtributo<Combustible>[] = [
+  { valor: 'GASOLINA', texto: 'Gasolina' },
+  { valor: 'DIESEL', texto: 'Diésel' },
+  { valor: 'GAS', texto: 'Gas' },
+  { valor: 'HIBRIDO', texto: 'Híbrido' },
+  { valor: 'HIBRIDO_ENCHUFABLE', texto: 'Híbrido enchufable' },
+  { valor: 'ELECTRICO', texto: 'Eléctrico' },
+];
+
+export const TRANSMISIONES: readonly OpcionAtributo<Transmision>[] = [
+  { valor: 'MECANICA', texto: 'Mecánica' },
+  { valor: 'AUTOMATICA', texto: 'Automática' },
+];
+
+export const TRACCIONES: readonly OpcionAtributo<Traccion>[] = [
+  { valor: '4X2', texto: '4x2' },
+  { valor: '4X4', texto: '4x4' },
+  { valor: 'AWD', texto: 'AWD' },
+];
 
 /** Lo que la persona dejó para después en el registro (RF-GAR-02b). */
 export type DatoFaltante = 'SOAT' | 'RTM' | 'ACEITE';
@@ -45,6 +68,9 @@ export type EdicionVehiculo = Readonly<{
   uso: UsoVehiculo;
   kmPromedioMes: number;
   fechaMatricula: string | null;
+  combustible: Combustible | null;
+  transmision: Transmision | null;
+  traccion: Traccion | null;
   versionFila: number;
 }>;
 
@@ -107,4 +133,15 @@ export type SolicitudRegistro = Readonly<{
 
 export function nombreParaMostrar(vehiculo: Pick<VehiculoResumen, 'alias' | 'marca' | 'linea'>): string {
   return vehiculo.alias?.trim() || `${vehiculo.marca} ${vehiculo.linea}`;
+}
+
+/** ADR 0023: días en que la última lectura todavía se puede corregir hacia abajo (igual que el backend). */
+export const DIAS_PARA_CORREGIR_KM = 7;
+
+const MS_POR_DIA = 24 * 60 * 60 * 1000;
+
+/** "Me equivoqué al anotarlo" solo aparece mientras la última lectura se puede corregir. Fechas en ISO. */
+export function puedeCorregirKilometraje(kmActualizadoEn: string, hoy: string): boolean {
+  const dias = (Date.parse(hoy) - Date.parse(kmActualizadoEn)) / MS_POR_DIA;
+  return !Number.isNaN(dias) && dias <= DIAS_PARA_CORREGIR_KM;
 }

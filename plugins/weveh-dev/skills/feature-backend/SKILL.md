@@ -20,7 +20,7 @@ Ejemplo guía: "Registrar tanqueada" en el módulo `combustible`.
        }
    }
    ```
-4. **Puerto de entrada** (`application/RegistrarTanqueada.java`): interfaz con un método y un `record` de comando que incluye el usuario (hoy `DispositivoId`; con ADR 0005, el `usuarioId` del token).
+4. **Puerto de entrada** (`application/RegistrarTanqueada.java`): interfaz con un método y un `record` de comando que incluye el `usuarioId` del token (ADR 0005).
 5. **Puertos de salida** (`application/puertos/`): `TanqueadaRepositorio`, y si necesita el vehículo, usa `GarajeApi`.
 6. **Servicio** (`application/RegistrarTanqueadaServicio.java`): `@Service`, `@Transactional`, early returns, publica eventos de dominio si aplica.
 7. **Persistencia** (`infrastructure/persistencia/`, ADR 0006): fila `record` con `@Table` y `@Version` si se edita, repositorio de **Spring Data JDBC** (`CrudRepository`, métodos derivados o `@Query`; `jsonb` con `cast(:valor as jsonb)`) y adaptador que implementa el puerto y traduce fila ↔ dominio. Nunca JPA.
@@ -40,15 +40,21 @@ Ejemplo guía: "Registrar tanqueada" en el módulo `combustible`.
 | `GET /api/v1/vehiculos` · `GET /api/v1/vehiculos/{id}` | Garaje y detalle con salud |
 | `PUT /api/v1/vehiculos/{id}` · `DELETE /api/v1/vehiculos/{id}` | Editar y eliminar |
 | `PUT /api/v1/vehiculos/{id}/kilometraje` | Actualizar km (`Idempotency-Key`) |
-| `GET /api/v1/vehiculos/{id}/plan` | Plan por pieza con estado |
-| `POST /api/v1/vehiculos/{id}/servicios` · `GET .../servicios` | Historial |
-| `PUT /api/v1/vehiculos/{id}/documentos/{tipo}` | SOAT, RTM, seguro |
+| `GET /api/v1/vehiculos/{id}/plan` | Plan por perfil y por pieza con estado (ADR 0016) |
+| `POST /api/v1/vehiculos/{id}/servicios` · `GET .../servicios` | Servicio como factura con trabajos `CAMBIO`/`REVISION`/`AJUSTE` y foto opcional como evidencia (ADR 0017) |
+| `POST /api/v1/vehiculos/{id}/servicios/borrador` | El agente arma un borrador desde texto (RF-MAN-04b); no guarda hasta confirmar |
+| `POST /api/v1/vehiculos/{id}/piezas/{pieza}/conceptos` | Concepto del mecánico con vigencia (RF-MAN-11) |
+| `PUT /api/v1/vehiculos/{id}/documentos/{tipo}` | SOAT, RTM, seguro, extintor, impuesto vehicular, multa; kit de carretera como lista |
+| `PUT /api/v1/cuenta/licencia` | Licencia de conducción: solo la fecha de vencimiento, por cuenta (RF-DOC-07) |
 | `POST /api/v1/vehiculos/{id}/tanqueadas` · `GET .../consumo` | Combustible |
 | `POST /api/v1/vehiculos/{id}/perfilamiento` y subrutas | Agente perfilador |
-| `POST /api/v1/vehiculos/{id}/consultas` | Mecánico IA |
-| `GET /api/v1/catalogo/...` | Catálogo (skill `catalogo-vehiculos`) |
+| `POST /api/v1/vehiculos/{id}/consultas` | Mecánico IA (con plazo fijado por código, RF-MIA-08) |
+| `POST /api/v1/transcripciones` | Voz a texto con el puerto `Transcriptor` (Groq); el audio no se guarda (ADR 0018) |
+| `GET /api/v1/catalogo/...` | Catálogo con atributos y su origen (skill `catalogo-vehiculos`, ADR 0021) |
 
-Todas exigen la identidad de la persona (hoy `X-Weveh-Dispositivo`; con ADR 0005, `Authorization: Bearer`). Contrato completo: `docs/api.md`.
+Las rutas nuevas son orientativas: la fuente es `docs/api.md`. Todas exigen `Authorization: Bearer` (ADR 0005).
+
+Adaptadores externos nuevos (`Transcriptor` con Groq, `BuscadorWeb` con Brave) van en `infrastructure/ia` con tiempo máximo y cortacircuitos (ADR 0010), y su llave solo en variables de entorno del backend.
 
 ## Errores comunes a evitar
 

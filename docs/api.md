@@ -21,7 +21,7 @@ Todo se filtra por la persona: un recurso ajeno responde **404** (no 403), para 
 
 - JSON en UTF-8. Nombres de campos en `camelCase` y español (`anioModelo`, `kilometraje`).
 - Fechas en ISO `AAAA-MM-DD` (`"2026-06-30"`). Números sin separadores de miles.
-- Valores fijos en mayúsculas: `CARRO`, `MOTO`, `CIUDAD`, `CARRETERA`, `MIXTO`, `GASOLINA`, `DIESEL`, `HIBRIDO`, `ELECTRICO`, `AUTOMATICA`, `MECANICA`, `4X2`, `4X4`, `AWD`.
+- Valores fijos en mayúsculas: `CARRO`, `MOTO`, `CIUDAD`, `CARRETERA`, `MIXTO`, `GASOLINA`, `DIESEL`, `GAS`, `HIBRIDO`, `HIBRIDO_ENCHUFABLE`, `ELECTRICO`, `AUTOMATICA`, `MECANICA`, `4X2`, `4X4`, `AWD`.
 
 ### Errores (Problem Details, RFC 9457)
 
@@ -50,7 +50,7 @@ Todo error tiene la misma forma; la app muestra `detail` tal cual porque está e
 
 ### Cambios hechos sin red ⬜
 
-Las escrituras aceptan `Idempotency-Key: <UUID>` (la misma petición repetida se aplica una sola vez) y la hora del cambio, para resolver conflictos con "gana lo último" (ADR 0009).
+Las escrituras aceptan `Idempotency-Key: <UUID>` (ADR 0009): la misma clave repetida se aplica una sola vez y devuelve la respuesta de la primera vez con la cabecera `Idempotent-Replayed: true`. Solo se guardan las respuestas 2xx, durante 7 días (tabla `cambio_procesado`, V10). La misma clave en otro método o ruta responde **422 `clave-repetida`**. Hoy la usa la app para el kilometraje anotado sin red (RF-GAR-06).
 
 ## Catálogo ✅
 
@@ -70,11 +70,24 @@ Líneas reales (sin genéricas) de la marca, ordenadas por nombre y cilindrada. 
 [{
   "id": 7811, "marcaId": 145, "nombre": "PRADO VX 5P AT", "clase": "CAMIONETAS Y CAMPEROS",
   "tipoVehiculo": "CARRO", "cilindradaCc": 3400, "potenciaKw": null,
-  "combustible": null, "transmision": "AUTOMATICA", "traccion": null, "puertas": 5
+  "combustible": null, "transmision": "AUTOMATICA", "traccion": null, "puertas": 5,
+  "atributos": {
+    "combustible": { "valores": ["GASOLINA"], "origen": "IA_WEB", "fuente": "https://www.toyota.com.co/prado" },
+    "transmision": { "valores": ["AUTOMATICA"], "origen": "CATALOGO", "fuente": null },
+    "traccion": { "valores": ["4X2", "4X4"], "origen": "IA_WEB", "fuente": "https://www.toyota.com.co/prado" }
+  }
 }]
 ```
 
-`combustible`, `transmision` y `traccion` son sugerencias inferidas del nombre (null = sin pista).
+`atributos` dice cada atributo y de dónde sale (RF-CAT-04, ADR 0021); es lo que debe usar la app. Cada uno es `null` cuando no hay dato, y entonces la app pregunta con "No sé".
+
+| `origen` | Qué significa | La app |
+|---|---|---|
+| `CATALOGO` | Lo dice el nombre de la línea del Ministerio | No pregunta; "Dato de WEVEH · Corregir" |
+| `IA_WEB` | Investigado por familia en la web, verificado y con `fuente` | No pregunta; "Dato de WEVEH · según [fuente] · Corregir" |
+| `EQUIPO` | Corregido por el equipo | Igual que `IA_WEB` |
+
+Varios `valores` significan que el modelo se vende en varias versiones: la app pregunta solo entre ellos. Gana el nombre de la línea; luego lo del equipo; luego lo de la web verificado. Los campos sueltos `combustible`, `transmision` y `traccion` se conservan por compatibilidad y solo traen lo deducido del nombre.
 
 ## Garaje ✅
 
@@ -120,7 +133,13 @@ Ver uno (200) o eliminarlo con todo lo suyo (204). Ajeno o inexistente → 404.
 
 ### `PUT /vehiculos/{id}`
 
-Edita `alias`, `placa`, `uso`, `kmPromedioMes` y `fechaMatricula`, enviando la `versionFila` que tenía la app. **Hoy** responde 409 si la versión cambió; **con ADR 0009** gana el cambio más reciente si cumple las reglas.
+Edita `alias`, `placa`, `uso`, `kmPromedioMes`, `fechaMatricula`, `combustible`, `transmision` y `traccion` (RF-GAR-03), enviando la `versionFila` que tenía la app. `combustible`, `transmision` y `traccion` son opcionales: si no llegan (o llegan en `null`) se conservan los actuales.
+
+```json
+{ "alias": "La Prado", "uso": "MIXTO", "kmPromedioMes": 1000, "combustible": "DIESEL", "traccion": "4X4", "versionFila": 3 }
+```
+
+ **Hoy** responde 409 si la versión cambió; **con ADR 0009** gana el cambio más reciente si cumple las reglas.
 
 ### `PUT /vehiculos/{id}/registro` (RF-GAR-02b)
 
@@ -129,10 +148,20 @@ Completa el aceite y los papeles que quedaron para después: `aceiteKm`, `aceite
 ### `PUT /vehiculos/{id}/kilometraje` (RF-GAR-05)
 
 ```json
-{ "kilometraje": 191200, "confirmado": false }
+{ "kilometraje": 191200, "confirmado": false, "leidoEn": "2026-10-22" }
 ```
 
 Nunca baja (400 "El kilometraje no puede bajar: hoy tiene 190.000 km"). Un salto mayor a `max(3 × km promedio diario × días desde la última lectura, 1.500)` sin `confirmado` responde **409 `confirmacion-requerida`** con la pregunta en `detail`; la app la muestra y reenvía con `confirmado: true`. Publica `KilometrajeActualizado`.
+
+`leidoEn` (opcional) es el día en que se anotó **sin red** (RF-GAR-06). Si ya hay una lectura de un día posterior, o una igual o mayor, el cambio se descarta ("gana lo último") y responde 200 con el vehículo como está, sin el error de "no puede bajar". Una fecha futura cuenta como hoy. Sin `leidoEn` se usa hoy y aplican las reglas de siempre.
+
+### `PUT /vehiculos/{id}/kilometraje/correccion` (ADR 0023)
+
+```json
+{ "kilometraje": 134000 }
+```
+
+Corrige hacia abajo la última lectura. Responde 400 si pasaron más de 7 días desde que se anotó ("Solo puedes corregir una lectura en los 7 días siguientes a anotarla"), si el número no es menor ("Para subir el kilometraje, anótalo como una lectura nueva") o si queda por debajo de la lectura anterior ("No puede quedar por debajo de la lectura anterior: 130.000 km"). No cambia el día de la lectura. Publica `KilometrajeActualizado`.
 
 ## Mecánico IA ✅
 
@@ -169,11 +198,11 @@ Respuesta **200**:
 
 ## Cuentas y datos ✅ (ADR 0005, RF-CTA, RF-DAT)
 
-El registro, el inicio de sesión, Google, el enlace mágico y la recuperación los hace la app directo con **Supabase Auth**. La API agrega:
+El registro, el inicio de sesión, Google, la recuperación y el cambio de correo y contraseña los hace la app directo con **Supabase Auth**. La API agrega:
 
 | Endpoint | Para qué |
 |---|---|
-| `POST /cuenta` | Crear el perfil con el nombre y la aceptación de la política (RF-DAT-02). Idempotente: la app lo llama en el primer inicio de sesión. 201 |
+| `POST /cuenta` | Crear el perfil con el nombre y la aceptación de la política (RF-DAT-02). Idempotente: la app lo llama en el primer inicio de sesión. `{ nombre, versionPolitica, aceptadoEn?, medio? }`: `medio` es `APP_REGISTRO` (por defecto, casilla del registro con correo) o `APP_GOOGLE` (casilla de "Antes de entrar" la primera vez con Google); otro valor responde 400. 201 |
 | `GET /cuenta` | Nombre, correo (sale del token) y consentimientos (RF-DAT-04). 404 si aún no hay perfil |
 | `PUT /cuenta` | Corregir el nombre (RF-DAT-05) |
 | `POST /cuenta/consentimientos` | Registrar la aceptación de una versión de la política (RF-DAT-02/03) |

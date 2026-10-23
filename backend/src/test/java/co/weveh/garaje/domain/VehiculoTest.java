@@ -183,13 +183,71 @@ class VehiculoTest {
     void editarCambiaSoloLoEditableYValida() {
         var prado = registrar(datos(190000, 2008, null, registroPrado()));
 
-        var editado = prado.editar("Mi Prado", "xyz-987", UsoVehiculo.CARRETERA, 2500, null, HOY);
+        var editado = prado.editar(edicion("Mi Prado", "xyz-987", UsoVehiculo.CARRETERA, 2500), HOY);
 
         assertThat(editado.alias()).isEqualTo("Mi Prado");
         assertThat(editado.placa()).isEqualTo("XYZ987");
         assertThat(editado.uso()).isEqualTo(UsoVehiculo.CARRETERA);
         assertThat(editado.km()).isEqualTo(prado.km());
-        assertThatThrownBy(() -> prado.editar(null, null, UsoVehiculo.MIXTO, 25000, null, HOY))
+        var demasiadosKm = edicion(null, null, UsoVehiculo.MIXTO, 25000);
+        assertThatThrownBy(() -> prado.editar(demasiadosKm, HOY))
                 .hasMessageContaining("kilómetros al mes");
+    }
+
+    @Test
+    void editarCorrigeCombustibleTransmisionYTraccion() {
+        var prado = registrar(datos(190000, 2008, null, registroPrado()));
+
+        var tras = new Vehiculo.DatosEdicion("La Prado", null, UsoVehiculo.MIXTO, 1000, null, Combustible.DIESEL,
+                Transmision.MECANICA, Traccion.TRACCION_4X2);
+        var editado = prado.editar(tras, HOY);
+
+        assertThat(editado.combustible()).isEqualTo(Combustible.DIESEL);
+        assertThat(editado.transmision()).isEqualTo(Transmision.MECANICA);
+        assertThat(editado.traccion()).isEqualTo(Traccion.TRACCION_4X2);
+    }
+
+    @Test
+    void editarSinCombustibleTransmisionNiTraccionConservaLosActuales() {
+        var prado = registrar(datos(190000, 2008, null, registroPrado()));
+
+        var editado = prado.editar(edicion("Mi Prado", null, UsoVehiculo.MIXTO, 1000), HOY);
+
+        assertThat(editado.transmision()).isEqualTo(Transmision.AUTOMATICA);
+        assertThat(editado.traccion()).isEqualTo(Traccion.TRACCION_4X4);
+        assertThat(editado.combustible()).isNull();
+    }
+
+    private static Vehiculo.DatosEdicion edicion(String alias, String placa, UsoVehiculo uso, int kmPromedioMes) {
+        return new Vehiculo.DatosEdicion(alias, placa, uso, kmPromedioMes, null, null, null, null);
+    }
+
+    @Test
+    void laUltimaLecturaSePuedeCorregirHaciaAbajoEnSusPrimerosSieteDias() {
+        var prado = registrar(datos(190000, 2008, null, null));
+
+        var corregido = prado.corregirKilometraje(185000, 180000, HOY.plusDays(Vehiculo.DIAS_PARA_CORREGIR));
+
+        assertThat(corregido.km().valor()).isEqualTo(185000);
+        assertThat(corregido.kmActualizadoEn()).isEqualTo(prado.kmActualizadoEn());
+    }
+
+    @Test
+    void despuesDeSieteDiasLaLecturaQuedaFija() {
+        assertThatThrownBy(() -> registrar(datos(190000, 2008, null, null)).corregirKilometraje(185000, 0, HOY.plusDays(Vehiculo.DIAS_PARA_CORREGIR + 1)))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessageContaining("7 días");
+    }
+
+    @Test
+    void corregirNoSirveParaSubirNiParaBajarDeLaLecturaAnterior() {
+        var prado = registrar(datos(190000, 2008, null, null));
+
+        assertThatThrownBy(() -> prado.corregirKilometraje(prado.km().valor(), 0, HOY))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessageContaining("lectura nueva");
+        assertThatThrownBy(() -> prado.corregirKilometraje(150000, 160000, HOY))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessageContaining("160.000");
     }
 }

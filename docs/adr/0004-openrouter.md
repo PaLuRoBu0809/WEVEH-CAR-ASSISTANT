@@ -1,6 +1,6 @@
 # ADR 0004 — OpenRouter con modelos gratuitos para la IA
 
-- **Estado:** aceptada (reemplaza la fila "IA" del ADR 0001)
+- **Estado:** aceptada (reemplaza la fila "IA" del ADR 0001) · enmendada en parte por el [ADR 0018](0018-audio-whisper-y-fotos-como-evidencia.md) (transcripción de voz con Whisper de Groq)
 - **Fecha:** 2026-10-08 (revisada 2026-10-10)
 - **Autores:** Isaac Cano, Pablo Rodríguez
 

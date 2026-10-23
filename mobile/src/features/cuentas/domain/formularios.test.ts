@@ -3,7 +3,9 @@ import {
   datosQueFaltan,
   erroresCrearCuenta,
   esCorreoValido,
+  nombreDesdeMetadatos,
   puedeIniciarSesion,
+  revisarNuevaContrasena,
   textoQueFalta,
 } from './formularios';
 
@@ -54,5 +56,57 @@ describe('correo e inicio de sesión', () => {
     expect(puedeIniciarSesion('laura@correo.com', 'x')).toBe(true);
     expect(puedeIniciarSesion('laura@correo.com', '')).toBe(false);
     expect(puedeIniciarSesion('laura', 'x')).toBe(false);
+  });
+});
+
+describe('nueva contraseña (RF-CTA-03)', () => {
+  test('vacía explica la regla y no se puede guardar', () => {
+    expect(revisarNuevaContrasena('', '')).toEqual({
+      ayudaNueva: 'Usa 8 caracteres o más.',
+      ayudaConfirmacion: undefined,
+      errorConfirmacion: undefined,
+      lista: false,
+    });
+  });
+
+  test('corta dice cuántos caracteres faltan', () => {
+    expect(revisarNuevaContrasena('12345', '').ayudaNueva).toBe('Faltan 3 caracteres.');
+    expect(revisarNuevaContrasena('1234567', '').ayudaNueva).toBe('Falta 1 carácter.');
+  });
+
+  test('válida pero distinta de la confirmación no se puede guardar', () => {
+    const revision = revisarNuevaContrasena('12345678', '1234567');
+
+    expect(revision.ayudaNueva).toBe('Contraseña válida.');
+    expect(revision.errorConfirmacion).toBe('Todavía no coinciden.');
+    expect(revision.lista).toBe(false);
+  });
+
+  test('dos iguales y corta tampoco se puede guardar', () => {
+    expect(revisarNuevaContrasena('1234', '1234').lista).toBe(false);
+  });
+
+  test('válida y con la confirmación igual se puede guardar', () => {
+    const revision = revisarNuevaContrasena('12345678', '12345678');
+
+    expect(revision.ayudaConfirmacion).toBe('Las contraseñas coinciden.');
+    expect(revision.errorConfirmacion).toBeUndefined();
+    expect(revision.lista).toBe(true);
+  });
+});
+
+describe('nombre del perfil', () => {
+  test('usa el que escribió al crear la cuenta', () => {
+    expect(nombreDesdeMetadatos({ nombre: ' Ana ', full_name: 'Ana Gómez' })).toBe('Ana');
+  });
+
+  test('con Google usa el nombre que comparte Google', () => {
+    expect(nombreDesdeMetadatos({ full_name: 'Laura Gómez', name: 'Laura' })).toBe('Laura Gómez');
+    expect(nombreDesdeMetadatos({ name: 'Laura' })).toBe('Laura');
+  });
+
+  test('sin nombre queda "Sin nombre"', () => {
+    expect(nombreDesdeMetadatos({ nombre: '  ' })).toBe('Sin nombre');
+    expect(nombreDesdeMetadatos(undefined)).toBe('Sin nombre');
   });
 });

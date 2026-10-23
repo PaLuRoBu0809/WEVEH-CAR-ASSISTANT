@@ -1,6 +1,6 @@
 # Modelo de dominio del MVP
 
-Versión revisada tras la decisión de quitar el login y enriquecer el perfil del vehículo. Los módulos se relacionan por id (`vehiculoId`), no por referencia de objeto; el diagrama los junta para leerlo completo.
+Diseño original, actualizado el 2026-10-21 con la ampliación aprobada (ADR 0005, 0016, 0017, 0018 y 0020): identidad por cuenta (`usuarioId`), servicio como factura con trabajos, concepto del mecánico, estado `SIN_DATO_REVISAR_YA`, documentos ampliados y licencia por cuenta. Las tablas vigentes están en `docs/datos.md`; las de abajo son guía. Los módulos se relacionan por id (`vehiculoId`, `usuarioId`), no por referencia de objeto; el diagrama los junta para leerlo completo.
 
 ## Diagrama de clases
 
@@ -9,7 +9,7 @@ classDiagram
   direction LR
   class Vehiculo {
     +VehiculoId id
-    +DispositivoId dispositivo
+    +UsuarioId usuario
     +TipoVehiculo tipo
     +Long catalogoLineaId
     +String marca
@@ -46,6 +46,7 @@ classDiagram
     +Integer intervaloKm
     +Integer intervaloMeses
     +boolean esSeguridad
+    +Integer margenFabricanteKm
     +Integer ultimoServicioKm
     +LocalDate ultimoServicioFecha
     +OrigenDato origen
@@ -53,13 +54,31 @@ classDiagram
     +consumo(Kilometraje, LocalDate) Double
     +estado(Kilometraje, LocalDate) EstadoPieza
   }
-  class RegistroServicio {
+  class Servicio {
     +LocalDate fecha
     +Kilometraje km
-    +String descripcion
     +String taller
-    +Long valorCop
-    +List~String~ piezasCambiadas
+    +Long totalCop
+    +String notas
+    +List~String~ recomendaciones
+    +String fotoFacturaId
+  }
+  class ServicioItem {
+    +String pieza
+    +AccionServicio accion
+    +String especificacion
+  }
+  class ConceptoMecanico {
+    +String pieza
+    +String veredicto
+    +LocalDate fecha
+    +LocalDate vigenteHasta
+    +Integer vigenteHastaKm
+    +EstadoConcepto estado
+  }
+  class Licencia {
+    +UsuarioId usuario
+    +LocalDate vence
   }
   class Falla {
     +LocalDate fecha
@@ -109,6 +128,13 @@ classDiagram
     POR_VENCER
     VENCIDO
     SIN_DATO
+    SIN_DATO_REVISAR_YA
+  }
+  class AccionServicio {
+    <<enumeration>>
+    CAMBIO
+    REVISION
+    AJUSTE
   }
   class OrigenDato {
     <<enumeration>>
@@ -122,13 +148,29 @@ classDiagram
     SOAT
     RTM
     SEGURO_TODO_RIESGO
+    EXTINTOR
+    IMPUESTO_VEHICULAR
+    MULTA
+  }
+  class TipoCombustible {
+    <<enumeration>>
+    GASOLINA
+    DIESEL
+    GAS
+    HIBRIDO
+    HIBRIDO_ENCHUFABLE
+    ELECTRICO
   }
   Vehiculo *-- MotorInfo
   Vehiculo "1" *-- "0..*" RegistroKilometraje
   Vehiculo "1" --> "0..*" PiezaPlan : vehiculoId
-  Vehiculo "1" --> "0..*" RegistroServicio : vehiculoId
+  Vehiculo "1" --> "0..*" Servicio : vehiculoId
+  Servicio "1" *-- "1..*" ServicioItem
+  ServicioItem ..> AccionServicio
+  Vehiculo "1" --> "0..*" ConceptoMecanico : vehiculoId
   Vehiculo "1" --> "0..*" Falla : vehiculoId
-  Vehiculo "1" --> "0..3" DocumentoLegal : vehiculoId
+  Vehiculo "1" --> "0..*" DocumentoLegal : vehiculoId
+  MotorInfo ..> TipoCombustible
   Vehiculo "1" --> "0..*" Tanqueada : vehiculoId
   Vehiculo "1" --> "0..*" SesionPerfilamiento : vehiculoId
   Vehiculo "1" --> "0..*" ConsultaMecanico : vehiculoId
@@ -138,6 +180,8 @@ classDiagram
   DocumentoLegal ..> TipoDocumento
 ```
 
+La `Licencia` es de la cuenta (`usuarioId`), no de un vehículo, y solo guarda la fecha de vencimiento (RF-DOC-07). El kit de carretera es una lista sin fecha ligada al vehículo (RF-DOC-05). Solo un `ServicioItem` con `accion = CAMBIO` reinicia el intervalo de su pieza (ADR 0017).
+
 `claveModelo` = `marca|linea|anioModelo|cilindradaCc` normalizado (minúsculas, sin tildes). Varias personas con el mismo modelo comparten la ficha investigada, lo que abarata la IA y es la base de los datos agregados.
 
 ## Tablas (PostgreSQL)
@@ -146,7 +190,9 @@ classDiagram
 erDiagram
   VEHICULO ||--o{ REGISTRO_KILOMETRAJE : registra
   VEHICULO ||--o{ PIEZA_PLAN : tiene
-  VEHICULO ||--o{ REGISTRO_SERVICIO : acumula
+  VEHICULO ||--o{ SERVICIO : acumula
+  SERVICIO ||--|{ SERVICIO_ITEM : incluye
+  VEHICULO ||--o{ CONCEPTO_MECANICO : tiene
   VEHICULO ||--o{ FALLA : registra
   VEHICULO ||--o{ DOCUMENTO_LEGAL : tiene
   VEHICULO ||--o{ TANQUEADA : registra
@@ -155,7 +201,7 @@ erDiagram
   FICHA_TECNICA ||--o{ VEHICULO : describe
   VEHICULO {
     uuid id PK
-    uuid dispositivo_id
+    uuid usuario_id FK
     text tipo
     bigint catalogo_linea_id
     text marca
@@ -230,4 +276,4 @@ erDiagram
   }
 ```
 
-Índices mínimos: `vehiculo(dispositivo_id)`, `pieza_plan(vehiculo_id)`, `documento_legal(vence)`, `tanqueada(vehiculo_id, km)`. Todas las tablas hijas con `ON DELETE CASCADE` para que eliminar un vehículo borre todo lo suyo.
+Índices mínimos: `vehiculo(usuario_id)`, `pieza_plan(vehiculo_id)`, `documento_legal(vence)`, `tanqueada(vehiculo_id, km)`. Todas las tablas hijas con `ON DELETE CASCADE` para que eliminar un vehículo borre todo lo suyo.

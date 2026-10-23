@@ -51,7 +51,9 @@ describe('cliente de Supabase', () => {
     expect(mockCreateClient).toHaveBeenCalledWith(
       'https://proyecto.supabase.co',
       'sb_publishable_123',
-      expect.objectContaining({ auth: expect.objectContaining({ persistSession: true, detectSessionInUrl: false }) }),
+      expect.objectContaining({
+        auth: expect.objectContaining({ persistSession: true, detectSessionInUrl: false, flowType: 'pkce' }),
+      }),
     );
     expect(console.warn).not.toHaveBeenCalled();
   });

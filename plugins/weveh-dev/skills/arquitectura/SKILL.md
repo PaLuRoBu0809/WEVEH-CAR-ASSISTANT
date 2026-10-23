@@ -3,7 +3,9 @@ name: arquitectura
 description: Reglas de arquitectura de WEVEH (monolito modular Spring Boot con hexagonal por módulo, app Expo por features, Supabase Postgres, identidad por dispositivo). Úsala antes de crear o mover clases, paquetes, carpetas, endpoints o tablas, o al decidir dónde va una lógica.
 ---
 
-> **Vigente (2026-10-10):** la arquitectura completa y su estado están en `docs/arquitectura.md`. Cambios respecto a esta skill: cuentas con Supabase Auth reemplazan la identidad por dispositivo (ADR 0005), persistencia con Spring Data JDBC (ADR 0006), eventos guardados (ADR 0007), sin red con SQLite (ADR 0009), resiliencia y Sentry (ADR 0010), módulo `cuentas`.
+> **Vigente (2026-10-10):** la arquitectura completa y su estado están en `docs/arquitectura.md`. Cambios respecto a esta skill: cuentas con Supabase Auth reemplazan la identidad por dispositivo (ADR 0005), persistencia con Spring Data JDBC (ADR 0006), eventos guardados (ADR 0007), sin red con SQLite (ADR 0009), resiliencia y Sentry (ADR 0010), módulo `cuentas`. Las secciones de abajo sobre `DispositivoId` e "Identidad sin login" son historia: hoy cada caso de uso recibe el `usuarioId` del token.
+>
+> **Aprobado el 2026-10-21:** plan por perfil y en capas (ADR 0016) en `mantenimiento`; servicio como factura y concepto del mecánico (ADR 0017) en `mantenimiento`; `documentos` ampliado (extintor y kit, impuesto, multas) y la **licencia de conducción en `documentos` con dueño `usuarioId`** (reutiliza el cálculo de vencimientos y los avisos; `cuentas` se queda con perfil y consentimientos); voz con el puerto `Transcriptor` y el adaptador de Whisper de Groq en `mecanicoia/infrastructure/ia` (ADR 0018); fotos como evidencia en almacenamiento privado detrás de la API; atributos del catálogo con origen y fuente en `catalogo` (`catalogo.atributo_linea`, ADR 0021).
 
 # Arquitectura de WEVEH (MVP)
 
@@ -30,22 +32,24 @@ flowchart LR
   end
   PG[("Supabase Postgres")]
   LLM["OpenRouter<br/>modelos :free"]
+  GROQ["Groq Whisper<br/>solo transcribir"]
   Backend --> PG
   PER --> LLM
   MIA --> LLM
+  MIA --> GROQ
 ```
 
 ## Módulos del backend
 
 | Módulo | Responsabilidad | Publica eventos |
 |---|---|---|
-| `catalogo` | Marcas y líneas de Colombia de las tablas del Ministerio de Transporte (solo lectura); fichas técnicas investigadas | — |
-| `garaje` | Vehículo: CRUD, kilometraje, datos de catálogo | `VehiculoRegistrado`, `KilometrajeActualizado`, `VehiculoEliminado` |
-| `mantenimiento` | Plan por pieza, historial de servicios, fallas, salud | `PiezaPorVencer` |
-| `documentos` | SOAT, RTM, seguro todo riesgo y su vencimiento | `DocumentoPorVencer` |
+| `catalogo` | Marcas y líneas de Colombia de las tablas del Ministerio de Transporte (solo lectura); atributos con origen y fuente (ADR 0021); fichas técnicas investigadas | — |
+| `garaje` | Vehículo: CRUD, kilometraje confirmado, datos de catálogo | `VehiculoRegistrado`, `KilometrajeActualizado`, `VehiculoEliminado` |
+| `mantenimiento` | Plan por perfil y en capas, servicios con trabajos, conceptos del mecánico, revisiones rápidas, fallas, salud | `PiezaPorVencer` |
+| `documentos` | SOAT, RTM, seguro, extintor y kit, impuesto, multas y licencia (por cuenta) y su vencimiento | `DocumentoPorVencer` |
 | `combustible` | Tanqueadas y consumo km/gal | `ConsumoAnomalo` |
-| `perfilamiento` | Agente que investiga el modelo y entrevista al usuario | `PerfilCompletado` |
-| `mecanicoia` | Diagnóstico por texto + `ValidadorSeguridadDiagnostico` | — |
+| `perfilamiento` | Agente que investiga el modelo por intención y entrevista por bloques | `PerfilCompletado` |
+| `mecanicoia` | Diagnóstico por texto o voz transcrita + `ValidadorSeguridadDiagnostico` + plazo por código | — |
 | `shared` | Value objects comunes (`Kilometraje`, `DispositivoId`), errores, Problem Details | — |
 
 Dependencias permitidas: todos pueden usar `shared`; `mantenimiento`, `perfilamiento` y `mecanicoia` leen el vehículo vía la API pública de `garaje` (`GarajeApi`), nunca vía su repositorio. `perfilamiento` escribe en `mantenimiento` y `documentos` solo a través de sus casos de uso.
@@ -63,7 +67,7 @@ co/weveh/<modulo>/
 └── infrastructure/
     ├── web/                    # @RestController + DTOs (records) + mapeadores
     ├── persistencia/           # Spring Data JDBC: filas + repositorios + adaptadores (ADR 0006)
-    └── ia/                     # adaptadores de OpenRouter (único lugar donde aparece el proveedor de IA)
+    └── ia/                     # adaptadores de OpenRouter, Groq (transcripción) y Brave (búsqueda): único lugar donde aparece un proveedor externo de IA
 ```
 
 Reglas:

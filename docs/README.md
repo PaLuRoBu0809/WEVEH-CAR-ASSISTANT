@@ -20,6 +20,18 @@ Otros: [`../evals/`](../evals/results.md) (cómo se mide la IA) y [`referencia/`
 4. **Tareas:** agregar los pasos a `tareas.md`.
 5. **Construir:** rama corta, pruebas de cada criterio, PR que enlaza los IDs; al fusionar se marca la tarea y el estado del requisito.
 
+## Verificación automática
+
+Las reglas que una prueba no ve viven en [`../scripts/calidad/`](../scripts/calidad/) y corren en dos sitios:
+
+| Dónde | Cuándo | Qué hace |
+|---|---|---|
+| Hook Stop de Claude Code (`.claude/hooks/compuerta.mjs`) | Al terminar cada cambio | Reglas sobre lo no commiteado + lint, typecheck y pruebas del área tocada (mobile o backend; el backend necesita Docker). Si falla, Claude lo corrige antes de terminar. |
+| Hook de commit (`.claude/hooks/commit.mjs`) | Antes de `git commit` | Conventional Commits, archivos o llaves secretas y nada en `main` salvo `WEVEH_PERMITIR_MAIN=1`. |
+| CI, job `higiene` | Push a `main` o `dev/**` y PR | `node scripts/calidad/revisar.mjs origin/main`: las mismas reglas sobre lo commiteado. |
+
+Reglas: tabla nueva sin RLS, migración ya versionada editada, prompt o `WEVEH_IA_MODELO` cambiado sin `evals/results.md`, `domain` importando Spring/Jakarta/JDBC, llaves en el código y archivos `.env.*`/`.pem`. Avisos sin bloquear: código nuevo sin `tareas.md`, controlador sin `openapi.yaml`/`api.md`. Para añadir una regla de texto, edita `scripts/calidad/reglas.mjs`. Si varios agentes editan en paralelo, crea `.claude/.compuerta-pausa` para que el hook Stop no verifique trabajo a medias, y bórralo antes de la verificación final.
+
 ## Convención de estados
 
 ✅ hecho · 🟡 parcial · ⬜ decidido, por construir · 🔜 fase futura · 🔁 hecho pero cambia por una decisión nueva.
