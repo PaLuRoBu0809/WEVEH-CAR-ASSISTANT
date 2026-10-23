@@ -35,3 +35,12 @@ Si una parte falla (OpenRouter caído, un módulo con un error), el resto de la 
 - Lo que tumba el proceso completo (sin memoria, base de datos caída) no se aísla con esto: se mitiga con varias copias del backend o sacando un módulo a su propio servicio (ADR 0003).
 - Dependencias nuevas: Resilience4j y el SDK de Sentry (backend y app).
 - El mapa de dependencias entre módulos (ADR 0003) dice qué funciones se desactivan si un módulo se apaga.
+
+## Enmienda (2026-10-23): cómo se construyó
+
+- **Interruptor:** `InterruptorModulos` (interceptor de Spring MVC) toma el módulo del paquete del controlador y lee `WEVEH_MODULO_<NOMBRE>`. Se pueden apagar `garaje`, `catalogo` y `mecanicoia`; `cuentas` no, porque sin ella no se entra. Responde 503 `modulo-inactivo`.
+- **Cortacircuitos y compartimento:** con el núcleo de Resilience4j 2.4.0, sin su integración con Spring Boot (todavía no hay versión para Boot 4), en `MotorDiagnosticoProtegido`, que envuelve al adaptador de OpenRouter sin tocar el caso de uso. Una respuesta vacía de la cadena de modelos cuenta como falla. Con el cortacircuitos abierto llega la respuesta segura al instante; con el cupo lleno, 503 `mucha-demanda`.
+- **Tiempos máximos:** ya estaban en el adaptador: 5 s para conectar, 20 s por modelo y 45 s en total.
+- **Salud:** `/actuator/health` muestra `modulos` (activo o inactivo) y `openrouter` (estado del cortacircuitos), además de la base de datos. Los dos van siempre en UP: un módulo apagado a propósito o la IA caída no deben hacer que Render reinicie el servicio.
+- **Sentry** (organización `weveh-group`): `sentry-spring-boot-4-starter` en el backend y `@sentry/react-native` en la app. Sin DSN (`SENTRY_DSN`, `EXPO_PUBLIC_SENTRY_DSN`) no envían nada. Van con `send-default-pii` apagado y un filtro (`FiltroSentry`, `limpiarEvento`) que borra usuario, IP, cabeceras, cookies, cuerpo y parámetros de la petición. Sin capturas de pantalla ni trazas de rendimiento.
+- **Conexiones a la base:** máximo `WEVEH_DB_POOL` (7) por backend; ver la nota del ADR 0008.

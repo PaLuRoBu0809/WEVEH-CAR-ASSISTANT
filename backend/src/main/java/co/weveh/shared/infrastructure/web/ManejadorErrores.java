@@ -4,6 +4,8 @@ import co.weveh.shared.domain.ConfirmacionRequeridaException;
 import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.DatoInvalidoException;
 import co.weveh.shared.domain.IdentidadNoConfirmadaException;
+import co.weveh.shared.domain.ModuloInactivoException;
+import co.weveh.shared.domain.MuchaDemandaException;
 import co.weveh.shared.domain.NoAutenticadoException;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
 import co.weveh.shared.domain.ServicioNoDisponibleException;
@@ -62,6 +64,16 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ServicioNoDisponibleException.class)
     ProblemDetail noDisponible(ServicioNoDisponibleException excepcion) {
         return problema(HttpStatus.SERVICE_UNAVAILABLE, "no-disponible", "Servicio no disponible", excepcion.getMessage());
+    }
+
+    @ExceptionHandler(ModuloInactivoException.class)
+    ProblemDetail moduloInactivo(ModuloInactivoException excepcion) {
+        return problema(HttpStatus.SERVICE_UNAVAILABLE, "modulo-inactivo", "En mantenimiento", excepcion.getMessage());
+    }
+
+    @ExceptionHandler(MuchaDemandaException.class)
+    ProblemDetail muchaDemanda(MuchaDemandaException excepcion) {
+        return problema(HttpStatus.SERVICE_UNAVAILABLE, "mucha-demanda", "Mucha demanda", excepcion.getMessage());
     }
 
     @Override

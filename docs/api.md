@@ -46,7 +46,9 @@ Todo error tiene la misma forma; la app muestra `detail` tal cual porque está e
 | 409 | `conflicto` | El cambio choca con el estado actual |
 | 409 | `confirmacion-requerida` | El cambio es raro y hay que confirmarlo (salto del kilometraje); `detail` trae la pregunta |
 | 429 | `limite-de-uso` ⬜ | Se agotó el cupo del Mecánico IA (dice cuándo vuelve a haber) |
-| 503 | `no-disponible` | La IA no está configurada, está caída (cortacircuitos) o el módulo está apagado |
+| 503 | `no-disponible` | La IA no está configurada o un servicio externo (Supabase Auth) no responde |
+| 503 | `modulo-inactivo` | El módulo está apagado con `WEVEH_MODULO_<NOMBRE>=inactivo` (garaje, catálogo o Mecánico IA; las cuentas no se apagan). La app dice "Esta función está en mantenimiento" (ADR 0010) |
+| 503 | `mucha-demanda` | Hay 10 consultas de IA en curso (compartimento); la app dice "Hay mucha demanda". Con el cortacircuitos abierto no hay error: llega la respuesta segura al instante (ADR 0010) |
 
 ### Cambios hechos sin red ⬜
 
