@@ -50,7 +50,7 @@ Todo error tiene la misma forma; la app muestra `detail` tal cual porque está e
 
 ### Cambios hechos sin red ⬜
 
-Las escrituras aceptan `Idempotency-Key: <UUID>` (la misma petición repetida se aplica una sola vez) y la hora del cambio, para resolver conflictos con "gana lo último" (ADR 0009).
+Las escrituras aceptan `Idempotency-Key: <UUID>` (ADR 0009): la misma clave repetida se aplica una sola vez y devuelve la respuesta de la primera vez con la cabecera `Idempotent-Replayed: true`. Solo se guardan las respuestas 2xx, durante 7 días (tabla `cambio_procesado`, V10). La misma clave en otro método o ruta responde **422 `clave-repetida`**. Hoy la usa la app para el kilometraje anotado sin red (RF-GAR-06).
 
 ## Catálogo ✅
 
@@ -148,10 +148,20 @@ Completa el aceite y los papeles que quedaron para después: `aceiteKm`, `aceite
 ### `PUT /vehiculos/{id}/kilometraje` (RF-GAR-05)
 
 ```json
-{ "kilometraje": 191200, "confirmado": false }
+{ "kilometraje": 191200, "confirmado": false, "leidoEn": "2026-10-22" }
 ```
 
 Nunca baja (400 "El kilometraje no puede bajar: hoy tiene 190.000 km"). Un salto mayor a `max(3 × km promedio diario × días desde la última lectura, 1.500)` sin `confirmado` responde **409 `confirmacion-requerida`** con la pregunta en `detail`; la app la muestra y reenvía con `confirmado: true`. Publica `KilometrajeActualizado`.
+
+`leidoEn` (opcional) es el día en que se anotó **sin red** (RF-GAR-06). Si ya hay una lectura de un día posterior, o una igual o mayor, el cambio se descarta ("gana lo último") y responde 200 con el vehículo como está, sin el error de "no puede bajar". Una fecha futura cuenta como hoy. Sin `leidoEn` se usa hoy y aplican las reglas de siempre.
+
+### `PUT /vehiculos/{id}/kilometraje/correccion` (ADR 0023)
+
+```json
+{ "kilometraje": 134000 }
+```
+
+Corrige hacia abajo la última lectura. Responde 400 si pasaron más de 7 días desde que se anotó ("Solo puedes corregir una lectura en los 7 días siguientes a anotarla"), si el número no es menor ("Para subir el kilometraje, anótalo como una lectura nueva") o si queda por debajo de la lectura anterior ("No puede quedar por debajo de la lectura anterior: 130.000 km"). No cambia el día de la lectura. Publica `KilometrajeActualizado`.
 
 ## Mecánico IA ✅
 

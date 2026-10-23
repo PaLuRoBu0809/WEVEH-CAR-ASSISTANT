@@ -1,5 +1,5 @@
 import { aEdicion, erroresEdicion, errorKilometraje, formularioDesde } from './edicion';
-import { listaFaltantes, tituloFaltantes, type VehiculoResumen } from './vehiculo';
+import { listaFaltantes, puedeCorregirKilometraje, tituloFaltantes, type VehiculoResumen } from './vehiculo';
 
 const HOY = new Date(2026, 9, 15);
 
@@ -110,5 +110,17 @@ describe('kilometraje y datos que faltan', () => {
   test('si faltan papeles el aviso lo dice así; si solo falta el aceite, es un dato', () => {
     expect(tituloFaltantes('La Prado', ['SOAT', 'ACEITE'])).toBe('Te faltan los papeles de La Prado');
     expect(tituloFaltantes('La Prado', ['ACEITE'])).toBe('Te falta un dato de La Prado');
+  });
+});
+
+describe('corregir el kilometraje (ADR 0023)', () => {
+  test('la última lectura se puede corregir hasta 7 días después', () => {
+    expect(puedeCorregirKilometraje('2026-10-15', '2026-10-15')).toBe(true);
+    expect(puedeCorregirKilometraje('2026-10-15', '2026-10-22')).toBe(true);
+  });
+
+  test('después de 7 días o con una fecha rara ya no', () => {
+    expect(puedeCorregirKilometraje('2026-10-15', '2026-10-23')).toBe(false);
+    expect(puedeCorregirKilometraje('no es fecha', '2026-10-23')).toBe(false);
   });
 });

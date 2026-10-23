@@ -1,5 +1,6 @@
 export {
   CLAVE_VEHICULOS,
+  prepararCambiosSinRed,
   useCompletarRegistro,
   useEliminarVehiculo,
   useRegistrarVehiculo,

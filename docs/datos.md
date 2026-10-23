@@ -51,7 +51,8 @@ La búsqueda usa un índice de similitud de texto (`pg_trgm`) sobre el nombre no
 | `conversacion` + `mensaje` | Conversaciones del Mecánico IA por vehículo; cada mensaje con su rol, texto, diagnóstico, modelo y prompt; resumen compactado de lo viejo | RF-MIA-02 |
 | `cupo_consultas` | Balde por cuenta: consultas disponibles y última recarga | RF-MIA-07 |
 | `event_publication` | Eventos entre módulos pendientes y completados | ADR 0007 |
-| `cambio_procesado` | `Idempotency-Key` ya aplicadas, para no guardar dos veces lo que llega de la cola sin red | ADR 0009 |
+| `lectura_kilometraje` | `vehiculo_id`, `km`, `leido_en`, `corregida`, `registrado_en`: historial de lecturas; de ahí sale el piso para corregir la última | ADR 0023 · ✅ V11 |
+| `cambio_procesado` | `usuario_id`, `clave` (la `Idempotency-Key`), `metodo`, `ruta`, `estado_http`, `tipo_contenido`, `cuerpo`, `procesado_en`: respuestas 2xx ya enviadas, 7 días, para no guardar dos veces lo que llega de la cola sin red | ADR 0009 · ✅ V10 |
 
 ### Fases futuras
 

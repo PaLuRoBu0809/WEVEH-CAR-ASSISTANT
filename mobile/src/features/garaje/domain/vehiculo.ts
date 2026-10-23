@@ -134,3 +134,14 @@ export type SolicitudRegistro = Readonly<{
 export function nombreParaMostrar(vehiculo: Pick<VehiculoResumen, 'alias' | 'marca' | 'linea'>): string {
   return vehiculo.alias?.trim() || `${vehiculo.marca} ${vehiculo.linea}`;
 }
+
+/** ADR 0023: días en que la última lectura todavía se puede corregir hacia abajo (igual que el backend). */
+export const DIAS_PARA_CORREGIR_KM = 7;
+
+const MS_POR_DIA = 24 * 60 * 60 * 1000;
+
+/** "Me equivoqué al anotarlo" solo aparece mientras la última lectura se puede corregir. Fechas en ISO. */
+export function puedeCorregirKilometraje(kmActualizadoEn: string, hoy: string): boolean {
+  const dias = (Date.parse(hoy) - Date.parse(kmActualizadoEn)) / MS_POR_DIA;
+  return !Number.isNaN(dias) && dias <= DIAS_PARA_CORREGIR_KM;
+}

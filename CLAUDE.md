@@ -79,7 +79,7 @@ Detalle, diagrama de clases y fórmulas: skill `weveh-dev:dominio-vehiculo`.
 - **Plan por perfil y en capas** (ADR 0016): plantilla por tipo, combustible, transmisión y tracción → ficha del modelo → condiciones de uso → historia del vehículo → lo que edita la persona o dice su mecánico.
 - **Pieza del plan**: intervalo en km y meses, `esSeguridad`, último servicio (km/fecha) u `SIN_DATO`, y **origen** del intervalo (`GENERICO`, `FABRICANTE_VERIFICADO`, `IA_WEB` con URL de fuente, `USUARIO`). Solo un trabajo `CAMBIO` de un servicio reinicia el intervalo (ADR 0017).
 - Estados: `AL_DIA`, `POR_VENCER` (consumo ≥ 85 %), `VENCIDO`, `SIN_DATO` y `SIN_DATO_REVISAR_YA` (pieza de seguridad sin dato que superó el margen del fabricante; sin ficha, el 100 % del intervalo). La salud pondera doble las piezas de seguridad, nunca sale verde si una pieza de seguridad está vencida y con `SIN_DATO_REVISAR_YA` queda como mucho en "Revisar"; solo se muestra el puntaje si más de la mitad de las piezas tiene dato.
-- El kilometraje es siempre el que la persona confirma: nunca se estima (el km por mes solo detecta saltos) y nunca decrece. Un salto anómalo pide confirmación.
+- El kilometraje es siempre el que la persona confirma: nunca se estima (el km por mes solo detecta saltos) y nunca decrece, salvo corregir la última lectura en sus primeros 7 días sin bajar de la anterior (ADR 0023). Un salto anómalo pide confirmación.
 
 ## 7. Reglas de arquitectura
 

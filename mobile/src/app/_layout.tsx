@@ -6,16 +6,35 @@ import {
   Manrope_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/manrope';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { usePrepararSesion } from '@/features/cuentas';
+import { prepararCambiosSinRed } from '@/features/garaje';
 import { useEstadoTema, useTema } from '@/shared/design-system';
+import { conectarDetectorDeRed, EDAD_MAXIMA_MS, opcionesPersistencia } from '@/shared/sinRed';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
+conectarDetectorDeRed();
+
+/**
+ * ADR 0009: lo guardado dura hasta 30 días (gcTime igual a la edad máxima) y los cambios fallan de una vez sin red,
+ * salvo el kilometraje, que espera la red (prepararCambiosSinRed).
+ */
+function crearClienteConsultas(): QueryClient {
+  const cliente = new QueryClient({
+    defaultOptions: {
+      queries: { retry: 1, staleTime: 30_000, gcTime: EDAD_MAXIMA_MS },
+      mutations: { networkMode: 'always' },
+    },
+  });
+  prepararCambiosSinRed(cliente);
+  return cliente;
+}
 
 export default function LayoutRaiz() {
   usePrepararSesion();
@@ -31,9 +50,7 @@ export default function LayoutRaiz() {
     JetBrainsMono_500Medium,
     JetBrainsMono_700Bold,
   });
-  const [clienteConsultas] = useState(
-    () => new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } }),
-  );
+  const [clienteConsultas] = useState(crearClienteConsultas);
 
   useEffect(() => {
     cargarModoGuardado().finally(() => setTemaListo(true));
@@ -51,7 +68,11 @@ export default function LayoutRaiz() {
   }
 
   return (
-    <QueryClientProvider client={clienteConsultas}>
+    <PersistQueryClientProvider
+      client={clienteConsultas}
+      persistOptions={opcionesPersistencia}
+      // Lo que quedó esperando red se envía apenas haya conexión, y luego se recarga lo guardado
+      onSuccess={() => clienteConsultas.resumePausedMutations().then(() => clienteConsultas.invalidateQueries())}>
       <SafeAreaProvider>
         <StatusBar style={modo === 'oscuro' ? 'light' : 'dark'} />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: tema.fondo } }}>
@@ -59,6 +80,6 @@ export default function LayoutRaiz() {
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
         </Stack>
       </SafeAreaProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

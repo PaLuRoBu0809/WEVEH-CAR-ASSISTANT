@@ -58,10 +58,14 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 
 ## Etapa 4 · Sin red (ADR 0009, RF-GAR-01, RF-GAR-06, RF-CAT-01)
 
-- [ ] SQLite con el último estado y lectura primero desde el celular.
-- [ ] Cola de cambios con `Idempotency-Key` y hora del cambio; backend con tabla `cambio_procesado` y "gana lo último" validando reglas.
-- [ ] Borrado de la base local al cerrar sesión.
-- [ ] Verificación: RNF-04 y RNF-05 en modo avión.
+- [x] Último estado en SQLite (`expo-sqlite/kv-store`; `localStorage` en la demo web) con TanStack Query persistido: vehículos, cuenta y búsquedas del catálogo (`meta: { guardarSinRed: true }`). Sin red: "Sin conexión · actualizado hace X".
+- [x] Cola: el kilometraje sin red queda en pausa, se guarda en el celular y se envía solo al volver la red con `Idempotency-Key` y `leidoEn`. Lo demás (editar, registrar) falla de una vez con "Revisa tu internet".
+- [x] Backend: filtro `Idempotency-Key` con tabla `cambio_procesado` (V10); `leidoEn` en el kilometraje y "gana lo último" (una lectura vieja o menor se descarta sin error).
+- [x] Borrado de lo guardado en el celular al cerrar sesión y al eliminar la cuenta.
+- [x] Cancelar un kilometraje que espera red, y corregir la última lectura hacia abajo en sus primeros 7 días sin bajar de la anterior ([ADR 0023](adr/0023-corregir-la-ultima-lectura-del-kilometraje.md), tabla `lectura_kilometraje` V11).
+- [ ] Verificación manual en el emulador con Expo Go: el aviso sin red ya se vio (2026-10-22); faltan el envío al volver la red, cancelar y corregir.
+- [ ] Abrir la app desde cero sin red (RNF-04 completo): solo con la app compilada (EAS), porque Expo Go baja el código de Metro.
+- [ ] Mejora: si un kilometraje enviado al volver la red pide confirmar un salto raro y la app se cerró entre tanto, hoy la pregunta no se vuelve a mostrar (la lectura no se guarda). Mostrarla al abrir el vehículo.
 
 ## Etapa 5 · Resiliencia y monitoreo (ADR 0010)
 

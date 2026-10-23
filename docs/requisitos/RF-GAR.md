@@ -72,6 +72,9 @@ Como dueño quiero anotar el kilometraje real para que el plan y los avisos sean
 - Dado que escribo 185.000
   Cuando guardo
   Entonces veo que el kilometraje no puede bajar
+- Dado que me equivoqué en la última lectura y la anoté hace 7 días o menos
+  Cuando toco "¿Te equivocaste? Corregir esta lectura" y escribo el número correcto, menor
+  Entonces queda corregida, sin bajar de la lectura anterior (ADR 0023); pasados 7 días la lectura queda fija
 - Dado que escribo un salto mayor a max(3 × km promedio diario × días desde la última lectura, 1.500)
   Cuando guardo
   Entonces la app me pide confirmar antes de guardarlo
@@ -89,9 +92,19 @@ Como dueño quiero anotar cosas aunque no tenga señal.
 - Dado que no tengo red y actualizo el kilometraje
   Cuando vuelve la conexión
   Entonces el cambio se envía solo y una sola vez
-- Dado que el cambio guardado sin red rompe una regla (por ejemplo, baja el kilometraje)
+- Dado que anoto el kilometraje sin red
+  Cuando lo guardo
+  Entonces lo veo de una vez con el aviso "Quedó anotado en tu celular. Lo enviamos solo cuando vuelva la señal",
+  aunque cierre la app antes de que vuelva la red
+- Dado que el cambio guardado sin red es más viejo o menor que una lectura que ya llegó desde otro lado
   Cuando se sincroniza
-  Entonces se rechaza y la app me avisa qué no se guardó
+  Entonces se descarta sin error: gana la lectura más reciente (ADR 0009) y el kilometraje nunca baja
+- Dado que el cambio guardado sin red es un salto raro
+  Cuando se sincroniza
+  Entonces la app me pide confirmarlo, como con red (RF-GAR-05)
+- Dado que no tengo red y quiero editar o registrar un vehículo
+  Cuando lo intento
+  Entonces veo que necesito conexión: solo el kilometraje se anota sin red
 
 ## RF-GAR-07 Recordatorio de kilometraje
 Como dueño quiero que la app me pida el kilometraje cada cierto tiempo, para no depender de acordarme.

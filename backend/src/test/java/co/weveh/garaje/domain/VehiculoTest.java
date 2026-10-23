@@ -221,4 +221,33 @@ class VehiculoTest {
     private static Vehiculo.DatosEdicion edicion(String alias, String placa, UsoVehiculo uso, int kmPromedioMes) {
         return new Vehiculo.DatosEdicion(alias, placa, uso, kmPromedioMes, null, null, null, null);
     }
+
+    @Test
+    void laUltimaLecturaSePuedeCorregirHaciaAbajoEnSusPrimerosSieteDias() {
+        var prado = registrar(datos(190000, 2008, null, null));
+
+        var corregido = prado.corregirKilometraje(185000, 180000, HOY.plusDays(Vehiculo.DIAS_PARA_CORREGIR));
+
+        assertThat(corregido.km().valor()).isEqualTo(185000);
+        assertThat(corregido.kmActualizadoEn()).isEqualTo(prado.kmActualizadoEn());
+    }
+
+    @Test
+    void despuesDeSieteDiasLaLecturaQuedaFija() {
+        assertThatThrownBy(() -> registrar(datos(190000, 2008, null, null)).corregirKilometraje(185000, 0, HOY.plusDays(Vehiculo.DIAS_PARA_CORREGIR + 1)))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessageContaining("7 días");
+    }
+
+    @Test
+    void corregirNoSirveParaSubirNiParaBajarDeLaLecturaAnterior() {
+        var prado = registrar(datos(190000, 2008, null, null));
+
+        assertThatThrownBy(() -> prado.corregirKilometraje(prado.km().valor(), 0, HOY))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessageContaining("lectura nueva");
+        assertThatThrownBy(() -> prado.corregirKilometraje(150000, 160000, HOY))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessageContaining("160.000");
+    }
 }

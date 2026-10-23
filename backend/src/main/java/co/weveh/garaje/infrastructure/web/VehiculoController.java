@@ -68,7 +68,14 @@ class VehiculoController {
     VehiculoRespuesta actualizarKilometraje(UsuarioId usuario, @PathVariable UUID id,
                                             @Valid @RequestBody KilometrajeSolicitud solicitud) {
         return VehiculoRespuesta.desde(garaje.actualizarKilometraje(usuario, id, solicitud.kilometraje(),
-                Boolean.TRUE.equals(solicitud.confirmado())));
+                Boolean.TRUE.equals(solicitud.confirmado()), solicitud.leidoEn()));
+    }
+
+    /** ADR 0023: "Me equivoqué al anotarlo". */
+    @PutMapping("/{id}/kilometraje/correccion")
+    VehiculoRespuesta corregirKilometraje(UsuarioId usuario, @PathVariable UUID id,
+                                          @Valid @RequestBody CorreccionKilometrajeSolicitud solicitud) {
+        return VehiculoRespuesta.desde(garaje.corregirKilometraje(usuario, id, solicitud.kilometraje()));
     }
 
     @DeleteMapping("/{id}")
@@ -104,8 +111,14 @@ class VehiculoController {
         }
     }
 
-    /** @param confirmado true cuando la persona ya confirmó un salto raro (respuesta 409 confirmacion-requerida) */
-    record KilometrajeSolicitud(@NotNull Integer kilometraje, Boolean confirmado) {
+    /**
+     * @param confirmado true cuando la persona ya confirmó un salto raro (respuesta 409 confirmacion-requerida)
+     * @param leidoEn    día en que se anotó sin red (RF-GAR-06); si falta, hoy
+     */
+    record KilometrajeSolicitud(@NotNull Integer kilometraje, Boolean confirmado, LocalDate leidoEn) {
+    }
+
+    record CorreccionKilometrajeSolicitud(@NotNull Integer kilometraje) {
     }
 
     /** RF-GAR-02b: el aceite y los papeles completos como quedan (lo que siga vacío queda para después). */

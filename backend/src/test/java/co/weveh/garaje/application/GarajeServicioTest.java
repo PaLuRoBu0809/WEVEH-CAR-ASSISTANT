@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import co.weveh.garaje.KilometrajeActualizado;
 import co.weveh.garaje.VehiculoEliminado;
 import co.weveh.garaje.VehiculoRegistrado;
+import co.weveh.garaje.application.puertos.LecturasKilometraje;
 import co.weveh.garaje.application.puertos.VehiculoRepositorio;
 import co.weveh.garaje.domain.RegistroInicial;
 import co.weveh.garaje.domain.Traccion;
@@ -18,6 +19,7 @@ import co.weveh.garaje.domain.Transmision;
 import co.weveh.garaje.domain.UsoVehiculo;
 import co.weveh.garaje.domain.Vehiculo;
 import co.weveh.shared.domain.ConflictoException;
+import co.weveh.shared.domain.DatoInvalidoException;
 import co.weveh.shared.domain.RecursoNoEncontradoException;
 import co.weveh.shared.domain.TipoVehiculo;
 import co.weveh.shared.domain.UsuarioId;
@@ -39,15 +41,17 @@ class GarajeServicioTest {
             LocalDate.of(2026, 6, 30), LocalDate.of(2026, 6, 28), false, LocalDate.of(2026, 7, 5), "Sura");
 
     private VehiculoRepositorio repositorio;
+    private LecturasKilometraje lecturas;
     private ApplicationEventPublisher eventos;
     private GarajeServicio servicio;
 
     @BeforeEach
     void preparar() {
         repositorio = mock(VehiculoRepositorio.class);
+        lecturas = mock(LecturasKilometraje.class);
         eventos = mock(ApplicationEventPublisher.class);
         var reloj = Clock.fixed(HOY.atStartOfDay().toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
-        servicio = new GarajeServicio(repositorio, eventos, reloj);
+        servicio = new GarajeServicio(repositorio, lecturas, eventos, reloj);
     }
 
     private static Vehiculo.DatosRegistro datos(RegistroInicial registro) {
@@ -154,10 +158,87 @@ class GarajeServicioTest {
         var vehiculo = guardado();
         when(repositorio.actualizar(any())).thenReturn(true);
 
-        servicio.actualizarKilometraje(USUARIO, vehiculo.id(), 190500, false);
+        servicio.actualizarKilometraje(USUARIO, vehiculo.id(), 190500, false, null);
 
         verify(repositorio).actualizar(org.mockito.ArgumentMatchers.argThat(v -> v.km().valor() == 190500));
         verify(eventos).publishEvent(new KilometrajeActualizado(vehiculo.id(), 190500));
+    }
+
+    @Test
+    void unaLecturaSinRedMasViejaQueLaUltimaSeDescartaSinError() {
+        var vehiculo = guardado();
+
+        var resultado = servicio.actualizarKilometraje(USUARIO, vehiculo.id(), 195000, false, HOY.minusDays(1));
+
+        assertThat(resultado.km().valor()).isEqualTo(vehiculo.km().valor());
+        verify(repositorio, never()).actualizar(any());
+        verify(eventos, never()).publishEvent(any());
+    }
+
+    @Test
+    void unaLecturaSinRedMenorQueLaActualSeDescartaEnVezDeFallar() {
+        var vehiculo = guardado();
+
+        var resultado = servicio.actualizarKilometraje(USUARIO, vehiculo.id(), vehiculo.km().valor() - 500, false, HOY);
+
+        assertThat(resultado.km()).isEqualTo(vehiculo.km());
+        verify(repositorio, never()).actualizar(any());
+    }
+
+    @Test
+    void unaLecturaSinRedNuevaSeGuardaYUnaFechaFuturaQuedaEnHoy() {
+        var vehiculo = guardado();
+        when(repositorio.actualizar(any())).thenReturn(true);
+
+        servicio.actualizarKilometraje(USUARIO, vehiculo.id(), 190500, false, HOY.plusDays(3));
+
+        verify(repositorio).actualizar(org.mockito.ArgumentMatchers.argThat(
+                v -> v.km().valor() == 190500 && v.kmActualizadoEn().equals(HOY)));
+    }
+
+    @Test
+    void actualizarKilometrajeAnotaLaLecturaEnElHistorial() {
+        var vehiculo = guardado();
+        when(repositorio.actualizar(any())).thenReturn(true);
+
+        servicio.actualizarKilometraje(USUARIO, vehiculo.id(), 190500, false, null);
+
+        verify(lecturas).anotar(vehiculo.id(), 190500, HOY);
+    }
+
+    @Test
+    void corregirBajaLaUltimaLecturaHastaLaAnteriorYPublicaElEvento() {
+        var vehiculo = guardado();
+        when(lecturas.anteriorALaUltima(vehiculo.id())).thenReturn(java.util.OptionalInt.of(185000));
+        when(repositorio.actualizar(any())).thenReturn(true);
+
+        servicio.corregirKilometraje(USUARIO, vehiculo.id(), 185000);
+
+        verify(repositorio).actualizar(org.mockito.ArgumentMatchers.argThat(v -> v.km().valor() == 185000));
+        verify(lecturas).corregirUltima(vehiculo.id(), 185000);
+        verify(eventos).publishEvent(new KilometrajeActualizado(vehiculo.id(), 185000));
+    }
+
+    @Test
+    void corregirPorDebajoDeLaLecturaAnteriorSeRechaza() {
+        var vehiculo = guardado();
+        when(lecturas.anteriorALaUltima(vehiculo.id())).thenReturn(java.util.OptionalInt.of(185000));
+
+        assertThatThrownBy(() -> servicio.corregirKilometraje(USUARIO, vehiculo.id(), 184999))
+                .isInstanceOf(DatoInvalidoException.class)
+                .hasMessageContaining("185.000");
+        verify(lecturas, never()).corregirUltima(any(), org.mockito.ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    void sinLecturaAnteriorElPisoEsCeroYSiOtraEdicionGanoHayConflicto() {
+        var vehiculo = guardado();
+        when(lecturas.anteriorALaUltima(vehiculo.id())).thenReturn(java.util.OptionalInt.empty());
+        when(repositorio.actualizar(any())).thenReturn(false);
+
+        assertThatThrownBy(() -> servicio.corregirKilometraje(USUARIO, vehiculo.id(), 1000))
+                .isInstanceOf(ConflictoException.class);
+        verify(lecturas, never()).corregirUltima(any(), org.mockito.ArgumentMatchers.anyInt());
     }
 
     @Test
@@ -165,7 +246,7 @@ class GarajeServicioTest {
         var vehiculo = guardado();
         when(repositorio.actualizar(any())).thenReturn(false);
 
-        assertThatThrownBy(() -> servicio.actualizarKilometraje(USUARIO, vehiculo.id(), 190500, false))
+        assertThatThrownBy(() -> servicio.actualizarKilometraje(USUARIO, vehiculo.id(), 190500, false, null))
                 .isInstanceOf(ConflictoException.class);
         verify(eventos, never()).publishEvent(any());
     }

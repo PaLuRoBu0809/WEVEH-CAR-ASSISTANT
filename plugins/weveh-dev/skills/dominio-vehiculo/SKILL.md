@@ -87,7 +87,7 @@ Estado: `VIGENTE` (> 30 días), `POR_VENCER` (≤ 30 días), `VENCIDO` (< 0). Av
 - `Kilometraje` es value object: 0 ≤ km ≤ 2.000.000.
 - Nunca decrece: si el nuevo valor es menor, error `KilometrajeDecreciente` (409).
 - Salto anómalo: más de `max(3 × kmPromedioDia × diasDesdeUltimo, 1.500)` km ⇒ la app pide confirmación antes de guardar.
-- **El kilometraje es siempre el confirmado por la persona** (ADR 0020): nunca se estima el de hoy. El km promedio al mes solo sirve para detectar saltos raros.
+- **El kilometraje es siempre el confirmado por la persona** (ADR 0020): nunca se estima el de hoy. El km promedio al mes solo sirve para detectar saltos raros. Nunca baja, salvo corregir la última lectura en sus primeros 7 días sin bajar de la anterior (ADR 0023, tabla `lectura_kilometraje`).
 - Cada actualización queda en `RegistroKilometraje` (fecha, km, origen: manual, servicio, tanqueada; foto del tablero opcional como evidencia, que ningún modelo lee). Un recordatorio local lo pide cada 15 días (7, 15 o 30 configurable, RF-GAR-07).
 
 ## 6. Tanqueadas y consumo

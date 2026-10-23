@@ -17,8 +17,8 @@ Organizados por las características de calidad de ISO/IEC 25010. Cada uno es me
 
 | ID | Requisito | Cómo se verifica | Estado |
 |---|---|---|---|
-| RNF-04 | Sin red, la app muestra el **último estado de todo** (vehículos, plan, documentos, historial, conversaciones) con "actualizado hace X" | Prueba manual en modo avión; pruebas de la capa SQLite | ❌ |
-| RNF-05 | Lo escrito sin red se envía una sola vez al volver la conexión (`Idempotency-Key`) | Prueba de integración de la cola | ❌ |
+| RNF-04 | Sin red, la app muestra el **último estado de todo** (vehículos, plan, documentos, historial, conversaciones) con "actualizado hace X" | Prueba manual en modo avión; pruebas de la capa SQLite | 🟡 vehículos, cuenta y catálogo (`sinRed.test.tsx`, `useVehiculos.test.tsx`); el plan, los documentos y las conversaciones se suman al construirlos; falta la prueba en modo avión |
+| RNF-05 | Lo escrito sin red se envía una sola vez al volver la conexión (`Idempotency-Key`) | Prueba de integración de la cola | ✅ `CambiosSinRedIntegracionTest` (Postgres) y `useVehiculos.test.tsx`; falta la prueba en modo avión |
 | RNF-20 | Si OpenRouter falla, el resto de la app sigue funcionando; con el cortacircuitos abierto, la respuesta segura llega en < 2 s | Prueba con el proveedor simulado caído | ❌ |
 | RNF-21 | Un módulo se puede apagar con una variable sin afectar a los demás (responde 503 y la app desactiva la función) | Prueba de integración por módulo | ❌ |
 | RNF-27 | Supabase tiene respaldo diario y está probado cómo restaurarlo | Ensayo de restauración documentado | ⚠️ |

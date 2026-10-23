@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import { create } from 'zustand';
 
 import { configurarSesion, ErrorApi } from '@/shared/http';
+import { borrarDatosLocales } from '@/shared/sinRed';
 
 import {
   MEDIO_CONSENTIMIENTO,
@@ -73,7 +74,12 @@ export function useEstadoSesion(): EstadoSesion {
 
 export function useCuenta() {
   const estado = useEstadoSesion();
-  return useQuery({ queryKey: CLAVE_CUENTA, queryFn: obtenerCuenta, enabled: estado === 'con-sesion' });
+  return useQuery({
+    queryKey: CLAVE_CUENTA,
+    queryFn: obtenerCuenta,
+    enabled: estado === 'con-sesion',
+    meta: { guardarSinRed: true },
+  });
 }
 
 /** Hay sesión pero no perfil en WEVEH: la persona salió de "Antes de entrar" sin aceptar la política. */
@@ -221,14 +227,17 @@ export function useAceptarPolitica() {
   });
 }
 
-/** RF-CTA-06: cierra la sesión y borra lo guardado en el celular. */
+/** RF-CTA-06: cierra la sesión y borra lo guardado en el celular (también el último estado sin red, ADR 0009). */
 export function useCerrarSesion() {
   const consultas = useQueryClient();
   return useMutation({
     mutationFn: async () => {
       await supabase.auth.signOut({ scope: 'local' });
     },
-    onSettled: () => consultas.clear(),
+    onSettled: async () => {
+      consultas.clear();
+      await borrarDatosLocales();
+    },
   });
 }
 

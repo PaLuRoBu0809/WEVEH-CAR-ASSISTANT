@@ -12,15 +12,15 @@ Estado revisado el 2026-10-10. Ampliación propuesta el 2026-10-19 y aprobada el
 | RF-CTA-01..07 | [Cuentas](RF-CTA.md) | 1 | ✅ | Correo y contraseña, Google, recuperar, confirmar, Mis datos (nombre, correo, contraseña) y confirmar la identidad. El enlace mágico salió del MVP |
 | RF-DAT-01..08 | [Tratamiento de datos](RF-DAT.md) | 1 | 🟡 | 01, 02 y 04 a 07 hechos (política, autorización con medio, Mis datos, corregir, eliminar = revocar). 03 se activa cuando cambie la política. 08: nada personal llega al modelo; falta el aviso en Preguntar (va con el Mecánico IA) |
 | RF-DAT-09..10 | Audio, fotos, terceros y ubicación gruesa | 2 | ⬜ | Reglas de privacidad para los medios y la entrevista |
-| RF-GAR-01 | Ver mi garaje | 0 / 1 | 🟡 | Falta ver sin red (ADR 0009) |
+| RF-GAR-01 | Ver mi garaje | 0 / 1 | ✅ | Sin red se ve lo último guardado con "Sin conexión · actualizado hace X" (ADR 0009) |
 | RF-GAR-02 | Registrar vehículo (datos mínimos) | 1 | 🔁 | Hecho; cambia: no pregunta lo que el catálogo ya sabe (RF-CAT-04) y el uso sale del registro (queda "Mixto") |
 | RF-GAR-02b | Completar lo que falta | 1 / 2 | ✅ | Aviso en Inicio, completar datos y guía del aceite |
 | RF-GAR-03 | Editar vehículo | 1 | 🟡 | Pantalla hecha; "gana lo último" llega con sin red (ADR 0009), hoy responde 409. Nuevo: editar combustible, transmisión y tracción |
 | RF-GAR-04 | Eliminar vehículo | 1 | ✅ | Plan, documentos, fotos y tanqueadas se borrarán en cascada cuando existan |
 | RF-GAR-05 | Actualizar kilometraje | 1 | 🔁 | Hecho; cambia: "confirmado hace X días", sin estimaciones y foto del tablero como evidencia |
-| RF-GAR-06 | Cambios sin red | 1 | ⬜ | |
+| RF-GAR-06 | Cambios sin red | 1 | ✅ | Solo el kilometraje; se envía solo y una vez (`Idempotency-Key`) y gana lo último |
 | RF-GAR-07 | Recordatorio de kilometraje | 2 | ⬜ | Notificación local cada 15 días (configurable, D-05) |
-| RF-CAT-01 | Buscar marcas | 1 | 🟡 | Falta la caché sin red |
+| RF-CAT-01 | Buscar marcas | 1 | ✅ | Sin red se ven las marcas y líneas ya buscadas |
 | RF-CAT-02 | Buscar líneas de una marca | 1 | 🔁 | Hecho; cambia: muestra los atributos que el catálogo ya conoce y su origen |
 | RF-CAT-03 | Importar y actualizar el catálogo | 1 | 🟡 | 2025 cargado con script; falta el proceso por año fiscal (ADR 0014) |
 | RF-CAT-04 | No preguntar lo que el catálogo ya sabe | 1 | ⬜ | Tres orígenes: nombre de la línea, investigación por familia con fuente (ADR 0021) o pregunta con "No sé"; nada se rellena en silencio |

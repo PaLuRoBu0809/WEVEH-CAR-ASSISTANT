@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { ErrorApi } from '@/shared/http';
+import { borrarDatosLocales } from '@/shared/sinRed';
 
 import { esSesionReciente } from '../domain/gestionCuenta';
 import { mensajeDeAuth } from '../domain/mensajes';
@@ -93,7 +94,10 @@ export function useEliminarCuenta() {
       }
       await supabase.auth.signOut({ scope: 'local' });
     },
-    onSuccess: () => consultas.clear(),
+    onSuccess: async () => {
+      consultas.clear();
+      await borrarDatosLocales();
+    },
   });
 }
 

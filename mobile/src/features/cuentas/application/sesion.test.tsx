@@ -29,6 +29,7 @@ jest.mock('@/shared/http', () => {
   return { ErrorApi: real.ErrorApi, configurarSesion: jest.fn(), pedir: jest.fn() };
 });
 
+jest.mock('@/shared/sinRed', () => ({ borrarDatosLocales: jest.fn() }));
 jest.mock('../infrastructure/apiCuenta', () => ({ obtenerCuenta: jest.fn(), crearPerfil: jest.fn() }));
 
 jest.mock('../infrastructure/supabase', () => ({

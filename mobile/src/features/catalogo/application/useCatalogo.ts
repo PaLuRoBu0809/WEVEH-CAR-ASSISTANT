@@ -24,6 +24,8 @@ export function useMarcas(tipo: TipoVehiculo, texto: string, activo = true) {
     enabled: activo && consulta.trim().length >= 2,
     staleTime: 24 * 60 * 60 * 1000,
     placeholderData: keepPreviousData,
+    // RF-CAT-01 y ADR 0009: sin red se ven las marcas y líneas ya buscadas
+    meta: { guardarSinRed: true },
   });
 }
 
@@ -35,5 +37,7 @@ export function useLineas(marcaId: number | null, tipo: TipoVehiculo, texto: str
     enabled: marcaId !== null,
     staleTime: 24 * 60 * 60 * 1000,
     placeholderData: keepPreviousData,
+    // RF-CAT-01 y ADR 0009: sin red se ven las marcas y líneas ya buscadas
+    meta: { guardarSinRed: true },
   });
 }

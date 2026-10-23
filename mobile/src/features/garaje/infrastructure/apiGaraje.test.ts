@@ -4,6 +4,7 @@ import type { EdicionVehiculo, RegistroCompletado, SolicitudRegistro } from '../
 import {
   actualizarKilometraje,
   completarRegistro,
+  corregirKilometraje,
   editarVehiculo,
   eliminarVehiculo,
   listarVehiculos,
@@ -32,6 +33,25 @@ describe('apiGaraje', () => {
     await registrarVehiculo(solicitud);
 
     expect(mockPedir).toHaveBeenCalledWith('/api/v1/vehiculos', { method: 'POST', body: JSON.stringify(solicitud) });
+  });
+
+  test('corregir la última lectura va a su propia ruta (ADR 0023)', async () => {
+    await corregirKilometraje('v1', 134000);
+
+    expect(mockPedir).toHaveBeenCalledWith('/api/v1/vehiculos/v1/kilometraje/correccion', {
+      method: 'PUT',
+      body: JSON.stringify({ kilometraje: 134000 }),
+    });
+  });
+
+  test('el kilometraje anotado sin red va con su clave y el día (RF-GAR-06)', async () => {
+    await actualizarKilometraje('v1', 191000, false, { clave: 'clave-1', leidoEn: '2026-10-22' });
+
+    expect(mockPedir).toHaveBeenCalledWith('/api/v1/vehiculos/v1/kilometraje', {
+      method: 'PUT',
+      headers: { 'Idempotency-Key': 'clave-1' },
+      body: JSON.stringify({ kilometraje: 191000, confirmado: false, leidoEn: '2026-10-22' }),
+    });
   });
 
   test('edita, completa el registro y actualiza el kilometraje con PUT', async () => {

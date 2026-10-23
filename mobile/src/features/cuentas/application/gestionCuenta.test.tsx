@@ -20,6 +20,7 @@ jest.mock('@/shared/http', () => {
   const real = jest.requireActual('@/shared/http/errores');
   return { ErrorApi: real.ErrorApi, configurarSesion: jest.fn(), pedir: jest.fn() };
 });
+jest.mock('@/shared/sinRed', () => ({ borrarDatosLocales: jest.fn() }));
 jest.mock('../infrastructure/apiCuenta', () => ({ editarNombre: jest.fn(), eliminarCuenta: jest.fn() }));
 jest.mock('../infrastructure/urlDeRetorno', () => ({ urlDeRetorno: (ruta: string) => `weveh://${ruta}` }));
 jest.mock('expo-web-browser', () => ({ openAuthSessionAsync: jest.fn() }));
