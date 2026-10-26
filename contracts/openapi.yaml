@@ -1,222 +1,819 @@
 openapi: 3.1.0
 info:
+  description: |-
+    API del MVP de WEVEH (docs/api.md). Todas las rutas bajo /api exigen
+    Authorization: Bearer <token de Supabase Auth> (ADR 0005). Los errores siguen Problem
+    Details (RFC 9457). Este contrato se genera del código: no se edita a mano.
   title: WEVEH API
   version: 0.1.0
-  description: |
-    API del MVP de WEVEH. Todas las rutas bajo `/api` exigen el header `X-Weveh-Dispositivo`
-    (UUID v4 generado por la app en el primer arranque, ver docs/adr/0002-identidad-por-dispositivo.md).
-    Los errores siguen Problem Details (RFC 9457). Este contrato se completa por fase.
 servers:
-  - url: http://localhost:8080
-    description: Backend local
-
-tags:
-  - name: garaje
-  - name: catalogo
-
+- description: Render
+  url: https://weveh-backend.onrender.com
+security:
+- supabase: []
 paths:
-  /api/v1/vehiculos:
+  /api/v1/catalogo/marcas:
     get:
-      tags: [garaje]
-      operationId: listarVehiculos
-      summary: Lista los vehículos del dispositivo
-      description: "Requisitos: RF-GAR-00, RF-GAR-01. En la fase 0 siempre devuelve una lista vacía."
+      operationId: marcas
       parameters:
-        - $ref: '#/components/parameters/Dispositivo'
+      - in: query
+        name: tipo
+        required: false
+        schema:
+          type: string
+          enum:
+          - CARRO
+          - MOTO
+      - in: query
+        name: q
+        required: false
+        schema:
+          type: string
       responses:
-        '200':
-          description: Vehículos del dispositivo (puede ser vacía)
+        "200":
           content:
-            application/json:
+            '*/*':
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VehiculoResumen'
-              example: []
-        '400':
-          $ref: '#/components/responses/DispositivoInvalido'
-
+                  $ref: "#/components/schemas/MarcaCatalogo"
+          description: OK
+      tags:
+      - catalogo-controller
   /api/v1/catalogo/marcas/{marcaId}/lineas:
     get:
-      tags: [catalogo]
-      operationId: buscarLineas
-      summary: Líneas reales de una marca con sus atributos y de dónde sale cada uno
-      description: "Requisitos: RF-CAT-02, RF-CAT-04 (ADR 0021). Máximo 50, sin genéricas."
+      operationId: lineas
       parameters:
-        - name: marcaId
-          in: path
-          required: true
-          schema: {type: integer, format: int64}
-        - name: tipo
-          in: query
-          schema: {type: string, enum: [CARRO, MOTO]}
-        - name: q
-          in: query
-          schema: {type: string}
+      - in: path
+        name: marcaId
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - in: query
+        name: tipo
+        required: false
+        schema:
+          type: string
+          enum:
+          - CARRO
+          - MOTO
+      - in: query
+        name: q
+        required: false
+        schema:
+          type: string
       responses:
-        '200':
-          description: Líneas encontradas
+        "200":
           content:
-            application/json:
+            '*/*':
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/LineaCatalogo'
-
-  /api/v1/vehiculos/{id}:
-    put:
-      tags: [garaje]
-      operationId: editarVehiculo
-      summary: Corrige lo editable del vehículo
-      description: "Requisito: RF-GAR-03. Combustible, transmisión y tracción omitidos conservan el valor actual."
+                  $ref: "#/components/schemas/LineaCatalogo"
+          description: OK
+      tags:
+      - catalogo-controller
+  /api/v1/cuenta:
+    delete:
+      operationId: eliminar_1
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema: {type: string, format: uuid}
-      requestBody:
+      - in: query
+        name: usuario
         required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      responses:
+        "200":
+          description: OK
+      tags:
+      - cuenta-controller
+    get:
+      operationId: obtener_1
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CuentaRespuesta"
+          description: OK
+      tags:
+      - cuenta-controller
+    post:
+      operationId: crear
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EdicionVehiculo'
+              $ref: "#/components/schemas/CreacionSolicitud"
+        required: true
       responses:
-        '200':
-          description: Vehículo editado
-        '400':
-          description: Un dato no cumple las reglas
-        '404':
-          description: No existe o es de otra persona
-        '409':
-          description: La versión cambió (otra edición ganó)
-
-components:
-  parameters:
-    Dispositivo:
-      name: X-Weveh-Dispositivo
-      in: header
-      required: true
-      description: Identificador del dispositivo (UUID v4)
-      schema:
-        type: string
-        format: uuid
-        example: 3f1c9a2e-8b4d-4f6a-9c1e-2d7b5a0e4c11
-
-  responses:
-    DispositivoInvalido:
-      description: Falta el header X-Weveh-Dispositivo o no es un UUID v4
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-          example:
-            type: https://weveh.co/problemas/dispositivo-invalido
-            title: Dispositivo no válido
-            status: 400
-            detail: El header X-Weveh-Dispositivo debe ser un UUID v4
-            instance: /api/v1/vehiculos
-
-  schemas:
-    ProblemDetail:
-      type: object
-      description: RFC 9457
-      required: [type, title, status]
-      properties:
-        type:
-          type: string
-          format: uri
-        title:
-          type: string
-        status:
-          type: integer
-        detail:
-          type: string
-        instance:
-          type: string
-
-    VehiculoResumen:
-      type: object
-      description: Se completa en la fase 1 (RF-GAR-02).
-      required: [id, tipo, marca, linea, anioModelo, kilometraje]
-      properties:
-        id:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CuentaRespuesta"
+          description: OK
+      tags:
+      - cuenta-controller
+    put:
+      operationId: editar_1
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EdicionSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CuentaRespuesta"
+          description: OK
+      tags:
+      - cuenta-controller
+  /api/v1/cuenta/consentimientos:
+    post:
+      operationId: aceptarPolitica
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsentimientoSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CuentaRespuesta"
+          description: OK
+      tags:
+      - cuenta-controller
+  /api/v1/vehiculos:
+    get:
+      operationId: listar
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VehiculoRespuesta"
+          description: OK
+      tags:
+      - vehiculo-controller
+    post:
+      operationId: registrar
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VehiculoRespuesta"
+          description: OK
+      tags:
+      - vehiculo-controller
+  /api/v1/vehiculos/{id}:
+    delete:
+      operationId: eliminar
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: id
+        required: true
+        schema:
           type: string
           format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - vehiculo-controller
+    get:
+      operationId: obtener
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VehiculoRespuesta"
+          description: OK
+      tags:
+      - vehiculo-controller
+    put:
+      operationId: editar
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EdicionSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VehiculoRespuesta"
+          description: OK
+      tags:
+      - vehiculo-controller
+  /api/v1/vehiculos/{id}/kilometraje:
+    put:
+      operationId: actualizarKilometraje
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KilometrajeSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VehiculoRespuesta"
+          description: OK
+      tags:
+      - vehiculo-controller
+  /api/v1/vehiculos/{id}/kilometraje/correccion:
+    put:
+      operationId: corregirKilometraje
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorreccionKilometrajeSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VehiculoRespuesta"
+          description: OK
+      tags:
+      - vehiculo-controller
+  /api/v1/vehiculos/{id}/registro:
+    put:
+      operationId: completarRegistro
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompletarRegistroSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VehiculoRespuesta"
+          description: OK
+      tags:
+      - vehiculo-controller
+  /api/v1/vehiculos/{vehiculoId}/consultas:
+    post:
+      operationId: consultar
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: vehiculoId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsultaSolicitud"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DiagnosticoRespuesta"
+          description: OK
+      tags:
+      - consulta-controller
+components:
+  schemas:
+    AtributoLinea:
+      type: object
+      properties:
+        fuente:
+          type: string
+        origen:
+          type: string
+          enum:
+          - CATALOGO
+          - IA_WEB
+          - EQUIPO
+        valores:
+          type: array
+          items:
+            type: string
+    AtributosLinea:
+      type: object
+      properties:
+        combustible:
+          $ref: "#/components/schemas/AtributoLinea"
+        traccion:
+          $ref: "#/components/schemas/AtributoLinea"
+        transmision:
+          $ref: "#/components/schemas/AtributoLinea"
+    CompletarRegistroSolicitud:
+      type: object
+      properties:
+        aceiteFecha:
+          type: string
+          format: date
+        aceiteKm:
+          type: integer
+          format: int32
+        rtmAunNoAplica:
+          type: boolean
+        rtmFecha:
+          type: string
+          format: date
+        seguroEntidad:
+          type: string
+        seguroInicio:
+          type: string
+          format: date
+        soatFecha:
+          type: string
+          format: date
+        versionFila:
+          type: integer
+          format: int32
+      required:
+      - versionFila
+    ConsentimientoRespuesta:
+      type: object
+      properties:
+        aceptadoEn:
+          type: string
+          format: date-time
+        medio:
+          type: string
+        versionPolitica:
+          type: string
+    ConsentimientoSolicitud:
+      type: object
+      properties:
+        versionPolitica:
+          type: string
+          minLength: 1
+      required:
+      - versionPolitica
+    ConsultaSolicitud:
+      type: object
+      properties:
+        sintoma:
+          type: string
+    CorreccionKilometrajeSolicitud:
+      type: object
+      properties:
+        kilometraje:
+          type: integer
+          format: int32
+      required:
+      - kilometraje
+    CreacionSolicitud:
+      type: object
+      properties:
+        aceptadoEn:
+          type: string
+          format: date-time
+        medio:
+          type: string
+          enum:
+          - APP_REGISTRO
+          - APP_NUEVA_VERSION
+          - APP_GOOGLE
+        nombre:
+          type: string
+          minLength: 1
+        versionPolitica:
+          type: string
+          minLength: 1
+      required:
+      - nombre
+      - versionPolitica
+    CuentaRespuesta:
+      type: object
+      properties:
+        consentimientos:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConsentimientoRespuesta"
+        correo:
+          type: string
+        nombre:
+          type: string
+    DiagnosticoRespuesta:
+      type: object
+      properties:
+        aviso:
+          type: string
+        datosFaltantes:
+          type: array
+          items:
+            type: string
+        gravedad:
+          type: string
+        nivel:
+          type: string
+        pasos:
+          type: array
+          items:
+            type: string
+        piezasRelacionadas:
+          type: array
+          items:
+            type: string
+        porQueImporta:
+          type: string
+        posibleFalla:
+          type: string
+        requiereMecanico:
+          type: boolean
+        requiereRevisionHumana:
+          type: boolean
+        respuestaSegura:
+          type: boolean
+    EdicionSolicitud:
+      type: object
+      properties:
+        alias:
+          type: string
+        combustible:
+          type: string
+          enum:
+          - GASOLINA
+          - DIESEL
+          - GAS
+          - HIBRIDO
+          - HIBRIDO_ENCHUFABLE
+          - ELECTRICO
+        fechaMatricula:
+          type: string
+          format: date
+        kmPromedioMes:
+          type: integer
+          format: int32
+        placa:
+          type: string
+        traccion:
+          type: string
+        transmision:
+          type: string
+          enum:
+          - AUTOMATICA
+          - MECANICA
+        uso:
+          type: string
+          enum:
+          - CIUDAD
+          - CARRETERA
+          - MIXTO
+        versionFila:
+          type: integer
+          format: int32
+      required:
+      - kmPromedioMes
+      - uso
+      - versionFila
+    KilometrajeSolicitud:
+      type: object
+      properties:
+        confirmado:
+          type: boolean
+        kilometraje:
+          type: integer
+          format: int32
+        leidoEn:
+          type: string
+          format: date
+      required:
+      - kilometraje
+    LineaCatalogo:
+      type: object
+      properties:
+        atributos:
+          $ref: "#/components/schemas/AtributosLinea"
+        cilindradaCc:
+          type: integer
+          format: int32
+        clase:
+          type: string
+        combustible:
+          type: string
+        id:
+          type: integer
+          format: int64
+        marcaId:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        potenciaKw:
+          type: number
+        puertas:
+          type: integer
+          format: int32
+        tipoVehiculo:
+          type: string
+          enum:
+          - CARRO
+          - MOTO
+        traccion:
+          type: string
+        transmision:
+          type: string
+    MarcaCatalogo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
         tipo:
           type: string
-          enum: [CARRO, MOTO]
-        alias:
-          type: [string, 'null']
-        marca:
+    RegistroSolicitud:
+      type: object
+      properties:
+        aceiteFecha:
           type: string
-        linea:
+          format: date
+        aceiteKm:
+          type: integer
+          format: int32
+        alias:
           type: string
         anioModelo:
           type: integer
+          format: int32
+        catalogoLineaId:
+          type: integer
+          format: int64
+        cilindradaCc:
+          type: integer
+          format: int32
+        combustible:
+          type: string
+          enum:
+          - GASOLINA
+          - DIESEL
+          - GAS
+          - HIBRIDO
+          - HIBRIDO_ENCHUFABLE
+          - ELECTRICO
+        fechaMatricula:
+          type: string
+          format: date
         kilometraje:
           type: integer
-          minimum: 0
-
-    Combustible:
-      type: string
-      enum: [GASOLINA, DIESEL, GAS, HIBRIDO, HIBRIDO_ENCHUFABLE, ELECTRICO]
-
-    AtributoLinea:
-      type: object
-      description: "Un atributo de la línea y su origen (ADR 0021). Varios valores: el modelo se vende en varias versiones y la app pregunta solo entre ellos."
-      required: [valores, origen]
-      properties:
-        valores:
-          type: array
-          minItems: 1
-          items: {type: string}
-        origen:
+          format: int32
+        kmPromedioMes:
+          type: integer
+          format: int32
+        linea:
           type: string
-          enum: [CATALOGO, IA_WEB, EQUIPO]
-          description: "CATALOGO = deducido del nombre; IA_WEB = investigado con fuente y verificado; EQUIPO = corregido por el equipo"
-        fuente:
-          type: [string, 'null']
-          format: uri
-
-    LineaCatalogo:
+        marca:
+          type: string
+        placa:
+          type: string
+        rtmAunNoAplica:
+          type: boolean
+        rtmFecha:
+          type: string
+          format: date
+        seguroEntidad:
+          type: string
+        seguroInicio:
+          type: string
+          format: date
+        soatFecha:
+          type: string
+          format: date
+        tipo:
+          type: string
+          enum:
+          - CARRO
+          - MOTO
+        traccion:
+          type: string
+        transmision:
+          type: string
+          enum:
+          - AUTOMATICA
+          - MECANICA
+        uso:
+          type: string
+          enum:
+          - CIUDAD
+          - CARRETERA
+          - MIXTO
+      required:
+      - anioModelo
+      - kilometraje
+      - tipo
+    UsuarioId:
       type: object
-      required: [id, marcaId, nombre, clase, tipoVehiculo, atributos]
       properties:
-        id: {type: integer, format: int64}
-        marcaId: {type: integer, format: int64}
-        nombre: {type: string, example: PRADO VX 5P AT}
-        clase: {type: string}
-        tipoVehiculo: {type: string, enum: [CARRO, MOTO]}
-        cilindradaCc: {type: [integer, 'null']}
-        potenciaKw: {type: [number, 'null']}
-        combustible:
-          type: [string, 'null']
-          description: Solo lo deducido del nombre; se conserva por compatibilidad. Usar `atributos`.
-        transmision: {type: [string, 'null']}
-        traccion: {type: [string, 'null']}
-        puertas: {type: [integer, 'null']}
-        atributos:
-          type: object
-          description: Cada atributo es null cuando no hay dato (la app pregunta con "No sé").
-          properties:
-            combustible:
-              oneOf: [{$ref: '#/components/schemas/AtributoLinea'}, {type: 'null'}]
-            transmision:
-              oneOf: [{$ref: '#/components/schemas/AtributoLinea'}, {type: 'null'}]
-            traccion:
-              oneOf: [{$ref: '#/components/schemas/AtributoLinea'}, {type: 'null'}]
-
-    EdicionVehiculo:
+        valor:
+          type: string
+          format: uuid
+    VehiculoRespuesta:
       type: object
-      required: [uso, kmPromedioMes, versionFila]
       properties:
-        alias: {type: [string, 'null']}
-        placa: {type: [string, 'null']}
-        uso: {type: string, enum: [CIUDAD, CARRETERA, MIXTO]}
-        kmPromedioMes: {type: integer, minimum: 0, maximum: 20000}
-        fechaMatricula: {type: [string, 'null'], format: date}
+        aceiteFecha:
+          type: string
+          format: date
+        aceiteKm:
+          type: integer
+          format: int32
+        alias:
+          type: string
+        anioModelo:
+          type: integer
+          format: int32
+        catalogoLineaId:
+          type: integer
+          format: int64
+        cilindradaCc:
+          type: integer
+          format: int32
         combustible:
-          oneOf: [{$ref: '#/components/schemas/Combustible'}, {type: 'null'}]
-        transmision: {type: [string, 'null'], enum: [AUTOMATICA, MECANICA, null]}
-        traccion: {type: [string, 'null'], enum: ['4X2', '4X4', AWD, null]}
-        versionFila: {type: integer}
+          type: string
+        datosFaltantes:
+          type: array
+          items:
+            type: string
+        fechaMatricula:
+          type: string
+          format: date
+        id:
+          type: string
+          format: uuid
+        kilometraje:
+          type: integer
+          format: int32
+        kmActualizadoEn:
+          type: string
+          format: date
+        kmPromedioMes:
+          type: integer
+          format: int32
+        linea:
+          type: string
+        marca:
+          type: string
+        placa:
+          type: string
+        rtmAunNoAplica:
+          type: boolean
+        rtmFecha:
+          type: string
+          format: date
+        seguroEntidad:
+          type: string
+        seguroInicio:
+          type: string
+          format: date
+        soatFecha:
+          type: string
+          format: date
+        tipo:
+          type: string
+        traccion:
+          type: string
+        transmision:
+          type: string
+        uso:
+          type: string
+        versionFila:
+          type: integer
+          format: int32
+  securitySchemes:
+    supabase:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http

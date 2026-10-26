@@ -33,3 +33,7 @@ El backend solo corre en el PC de un integrante. Para la demo y para que el otro
 - El plan gratis de Render **se duerme tras 15 minutos sin uso** y tarda unos 50 s en despertar: antes de una demo hay que despertarlo. La app muestra progreso mientras espera.
 - Datos de prueba y reales conviven: no se corren scripts destructivos contra Supabase y las pruebas automáticas nunca lo usan.
 - Respaldos: los del plan gratis de Supabase son limitados (RNF-27); revisar antes de tener usuarios reales.
+
+## Nota (2026-10-23): límite de conexiones
+
+El pooler de Supabase en modo sesión acepta **15 conexiones en total**. Un despliegue falló con `EMAXCONNSESSION` porque cada backend abría 10 (Hikari por defecto) y convivían la instancia vieja, la nueva y un backend local. Ahora cada backend usa como máximo `WEVEH_DB_POOL` (7 por defecto): durante un despliegue Render usa 14, y un backend local debe usar 1.

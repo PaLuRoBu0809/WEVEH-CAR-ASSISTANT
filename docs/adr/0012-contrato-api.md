@@ -24,3 +24,7 @@
 
 - Las anotaciones de los controladores y DTOs son la fuente del contrato: deben describir bien cada campo.
 - La app puede generar sus tipos TypeScript desde `openapi.yaml`.
+
+## Nota (2026-10-23): construido
+
+`springdoc-openapi-starter-webmvc-api` 3.1.1 (la línea para Spring Boot 4) genera el contrato; en producción está apagado (`WEVEH_OPENAPI=false`). `ContratoOpenApiTest` lo compara con `contracts/openapi.yaml` y falla en la CI si difieren. Para regenerarlo: `./mvnw test -Dtest=ContratoOpenApiTest -Dweveh.contrato.escribir=true`. El encabezado (título, servidor de Render y el token de Supabase como Bearer) está en `ConfiguracionContrato`.

@@ -19,8 +19,8 @@ Organizados por las características de calidad de ISO/IEC 25010. Cada uno es me
 |---|---|---|---|
 | RNF-04 | Sin red, la app muestra el **último estado de todo** (vehículos, plan, documentos, historial, conversaciones) con "actualizado hace X" | Prueba manual en modo avión; pruebas de la capa SQLite | 🟡 vehículos, cuenta y catálogo (`sinRed.test.tsx`, `useVehiculos.test.tsx`); el plan, los documentos y las conversaciones se suman al construirlos; falta la prueba en modo avión |
 | RNF-05 | Lo escrito sin red se envía una sola vez al volver la conexión (`Idempotency-Key`) | Prueba de integración de la cola | ✅ `CambiosSinRedIntegracionTest` (Postgres) y `useVehiculos.test.tsx`; falta la prueba en modo avión |
-| RNF-20 | Si OpenRouter falla, el resto de la app sigue funcionando; con el cortacircuitos abierto, la respuesta segura llega en < 2 s | Prueba con el proveedor simulado caído | ❌ |
-| RNF-21 | Un módulo se puede apagar con una variable sin afectar a los demás (responde 503 y la app desactiva la función) | Prueba de integración por módulo | ❌ |
+| RNF-20 | Si OpenRouter falla, el resto de la app sigue funcionando; con el cortacircuitos abierto, la respuesta segura llega en < 2 s | Prueba con el proveedor simulado caído | ✅ `MotorDiagnosticoProtegidoTest`: tras 3 fallas responde al instante sin llamar al modelo |
+| RNF-21 | Un módulo se puede apagar con una variable sin afectar a los demás (responde 503 y la app desactiva la función) | Prueba de integración por módulo | ✅ `InterruptorModulosTest`, `GarajeApagadoTest`; la app muestra "en mantenimiento" |
 | RNF-27 | Supabase tiene respaldo diario y está probado cómo restaurarlo | Ensayo de restauración documentado | ⚠️ |
 | RNF-32 | Los avisos locales se reprograman cada vez que se abre la app y solo se programan los más próximos (máximo 20 pendientes) para respetar el tope del sistema; si el permiso está negado, la app lo dice (RF-MAN-09, RF-DOC-04) | Prueba manual en Android e iOS con el permiso concedido y negado | 🔜 |
 
@@ -36,7 +36,7 @@ Organizados por las características de calidad de ISO/IEC 25010. Cada uno es me
 | RNF-24 | La sesión usa un token firmado que expira; un token ausente, vencido o alterado responde 401 | Prueba de integración | ✅ |
 | RNF-25 | Eliminar la cuenta o cambiar el correo piden volver a confirmar la identidad | Prueba de la app | ✅ `gestionCuenta.test.tsx`, `PantallasMisDatos.test.tsx`; el backend exige sesión de máximo 5 min |
 | RNF-26 | Al eliminar la cuenta, todos sus datos se borran en < 24 h, incluido lo guardado en el celular | Prueba de integración + verificación en la base | ✅ `CuentaIntegracionTest` (se borra al instante) y `useEliminarCuenta` (cierra la sesión y limpia la caché); la base local de la etapa 4 también se borrará |
-| RNF-23 | Los logs y el monitoreo nunca contienen nombre, correo, token ni llaves | Revisión de configuración de Sentry y logs | ⚠️ |
+| RNF-23 | Los logs y el monitoreo nunca contienen nombre, correo, token ni llaves | Revisión de configuración de Sentry y logs | 🟡 Sentry sin datos personales (`FiltroSentryTest`, `sentry.test.ts`); falta revisar los logs |
 | RNF-33 | El audio se borra apenas se transcribe; las fotos pesan menos de 1 MB tras reducirlas, solo las ve su dueña o dueño, pasan siempre por la API, nunca llegan a un modelo y se borran con el vehículo o la cuenta en menos de 24 h (RF-DAT-09, ADR 0018) | Prueba de integración + verificación en el almacenamiento | 🔜 |
 | RNF-35 | El plazo del diagnóstico (No manejar, hoy, esta semana, próximo servicio) lo fija código; en el 100 % de los casos críticos de `evals/` el plazo es "No manejes" u "hoy", sin importar lo que diga el modelo, y ninguna pregunta de mantenimiento sin síntoma recibe "No manejes" (RF-MIA-08) | Evaluador por modelo + vectores compartidos | 🔜 |
 
