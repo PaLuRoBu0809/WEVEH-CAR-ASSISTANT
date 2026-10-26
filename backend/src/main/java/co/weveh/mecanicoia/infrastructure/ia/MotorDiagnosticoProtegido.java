@@ -10,6 +10,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -62,10 +63,10 @@ class MotorDiagnosticoProtegido implements MotorDiagnostico {
     }
 
     @Override
-    public Optional<Respuesta> diagnosticar(String contextoJson) {
+    public Optional<Respuesta> conversar(String contextoVehiculoJson, List<Turno> historial, String mensaje) {
         try {
-            return Bulkhead.decorateSupplier(compartimento,
-                    CircuitBreaker.decorateSupplier(cortacircuitos, () -> motor.diagnosticar(contextoJson))).get();
+            return Bulkhead.decorateSupplier(compartimento, CircuitBreaker.decorateSupplier(cortacircuitos,
+                    () -> motor.conversar(contextoVehiculoJson, historial, mensaje))).get();
         } catch (CallNotPermittedException abierto) {
             return Optional.empty();
         } catch (BulkheadFullException lleno) {

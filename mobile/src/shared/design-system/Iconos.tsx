@@ -91,3 +91,18 @@ export const IconoTelefono = (p: Props) => (
     <Path d="M11 18.5h2" />
   </Trazo>
 );
+
+export const IconoMicrofono = (p: Props) => (
+  <Trazo {...p}>
+    <Rect x={9} y={3} width={6} height={12} rx={3} />
+    <Path d="M5 11a7 7 0 0 0 14 0" />
+    <Path d="M12 18v3" />
+  </Trazo>
+);
+
+export const IconoEnviar = (p: Props) => (
+  <Trazo {...p}>
+    <Path d="M4 12l16-8-6 16-3-7z" />
+    <Path d="M11 13l9-9" />
+  </Trazo>
+);

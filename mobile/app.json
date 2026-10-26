@@ -35,7 +35,13 @@
       ],
       "expo-secure-store",
       "expo-sqlite",
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "WEVEH usa el micrófono para que le hables al Mecánico IA. Un proveedor externo pasa tu voz a texto y el audio no se guarda."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

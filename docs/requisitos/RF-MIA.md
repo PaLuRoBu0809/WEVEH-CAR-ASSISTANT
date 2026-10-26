@@ -3,6 +3,8 @@
 Diseño, contrato y evals: skill `weveh-dev:mecanico-ia` y [ADR 0004](../adr/0004-openrouter.md). Contrato base: `diagnostico_mecanico_preventivo` de [docs/referencia/README-original.md](../referencia/README-original.md).
 
 > Actualizado el 2026-10-21 (ampliación propuesta el 2026-10-19 y aprobada). El agente es neutral y orientativo: da contexto e información; los plazos y las recomendaciones estrictas los fija la app con reglas (RF-MIA-08). Las fallas se convierten en fichas automáticas (RF-MIA-01c). Lo que dice el mecánico es información para la persona y para el agente, nunca entrenamiento (RF-MIA-09). Entran el audio por Whisper (RF-MIA-11, ADR 0018) y el contexto completo del vehículo (RF-MIA-10).
+>
+> Cambios del 2026-10-26 (decisiones de Pablo): el Mecánico IA es una **conversación continua** con tarjeta cuando hay un síntoma (RF-MIA-02); la voz entra en la primera tanda; sale "¿Cuánto podría costar?" (RF-MIA-01b); sin balde ni límite por minuto, solo un tope de 100 mensajes al día por cuenta (RF-MIA-07). RF-MIA-01c, 09 y el contexto completo de RF-MIA-10 se construyen después de la etapa 7 (necesitan plan, servicios y fichas).
 
 ## RF-MIA-01 Preguntar por un síntoma
 Como dueño quiero describir lo que siente mi carro con mis palabras y recibir una orientación clara.
@@ -19,14 +21,8 @@ Como dueño quiero describir lo que siente mi carro con mis palabras y recibir u
   Cuando lo veo
   Entonces responde "¿Puedo seguir manejando?" y "¿Cuándo debo llevarlo?" con los valores que fija la app (RF-MIA-08)
 
-## RF-MIA-01b ¿Cuánto podría costar?
-Como dueño quiero una referencia de precio solo si la pido.
-- Dado un diagnóstico
-  Cuando toco "¿Cuánto podría costar?"
-  Entonces veo un rango en pesos con el aviso "Es una referencia; el taller puede cobrar distinto", o "No se puede estimar" si el problema es ambiguo
-- Dado que el rango sería 0, "gratis" o una cifra cerrada
-  Cuando se valida
-  Entonces se muestra "No se puede estimar"
+## RF-MIA-01b ¿Cuánto podría costar? (fuera del MVP)
+Retirado el 2026-10-26: sin referencias reales de precios el rango sería impreciso. El agente sigue sin dar precios.
 
 ## RF-MIA-01c Ficha de falla automática
 Como dueño quiero que cuando reporte una falla se cree una ficha con todo lo importante, para completarla y llevarla a mi mecánico.
@@ -51,14 +47,26 @@ Como dueño quiero que cuando reporte una falla se cree una ficha con todo lo im
 
 Una falla abierta la tiene en cuenta el Mecánico IA en las siguientes consultas. Las fichas se crean sin que la persona tenga que pedirlo.
 
-## RF-MIA-02 Conversación con memoria
-Como dueño quiero repreguntar sin repetir todo.
+## RF-MIA-02 Conversación continua con memoria
+Como dueño quiero conversar con un mecánico que me entienda, no llenar un formulario por pregunta.
+- Dado que abro el Mecánico IA
+  Cuando escribo o dicto lo que quiero
+  Entonces el agente me responde como un mecánico que conversa, en español y sin jerga
+- Dado que el mensaje describe un síntoma
+  Cuando el agente responde
+  Entonces la respuesta trae además la tarjeta de RF-MIA-01 (posible falla, gravedad, plazo y pasos)
+- Dado que el mensaje es una pregunta sin síntoma (por ejemplo "¿cada cuánto cambio el aceite?")
+  Cuando el agente responde
+  Entonces responde en texto, sin tarjeta Crítica
 - Dado que pregunté por un chillido al frenar
   Cuando escribo "¿y si sigue sonando después de cambiarlas?"
   Entonces la respuesta tiene en cuenta la conversación
+- Dado que quiero empezar de cero
+  Cuando toco "Nueva conversación"
+  Entonces empieza una conversación nueva y las anteriores quedan guardadas para volver a verlas
 - Dado una conversación larga
   Cuando sigo preguntando
-  Entonces la app sigue respondiendo con el contexto (los mensajes viejos se resumen) y toda la conversación queda guardada
+  Entonces la app sigue respondiendo con el contexto (los mensajes viejos se resumen, tanda 6b) y toda la conversación queda guardada
 - Dado la Prado a 190.000 km sin dato de la correa de distribución y escribo "suena un tic-tac al encender"
   Cuando pregunto
   Entonces el diagnóstico considera la distribución, el kilometraje y el historial del vehículo
@@ -105,19 +113,18 @@ Como equipo queremos saber con qué se generó cada respuesta.
   Entonces queda con el mensaje, la respuesta, la versión del prompt y el modelo que respondió
 
 ## RF-MIA-07 Límites de uso que no estorban
-Como dueño quiero usar el Mecánico IA con libertad; como equipo queremos que nadie agote el cupo de los demás.
-- Dado que hago 5 preguntas seguidas
-  Cuando pregunto la sexta en el mismo minuto
-  Entonces veo "Espera un momento antes de preguntar de nuevo"
-- Dado que usé las 15 consultas de mi balde
-  Cuando pregunto otra
-  Entonces veo en cuánto tiempo tendré una nueva (se recupera 1 cada 10 minutos)
-- Dado que la IA dio una respuesta segura o falló
-  Cuando reviso mi cupo
-  Entonces esa consulta no se descontó
-- Dado que abro Perfil
-  Cuando miro el asistente
-  Entonces veo cuántas consultas tengo disponibles
+Como dueño quiero conversar con libertad; como equipo queremos que un error o un abuso no agote el cupo gratuito compartido de OpenRouter.
+- Dado que converso de forma normal
+  Cuando sigo escribiendo o dictando
+  Entonces la app no me frena (no hay balde ni límite por minuto)
+- Dado que una cuenta envió 100 mensajes o audios en el día
+  Cuando envía otro
+  Entonces ve "Por hoy llegaste al máximo de mensajes. Vuelve mañana"
+- Dado que la IA está saturada o caída
+  Cuando pregunto
+  Entonces veo "mucha demanda" al instante por el cortacircuitos (RF-MIA-04, ADR 0010)
+
+Cambiado el 2026-10-26 (decisión de Pablo): el MVP tiene pocas personas a la vez y un límite estricto estorba la conversación. El balde de 15 consultas y el máximo de 5 por minuto se retiraron.
 
 ## RF-MIA-08 Plazo y recomendación estrictos de la app
 Como dueño quiero saber si puedo seguir manejando y cuándo debo llevar el vehículo, con una respuesta que no dependa del humor del modelo.

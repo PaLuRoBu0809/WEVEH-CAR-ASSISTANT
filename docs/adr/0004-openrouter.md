@@ -40,14 +40,12 @@ El ADR 0001 fijó el Anthropic Java SDK para los agentes de IA. El equipo decidi
 
 El cupo de los modelos gratuitos es **de la cuenta de OpenRouter, compartido por todos los usuarios**. Para que la app sea usable y nadie agote el cupo de los demás:
 
-| Mecanismo | Valor inicial |
+| Mecanismo | Valor |
 |---|---|
-| Balde por cuenta | 15 consultas; se recupera 1 cada 10 minutos |
-| Anti-abuso | Máximo 5 consultas por minuto por cuenta |
-| Cobro justo | Solo cuentan las respuestas del modelo; la respuesta segura y los errores no gastan |
-| Freno global | Si la cuenta de OpenRouter se acerca a su límite del día, se responde "mucha demanda" en vez de fallar |
+| Tope diario por cuenta | 100 mensajes o audios al día; solo frena un error o un abuso |
+| Freno global | Cortacircuitos y máximo 10 consultas a la vez ([ADR 0010](0010-resiliencia-y-monitoreo.md)): "mucha demanda" en vez de fallar |
 
-En Perfil se muestra cuántas consultas quedan. Los valores se ajustan con el uso real.
+**Enmienda del 2026-10-26:** el balde de 15 consultas, el máximo de 5 por minuto y el cupo en Perfil se retiraron por decisión de Pablo. El Mecánico IA es una conversación continua y el MVP tiene pocas personas a la vez; un límite estricto estorbaba más de lo que protegía. El límite real sigue siendo el cupo gratuito de la cuenta de OpenRouter.
 
 ### Privacidad
 
@@ -65,4 +63,4 @@ En Perfil se muestra cuántas consultas quedan. Los valores se ajustan con el us
 - **Latencia variable:** 9 s por caso en los evals y 27 s en una consulta real. Mientras se usen modelos gratuitos, la meta es 45 s como máximo con mensajes de progreso (RNF-02).
 - Si toda la cadena falla de forma seguida, el cortacircuitos ([ADR 0010](0010-resiliencia-y-monitoreo.md)) responde la respuesta segura al instante durante 60 s en vez de hacer esperar.
 - El agente "Completar perfil" resuelve la búsqueda web en el backend ([ADR 0013](0013-busqueda-web-perfilador.md)), porque la búsqueda de OpenRouter cobra.
-- Cambiar de prompt o de modelo exige correr los evals y actualizar `evals/results.md`. Último resultado: 7/7 con `nvidia/nemotron-3-super-120b-a12b:free` (2026-10-08).
+- Cambiar de prompt o de modelo exige correr los evals y actualizar `evals/results.md`. Último resultado: 11/11 con `mecanico-v3` y la lista `nvidia/nemotron-3.5-super-vl:free`, `dots-studio/dots-3-note-preview:free`, Gemma 4 31b y 26b (2026-10-26). `nemotron-3-super` dejó de existir del lado del proveedor.

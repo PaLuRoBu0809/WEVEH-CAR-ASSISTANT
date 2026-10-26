@@ -37,7 +37,8 @@ export async function pedir<T>(ruta: string, init: RequestInit = {}): Promise<T>
     headers.set('Authorization', `Bearer ${token}`);
   }
   headers.set('Accept', 'application/json, application/problem+json');
-  if (init.body && !headers.has('Content-Type')) {
+  // Con FormData (el audio del micrófono) fetch pone el Content-Type con su separador
+  if (init.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 

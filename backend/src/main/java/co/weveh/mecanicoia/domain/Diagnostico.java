@@ -5,11 +5,12 @@ import java.util.stream.Stream;
 
 /**
  * Contrato de salida del Mecánico IA (skill mecanico-ia, RF-MIA-01): qué puede ser, por qué importa y qué hacer en
- * máximo 3 pasos cortos. Sin precio: el costo se pide aparte (RF-MIA-01b).
+ * máximo 3 pasos cortos. Sin precios (RF-MIA-01b salió del MVP).
  *
  * @param explicacionSimple "¿Por qué importa?": máximo 2 oraciones, sin jerga
  * @param pasos             qué hacer, de 1 a {@value #MAXIMO_PASOS} pasos cortos
  * @param seguro            true si es la respuesta segura (el modelo falló o se negó), no un diagnóstico del modelo
+ * @param plazo             lo fija {@link ValidadorSeguridadDiagnostico} (RF-MIA-08); null mientras no ha pasado por él
  */
 public record Diagnostico(
         String posibleFalla,
@@ -20,7 +21,8 @@ public record Diagnostico(
         boolean requiereMecanico,
         List<String> piezasRelacionadas,
         List<String> datosFaltantes,
-        boolean seguro) {
+        boolean seguro,
+        Plazo plazo) {
 
     public static final String AVISO = "Orientación, no reemplaza al mecánico";
     public static final int MAXIMO_PASOS = 3;
@@ -29,6 +31,19 @@ public record Diagnostico(
         pasos = pasos == null ? List.of() : pasos.stream().limit(MAXIMO_PASOS).toList();
         piezasRelacionadas = piezasRelacionadas == null ? List.of() : List.copyOf(piezasRelacionadas);
         datosFaltantes = datosFaltantes == null ? List.of() : List.copyOf(datosFaltantes);
+    }
+
+    /** Lo que llega del modelo: nunca trae plazo. */
+    public Diagnostico(String posibleFalla, NivelGravedad nivelGravedad, String explicacionSimple, List<String> pasos,
+                       boolean requiereRevisionHumana, boolean requiereMecanico, List<String> piezasRelacionadas,
+                       List<String> datosFaltantes, boolean seguro) {
+        this(posibleFalla, nivelGravedad, explicacionSimple, pasos, requiereRevisionHumana, requiereMecanico,
+                piezasRelacionadas, datosFaltantes, seguro, null);
+    }
+
+    Diagnostico conPlazo(Plazo nuevo) {
+        return new Diagnostico(posibleFalla, nivelGravedad, explicacionSimple, pasos, requiereRevisionHumana,
+                requiereMecanico, piezasRelacionadas, datosFaltantes, seguro, nuevo);
     }
 
     /** Cuando el modelo no responde algo válido: nunca un diagnóstico a medias. */
@@ -48,6 +63,6 @@ public record Diagnostico(
                 ? pasos
                 : Stream.concat(Stream.of(primerPaso), pasos.stream().filter(paso -> !paso.equals(primerPaso))).toList();
         return new Diagnostico(posibleFalla, nivel, explicacionSimple, nuevosPasos, revisionHumana, mecanico,
-                piezasRelacionadas, datosFaltantes, seguro);
+                piezasRelacionadas, datosFaltantes, seguro, plazo);
     }
 }

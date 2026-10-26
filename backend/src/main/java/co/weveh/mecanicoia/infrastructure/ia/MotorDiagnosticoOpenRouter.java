@@ -4,6 +4,7 @@ import co.weveh.mecanicoia.application.puertos.MotorDiagnostico;
 import co.weveh.mecanicoia.domain.DetectorIngles;
 import co.weveh.mecanicoia.domain.Diagnostico;
 import co.weveh.mecanicoia.domain.NivelGravedad;
+import co.weveh.mecanicoia.domain.RolMensaje;
 import co.weveh.shared.domain.ServicioNoDisponibleException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,11 +44,14 @@ import tools.jackson.databind.json.JsonMapper;
  * <p>Con el plan gratis los modelos ":free" se saturan o se limitan a menudo, así que WEVEH_IA_MODELO es una lista en
  * orden de preferencia: si un modelo no responde, responde con error o devuelve algo que no cumple el contrato, se
  * prueba el siguiente, hasta agotar la lista o el tiempo máximo. Una llave inválida corta todo: no se queman intentos.
+ *
+ * <p>RF-MIA-02: cada turno manda, en este orden, las instrucciones con los datos del vehículo (lo fijo, para la caché),
+ * los últimos mensajes de la conversación y el mensaje nuevo.
  */
 @Component
 class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
 
-    static final String VERSION_PROMPT = "mecanico-v2";
+    static final String VERSION_PROMPT = "mecanico-v3";
     private static final Logger LOG = LoggerFactory.getLogger(MotorDiagnosticoOpenRouter.class);
     private static final Duration ESPERA_POR_MODELO = Duration.ofSeconds(20);
     private static final Duration ESPERA_TOTAL = Duration.ofSeconds(45);
@@ -91,27 +95,39 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
     }
 
     @Override
-    public Optional<Respuesta> diagnosticar(String contextoJson) {
+    public Optional<Respuesta> conversar(String contextoVehiculoJson, List<Turno> historial, String mensaje) {
         if (llave.isEmpty() || modelos.isEmpty()) {
             throw new ServicioNoDisponibleException("El Mecánico IA todavía no está configurado. Intenta más tarde.");
         }
+        var mensajes = mensajes(contextoVehiculoJson, historial, mensaje);
         var limite = Instant.now(reloj).plus(ESPERA_TOTAL);
         for (var modelo : modelos) {
             if (Instant.now(reloj).isAfter(limite)) {
                 LOG.warn("Se acabó el tiempo antes de probar {}", modelo);
                 break;
             }
-            var diagnostico = probar(modelo, contextoJson);
-            if (diagnostico.isPresent()) {
-                return diagnostico.map(d -> new Respuesta(d, modelo));
+            var salida = probar(modelo, mensajes);
+            if (salida.isPresent()) {
+                return salida.map(s -> new Respuesta(s.texto(), s.diagnostico(), modelo));
             }
         }
         return Optional.empty();
     }
 
-    private Optional<Diagnostico> probar(String modelo, String contextoJson) {
+    /** Lo fijo primero (instrucciones y vehículo) y lo que cambia al final, para aprovechar la caché del proveedor. */
+    private List<MensajeChat> mensajes(String contextoVehiculoJson, List<Turno> historial, String mensaje) {
+        var mensajes = new ArrayList<MensajeChat>();
+        mensajes.add(new MensajeChat("system", prompt + "\n\nDatos del vehículo:\n" + contextoVehiculoJson));
+        for (var turno : historial) {
+            mensajes.add(new MensajeChat(turno.rol() == RolMensaje.PERSONA ? "user" : "assistant", turno.texto()));
+        }
+        mensajes.add(new MensajeChat("user", mensaje));
+        return mensajes;
+    }
+
+    private Optional<Salida> probar(String modelo, List<MensajeChat> mensajes) {
         try {
-            return interpretar(llamar(modelo, contextoJson, true));
+            return interpretar(llamar(modelo, mensajes, true));
         } catch (RestClientResponseException error) {
             var estado = error.getStatusCode();
             if (estado.isSameCodeAs(HttpStatus.UNAUTHORIZED) || estado.isSameCodeAs(HttpStatus.FORBIDDEN)) {
@@ -119,7 +135,7 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
             }
             if (estado.isSameCodeAs(HttpStatus.BAD_REQUEST)) {
                 // Algunos modelos gratis no aceptan response_format: se reintenta el mismo modelo solo con el prompt
-                return reintentarSinEsquema(modelo, contextoJson);
+                return reintentarSinEsquema(modelo, mensajes);
             }
             LOG.warn("OpenRouter respondió {} con {}; se prueba el siguiente modelo", estado.value(), modelo);
             return Optional.empty();
@@ -129,70 +145,83 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
         }
     }
 
-    private Optional<Diagnostico> reintentarSinEsquema(String modelo, String contextoJson) {
+    private Optional<Salida> reintentarSinEsquema(String modelo, List<MensajeChat> mensajes) {
         try {
-            return interpretar(llamar(modelo, contextoJson, false));
+            return interpretar(llamar(modelo, mensajes, false));
         } catch (RestClientException | JacksonException error) {
             LOG.warn("{} tampoco respondió sin esquema ({})", modelo, error.getMessage());
             return Optional.empty();
         }
     }
 
-    private String llamar(String modelo, String contextoJson, boolean conEsquema) {
+    private String llamar(String modelo, List<MensajeChat> mensajes, boolean conEsquema) {
         return cliente.post()
                 .uri("/chat/completions")
                 .header("Authorization", "Bearer " + llave)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(json.writeValueAsString(solicitud(modelo, contextoJson, conEsquema)))
+                .body(json.writeValueAsString(solicitud(modelo, mensajes, conEsquema)))
                 .retrieve()
                 .body(String.class);
     }
 
-    private Map<String, Object> solicitud(String modelo, String contextoJson, boolean conEsquema) {
+    private Map<String, Object> solicitud(String modelo, List<MensajeChat> mensajes, boolean conEsquema) {
         var cuerpo = new LinkedHashMap<String, Object>();
         cuerpo.put("model", modelo);
         cuerpo.put("temperature", 0.2);
         cuerpo.put("max_tokens", 1200);
-        cuerpo.put("messages", List.of(
-                Map.of("role", "system", "content", prompt),
-                Map.of("role", "user", "content", contextoJson)));
+        cuerpo.put("messages", mensajes);
         if (conEsquema) {
             cuerpo.put("response_format", Map.of(
                     "type", "json_schema",
-                    "json_schema", Map.of("name", "diagnostico_mecanico_preventivo", "strict", true, "schema", ESQUEMA)));
+                    "json_schema", Map.of("name", "conversacion_mecanico", "strict", true, "schema", ESQUEMA)));
         }
         return cuerpo;
     }
 
-    Optional<Diagnostico> interpretar(String respuesta) {
+    Optional<Salida> interpretar(String respuesta) {
         var completado = json.readValue(respuesta, Completado.class);
         if (completado.choices() == null || completado.choices().isEmpty()) {
             return Optional.empty();
         }
         var opcion = completado.choices().getFirst();
-        // "length" = se cortó; "content_filter" = el modelo se negó: nunca un diagnóstico a medias (skill mecanico-ia)
+        // "length" = se cortó; "content_filter" = el modelo se negó: nunca una respuesta a medias (skill mecanico-ia)
         if (opcion.message() == null || !"stop".equals(opcion.finishReason())) {
             return Optional.empty();
         }
-        return aDiagnostico(soloElObjeto(opcion.message().content()));
+        return aSalida(soloElObjeto(opcion.message().content()));
     }
 
-    Optional<Diagnostico> aDiagnostico(String contenido) {
+    /** La respuesta conversacional es obligatoria; la tarjeta, si viene, debe cumplir el contrato o se descarta todo. */
+    Optional<Salida> aSalida(String contenido) {
         if (contenido == null || contenido.isBlank()) {
             return Optional.empty();
         }
         var salida = json.readValue(contenido, SalidaModelo.class);
+        if (vacio(salida.respuesta())) {
+            return Optional.empty();
+        }
+        // RF-MIA-01: la app habla español; una respuesta con inglés no se muestra y se prueba el siguiente modelo
+        if (DetectorIngles.tieneIngles(salida.respuesta())) {
+            LOG.warn("La respuesta trae palabras en inglés; se descarta");
+            return Optional.empty();
+        }
+        if (salida.diagnostico() == null) {
+            return Optional.of(new Salida(salida.respuesta().strip(), null));
+        }
+        return aDiagnostico(salida.diagnostico()).map(d -> new Salida(salida.respuesta().strip(), d));
+    }
+
+    Optional<Diagnostico> aDiagnostico(SalidaDiagnostico salida) {
         var pasos = salida.pasos() == null ? List.<String>of()
                 : salida.pasos().stream().filter(paso -> !vacio(paso)).map(String::strip).toList();
         if (vacio(salida.posibleFalla()) || vacio(salida.porQueImporta()) || pasos.isEmpty()
                 || !NIVELES.contains(salida.nivelGravedad())) {
             return Optional.empty();
         }
-        // RF-MIA-01: la app habla español; una respuesta con inglés no se muestra y se prueba el siguiente modelo
         var textos = new ArrayList<String>(List.of(salida.posibleFalla(), salida.porQueImporta()));
         textos.addAll(pasos);
         if (textos.stream().anyMatch(DetectorIngles::tieneIngles)) {
-            LOG.warn("La respuesta trae palabras en inglés; se descarta");
+            LOG.warn("La tarjeta trae palabras en inglés; se descarta");
             return Optional.empty();
         }
         var nivel = NivelGravedad.desdeTexto(salida.nivelGravedad()).orElseThrow();
@@ -244,6 +273,14 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
         return VERSION_PROMPT;
     }
 
+    /** Un mensaje de la API de chat; un record para que el JSON salga siempre con "role" antes de "content". */
+    record MensajeChat(String role, String content) {
+    }
+
+    /** Lo que sale de un modelo ya validado: el texto y, si hubo síntoma, la tarjeta sin plazo. */
+    record Salida(String texto, Diagnostico diagnostico) {
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     record Completado(List<Opcion> choices) {
     }
@@ -257,7 +294,12 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record SalidaModelo(
+    record SalidaModelo(@JsonProperty("respuesta") String respuesta,
+                        @JsonProperty("diagnostico") SalidaDiagnostico diagnostico) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record SalidaDiagnostico(
             @JsonProperty("posible_falla") String posibleFalla,
             @JsonProperty("nivel_gravedad") String nivelGravedad,
             @JsonProperty("por_que_importa") String porQueImporta,
@@ -268,20 +310,32 @@ class MotorDiagnosticoOpenRouter implements MotorDiagnostico {
             @JsonProperty("datos_faltantes") List<String> datosFaltantes) {
     }
 
-    /** Esquema del contrato diagnostico_mecanico_preventivo, versión 2: nombres en español, pasos y sin precio. */
-    static final Map<String, Object> ESQUEMA = Map.of(
+    private static final Map<String, Object> TEXTO = Map.of("type", "string");
+    private static final Map<String, Object> SI_O_NO = Map.of("type", "boolean");
+    private static final Map<String, Object> LISTA_DE_TEXTOS = Map.of("type", "array", "items", TEXTO);
+
+    /** Tarjeta del contrato diagnostico_mecanico_preventivo (v2): nombres en español, pasos y sin precio. */
+    static final Map<String, Object> ESQUEMA_DIAGNOSTICO = Map.of(
             "type", "object",
             "additionalProperties", false,
             "required", List.of("posible_falla", "nivel_gravedad", "por_que_importa", "pasos", "requiere_revision_humana",
                     "requiere_mecanico", "piezas_relacionadas", "datos_faltantes"),
             "properties", Map.of(
-                    "posible_falla", Map.of("type", "string"),
+                    "posible_falla", TEXTO,
                     "nivel_gravedad", Map.of("type", "string", "enum", NIVELES),
-                    "por_que_importa", Map.of("type", "string"),
-                    "pasos", Map.of("type", "array", "items", Map.of("type", "string"), "minItems", 1,
-                            "maxItems", Diagnostico.MAXIMO_PASOS),
-                    "requiere_revision_humana", Map.of("type", "boolean"),
-                    "requiere_mecanico", Map.of("type", "boolean"),
-                    "piezas_relacionadas", Map.of("type", "array", "items", Map.of("type", "string")),
-                    "datos_faltantes", Map.of("type", "array", "items", Map.of("type", "string"))));
+                    "por_que_importa", TEXTO,
+                    "pasos", Map.of("type", "array", "items", TEXTO, "minItems", 1, "maxItems", Diagnostico.MAXIMO_PASOS),
+                    "requiere_revision_humana", SI_O_NO,
+                    "requiere_mecanico", SI_O_NO,
+                    "piezas_relacionadas", LISTA_DE_TEXTOS,
+                    "datos_faltantes", LISTA_DE_TEXTOS));
+
+    /** Contrato de mecanico-v3: la respuesta conversacional y la tarjeta solo cuando hay un síntoma. */
+    static final Map<String, Object> ESQUEMA = Map.of(
+            "type", "object",
+            "additionalProperties", false,
+            "required", List.of("respuesta", "diagnostico"),
+            "properties", Map.of(
+                    "respuesta", TEXTO,
+                    "diagnostico", Map.of("anyOf", List.of(ESQUEMA_DIAGNOSTICO, Map.of("type", "null")))));
 }

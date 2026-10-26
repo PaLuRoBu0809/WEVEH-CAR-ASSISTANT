@@ -4,6 +4,7 @@ import co.weveh.shared.domain.ConfirmacionRequeridaException;
 import co.weveh.shared.domain.ConflictoException;
 import co.weveh.shared.domain.DatoInvalidoException;
 import co.weveh.shared.domain.IdentidadNoConfirmadaException;
+import co.weveh.shared.domain.LimiteDiarioException;
 import co.weveh.shared.domain.ModuloInactivoException;
 import co.weveh.shared.domain.MuchaDemandaException;
 import co.weveh.shared.domain.NoAutenticadoException;
@@ -74,6 +75,11 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
     @ExceptionHandler(MuchaDemandaException.class)
     ProblemDetail muchaDemanda(MuchaDemandaException excepcion) {
         return problema(HttpStatus.SERVICE_UNAVAILABLE, "mucha-demanda", "Mucha demanda", excepcion.getMessage());
+    }
+
+    @ExceptionHandler(LimiteDiarioException.class)
+    ProblemDetail limiteDiario(LimiteDiarioException excepcion) {
+        return problema(HttpStatus.TOO_MANY_REQUESTS, "limite-diario", "Límite del día", excepcion.getMessage());
     }
 
     @Override

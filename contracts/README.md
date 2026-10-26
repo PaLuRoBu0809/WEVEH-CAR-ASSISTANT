@@ -7,6 +7,7 @@
 | `vectores-salud.json` | Salud 0-100, banda y si hay datos suficientes para mostrar el puntaje | JUnit y Jest |
 | `vectores-vencimientos.json` | Vencimiento y estado de SOAT, RTM y seguro | JUnit y Jest |
 | `vectores-consumo.json` | km/gal, costo por km y clasificación | JUnit y Jest |
+| `vectores-plazo.json` | Plazo del Mecánico IA (`NO_MANEJAR`, `HOY`, `ESTA_SEMANA`, `PROXIMO_SERVICIO`) según gravedad, causa de la regla de seguridad y pieza vencida (RF-MIA-08) | JUnit (`PlazoTest`) y Jest (`plazo.test.ts`) |
 
 Forma de cada archivo de vectores:
 

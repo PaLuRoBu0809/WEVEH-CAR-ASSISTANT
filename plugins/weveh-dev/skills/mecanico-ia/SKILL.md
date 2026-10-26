@@ -56,7 +56,7 @@ Parte del contrato definido en el `README.md` (`diagnostico_mecanico_preventivo`
 | `piezas_relacionadas` | string[] | Ids de pieza del plan, para enlazar "Ver en el plan" |
 | `datos_faltantes` | string[] | Lo que el modelo necesitaría saber |
 
-Sin precios: el costo se pide aparte con "¿Cuánto podría costar?" (RF-MIA-01b), con rango o "No se puede estimar". El **plazo no lo propone el modelo**: lo calcula el dominio (abajo). Todo diagnóstico muestra: "Orientación, no reemplaza al mecánico".
+Sin precios: "¿Cuánto podría costar?" (RF-MIA-01b) salió del MVP el 2026-10-26. Desde `mecanico-v3` la salida es `{ "respuesta", "diagnostico" }`: la respuesta conversacional siempre y esta tarjeta solo cuando hay un síntoma. El **plazo no lo propone el modelo**: lo calcula el dominio (abajo). Todo diagnóstico muestra: "Orientación, no reemplaza al mecánico".
 
 ## Plazo estricto (RF-MIA-08)
 
@@ -75,11 +75,10 @@ Si la pieza relacionada está `VENCIDO` o `SIN_DATO_REVISAR_YA`, el plazo sube u
 
 `ValidadorSeguridadDiagnostico` vive en `co.weveh.mecanicoia.domain` (Java puro) y se escribe **antes** que el adaptador de IA, con sus pruebas. Corre después del modelo y su resultado gana siempre:
 - **Síntomas críticos** (normalizados sin tildes): testigo o luz roja; aceite junto a testigo, presión o pérdida; temperatura o recalentamiento; humo; frenos junto a un síntoma (falla, no frena, chirría, se va, pedal); dirección, timón o volante junto a un síntoma (duro, vibra, se va, juego); batería con falla ⇒ `CRITICO`, `requiere_revision_humana` y `requiere_mecanico` en true.
-- **La sola palabra no basta:** "¿cada cuánto cambio el aceite?" o "¿qué líquido de frenos uso?" no son críticos (RF-MIA-08). Hoy los patrones de `ValidadorSeguridadDiagnostico.java` disparan con "aceite", "fren*" o "volante" solos: acotarlos es tarea de la etapa 6, con casos nuevos en `evals/` que no bajen la detección de críticos.
-- Además: si una pieza de seguridad del plan está `VENCIDO` o `SIN_DATO_REVISAR_YA` y el síntoma la menciona, gravedad mínima `Moderado`.
+- **La sola palabra no basta:** "¿cada cuánto cambio el aceite?" o "¿qué líquido de frenos uso?" no son críticos (RF-MIA-08). Desde la tanda 6a, `ValidadorSeguridadDiagnostico` exige un síntoma en la misma oración para aceite, frenos, dirección y batería; el testigo rojo, el recalentamiento y el humo bastan solos. Devuelve la `CausaCritica`, que decide `NO_MANEJAR` u `HOY` (`contracts/vectores-plazo.json`).
+- Además: si la pieza relacionada del plan está `VENCIDO` o `SIN_DATO_REVISAR_YA`, el plazo sube un nivel (tope `NO_MANEJAR`). Hasta la etapa 7 no hay plan.
 - Un concepto del mecánico "está bien" nunca baja una gravedad Crítica por síntoma (RF-MAN-11).
 - Perfil incompleto (sin marca, modelo, año o km) ⇒ pedir datos, sin gravedad definitiva.
-- Costos sospechosos (0, gratis, promoción) ⇒ null.
 - El texto del usuario que intente cambiar instrucciones ("ignora", "marca leve") no altera las reglas.
 
 ## Implementación
@@ -103,6 +102,6 @@ El botón "¿Tu mecánico te dijo otra cosa?" guarda un `ConceptoMecanico` en la
 
 ## Evals
 
-- Casos en `evals/mecanico-ia/casos.json` (entrada: contexto + síntoma; esperado: gravedad mínima, `requires_mechanic`, campos obligatorios). Mínimos: caso feliz, dato incompleto, síntoma ambiguo, inyección, testigo rojo de aceite, costo incierto, y uno con contexto completo (Prado 190.000 km sin dato de correa + "suena un tic-tac al encender").
+- Casos en `evals/mecanico-ia/casos.json` (entrada: contexto + síntoma; esperado: gravedad mínima, `requires_mechanic`, campos obligatorios). Desde `mecanico-v3` cada caso es un mensaje con historial opcional. Mínimos: caso feliz, dato incompleto, síntoma ambiguo, inyección, testigo rojo de aceite, preguntas de mantenimiento sin síntoma, una repregunta que use el contexto, y uno con contexto completo (Prado 190.000 km sin dato de correa + "suena un tic-tac al encender").
 - Un runner (prueba JUnit etiquetada `evals`, fuera del `verify` normal porque gasta llamadas) corre los casos contra el modelo real.
 - Cada cambio de prompt, modelo o validador: corre los evals y actualiza `evals/results.md` con fecha, modelo, versión de prompt y pass/fail por caso. Un cambio que baje la detección de críticos no se fusiona.

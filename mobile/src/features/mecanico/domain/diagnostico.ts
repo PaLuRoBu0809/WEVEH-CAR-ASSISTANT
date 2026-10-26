@@ -1,12 +1,17 @@
 import type { Nivel } from '@/shared/design-system';
 
+import type { Plazo } from './plazo';
+
 export type NivelGravedad = 'LEVE' | 'MODERADO' | 'CRITICO';
 
-/** Igual a DiagnosticoRespuesta del backend (contrato v2, RF-MIA-01): sin precio, que se pide aparte. */
+/** Igual a TarjetaRespuesta del backend (RF-MIA-01 y RF-MIA-08): sin precios; el plazo lo fija el código. */
 export type Diagnostico = Readonly<{
   posibleFalla: string;
   nivel: NivelGravedad;
   gravedad: string;
+  plazo: Plazo;
+  /** "No manejes; llévalo hoy al mecánico", etc. */
+  textoPlazo: string;
   /** "¿Por qué importa?": máximo 2 oraciones. */
   porQueImporta: string;
   /** Qué hacer: de 1 a 3 pasos cortos, en orden. */
@@ -35,6 +40,22 @@ export function nombrePieza(pieza: string): string {
 export const EJEMPLOS = [
   'Suena un chillido al frenar',
   'Se prendió un testigo en el tablero',
-  'Gasta más gasolina que antes',
+  '¿Cada cuánto cambio el aceite?',
   'Vibra cuando voy rápido',
 ] as const;
+
+export type RolMensaje = 'PERSONA' | 'MECANICO';
+
+/** Un mensaje de la conversación (RF-MIA-02); la tarjeta solo cuando el mensaje describía un síntoma. */
+export type Mensaje = Readonly<{
+  rol: RolMensaje;
+  texto: string;
+  tarjeta: Diagnostico | null;
+  creado: string;
+}>;
+
+export type ConversacionResumen = Readonly<{ id: string; actualizada: string; primerMensaje: string | null }>;
+
+export type Conversacion = Readonly<{ id: string; mensajes: readonly Mensaje[] }>;
+
+export type RespuestaMecanico = Readonly<{ respuesta: string; tarjeta: Diagnostico | null }>;

@@ -38,7 +38,7 @@ La búsqueda usa un índice de similitud de texto (`pg_trgm`) sobre el nombre no
 | Registro inicial | `registro_aceite_km`, `registro_aceite_fecha`, `registro_soat_fecha`, `registro_rtm_fecha`, `registro_rtm_aun_no_aplica`, `registro_seguro_inicio`, `registro_seguro_entidad`. Los consumen mantenimiento y documentos en la fase 2. Todo opcional desde V6 (registro con datos mínimos, RF-GAR-02) |
 | Control | `version_fila` (cambios concurrentes), `creado_en` |
 
-**`consulta_mecanico`** (V4) ✅: `vehiculo_id` (cascada), `sintoma`, `nivel_gravedad`, `diagnostico` (jsonb, ya validado), `respuesta_segura`, `modelo` (el que respondió), `version_prompt`, `creado_en`. Con la conversación (RF-MIA-02) pasa a ser un mensaje dentro de una conversación.
+**`consulta_mecanico`** (V4) ✅: `vehiculo_id` (cascada), `sintoma`, `nivel_gravedad`, `diagnostico` (jsonb, ya validado), `respuesta_segura`, `modelo` (el que respondió), `version_prompt`, `creado_en`. Desde V12 queda como histórico y ya no se escribe: la reemplazan `conversacion_mecanico` y `mensaje_mecanico` (RF-MIA-02).
 
 **`flyway_schema_history`** ✅: historial de migraciones, con RLS activado por el backend después de migrar.
 
@@ -48,8 +48,8 @@ La búsqueda usa un índice de similitud de texto (`pg_trgm`) sobre el nombre no
 |---|---|---|
 | `usuario` | `id` (el de Supabase Auth), `nombre`, `creado_en`. El correo vive en Supabase Auth | ADR 0005 · ✅ V5 |
 | `consentimiento` | `usuario_id`, `version_politica`, `aceptado_en`, `medio` (`APP_REGISTRO`, `APP_NUEVA_VERSION`, `APP_GOOGLE`) | RF-DAT-02 · ✅ V5, `APP_GOOGLE` en V9 |
-| `conversacion` + `mensaje` | Conversaciones del Mecánico IA por vehículo; cada mensaje con su rol, texto, diagnóstico, modelo y prompt; resumen compactado de lo viejo | RF-MIA-02 |
-| `cupo_consultas` | Balde por cuenta: consultas disponibles y última recarga | RF-MIA-07 |
+| `conversacion_mecanico` + `mensaje_mecanico` | Conversaciones del Mecánico IA por vehículo (cascada); cada mensaje con su rol (`PERSONA`/`MECANICO`), texto, tarjeta (jsonb, ya validada, con el plazo), modelo y prompt. El resumen de lo viejo llega en la tanda 6b | RF-MIA-02, RF-MIA-06 · V12 (tanda 6a) |
+| `uso_ia` | `usuario_id`, `tipo` (`MENSAJE`/`AUDIO`), `creado_en`: para el tope de 100 al día por cuenta; nunca el texto ni el audio | RF-MIA-07 · V12 (tanda 6a). Reemplaza al balde `cupo_consultas`, que se retiró |
 | `event_publication` | Eventos entre módulos pendientes y completados | ADR 0007 |
 | `lectura_kilometraje` | `vehiculo_id`, `km`, `leido_en`, `corregida`, `registrado_en`: historial de lecturas; de ahí sale el piso para corregir la última | ADR 0023 · ✅ V11 |
 | `cambio_procesado` | `usuario_id`, `clave` (la `Idempotency-Key`), `metodo`, `ruta`, `estado_http`, `tipo_contenido`, `cuerpo`, `procesado_en`: respuestas 2xx ya enviadas, 7 días, para no guardar dos veces lo que llega de la cola sin red | ADR 0009 · ✅ V10 |

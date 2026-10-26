@@ -175,6 +175,23 @@ paths:
           description: OK
       tags:
       - cuenta-controller
+  /api/v1/transcripciones:
+    post:
+      operationId: transcribir
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UsuarioId"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Transcripcion"
+          description: OK
+      tags:
+      - transcripcion-controller
   /api/v1/vehiculos:
     get:
       operationId: listar
@@ -380,9 +397,9 @@ paths:
           description: OK
       tags:
       - vehiculo-controller
-  /api/v1/vehiculos/{vehiculoId}/consultas:
-    post:
-      operationId: consultar
+  /api/v1/vehiculos/{vehiculoId}/conversaciones:
+    get:
+      operationId: listar_1
       parameters:
       - in: query
         name: usuario
@@ -395,21 +412,106 @@ paths:
         schema:
           type: string
           format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConversacionResumen"
+          description: OK
+      tags:
+      - conversacion-controller
+    post:
+      operationId: crear_1
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: vehiculoId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "201":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConversacionCreada"
+          description: Created
+      tags:
+      - conversacion-controller
+  /api/v1/vehiculos/{vehiculoId}/conversaciones/{conversacionId}:
+    get:
+      operationId: ver
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: vehiculoId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: conversacionId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConversacionDetalle"
+          description: OK
+      tags:
+      - conversacion-controller
+  /api/v1/vehiculos/{vehiculoId}/conversaciones/{conversacionId}/mensajes:
+    post:
+      operationId: enviar
+      parameters:
+      - in: query
+        name: usuario
+        required: true
+        schema:
+          $ref: "#/components/schemas/UsuarioId"
+      - in: path
+        name: vehiculoId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: conversacionId
+        required: true
+        schema:
+          type: string
+          format: uuid
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConsultaSolicitud"
+              $ref: "#/components/schemas/MensajeSolicitud"
         required: true
       responses:
         "200":
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/DiagnosticoRespuesta"
+                $ref: "#/components/schemas/RespuestaMecanico"
           description: OK
       tags:
-      - consulta-controller
+      - conversacion-controller
 components:
   schemas:
     AtributoLinea:
@@ -481,10 +583,35 @@ components:
           minLength: 1
       required:
       - versionPolitica
-    ConsultaSolicitud:
+    ConversacionCreada:
       type: object
       properties:
-        sintoma:
+        creada:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+    ConversacionDetalle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mensajes:
+          type: array
+          items:
+            $ref: "#/components/schemas/MensajeRespuesta"
+    ConversacionResumen:
+      type: object
+      properties:
+        actualizada:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        primerMensaje:
           type: string
     CorreccionKilometrajeSolicitud:
       type: object
@@ -526,37 +653,6 @@ components:
           type: string
         nombre:
           type: string
-    DiagnosticoRespuesta:
-      type: object
-      properties:
-        aviso:
-          type: string
-        datosFaltantes:
-          type: array
-          items:
-            type: string
-        gravedad:
-          type: string
-        nivel:
-          type: string
-        pasos:
-          type: array
-          items:
-            type: string
-        piezasRelacionadas:
-          type: array
-          items:
-            type: string
-        porQueImporta:
-          type: string
-        posibleFalla:
-          type: string
-        requiereMecanico:
-          type: boolean
-        requiereRevisionHumana:
-          type: boolean
-        respuestaSegura:
-          type: boolean
     EdicionSolicitud:
       type: object
       properties:
@@ -656,6 +752,23 @@ components:
           type: string
         tipo:
           type: string
+    MensajeRespuesta:
+      type: object
+      properties:
+        creado:
+          type: string
+          format: date-time
+        rol:
+          type: string
+        tarjeta:
+          $ref: "#/components/schemas/TarjetaRespuesta"
+        texto:
+          type: string
+    MensajeSolicitud:
+      type: object
+      properties:
+        texto:
+          type: string
     RegistroSolicitud:
       type: object
       properties:
@@ -735,6 +848,53 @@ components:
       - anioModelo
       - kilometraje
       - tipo
+    RespuestaMecanico:
+      type: object
+      properties:
+        respuesta:
+          type: string
+        tarjeta:
+          $ref: "#/components/schemas/TarjetaRespuesta"
+    TarjetaRespuesta:
+      type: object
+      properties:
+        aviso:
+          type: string
+        datosFaltantes:
+          type: array
+          items:
+            type: string
+        gravedad:
+          type: string
+        nivel:
+          type: string
+        pasos:
+          type: array
+          items:
+            type: string
+        piezasRelacionadas:
+          type: array
+          items:
+            type: string
+        plazo:
+          type: string
+        porQueImporta:
+          type: string
+        posibleFalla:
+          type: string
+        requiereMecanico:
+          type: boolean
+        requiereRevisionHumana:
+          type: boolean
+        respuestaSegura:
+          type: boolean
+        textoPlazo:
+          type: string
+    Transcripcion:
+      type: object
+      properties:
+        texto:
+          type: string
     UsuarioId:
       type: object
       properties:

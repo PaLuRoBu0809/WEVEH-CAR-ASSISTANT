@@ -167,7 +167,7 @@ Corrige hacia abajo la última lectura. Responde 400 si pasaron más de 7 días 
 
 ## Mecánico IA ✅
 
-### `POST /vehiculos/{id}/consultas`
+### `POST /vehiculos/{id}/consultas` (retirada)
 
 ```json
 { "sintoma": "suena un tic-tac al encender que se quita cuando calienta" }
@@ -193,10 +193,45 @@ Respuesta **200**:
 
 `nivel` es el código para la app (color); `gravedad` el texto del contrato. `porQueImporta` tiene máximo 2 oraciones y `pasos` de 1 a 3, en orden; si el validador sube la gravedad a crítica, el primer paso es ir al mecánico. Todo el texto va en español: una respuesta del modelo con inglés se descarta y se prueba el siguiente modelo (prompt `mecanico-v2`). Sin precio: se pide aparte. Errores: 400 (síntoma vacío o > 1.000 caracteres), 404, 409 (límite diario, hoy), 503 (IA no configurada).
 
-**Cambios decididos ⬜:**
-- El costo se pide con `POST /vehiculos/{id}/consultas/{consultaId}/costo` (RF-MIA-01b).
-- Conversación: `POST /vehiculos/{id}/conversaciones` y `POST /conversaciones/{id}/mensajes`; `GET` para retomarlas (RF-MIA-02).
-- Cupo: el límite pasa a 429 `limite-de-uso` con cuándo vuelve a haber; `GET /cuenta/cupo` para mostrarlo en Perfil (RF-MIA-07).
+Retirada en la tanda 6a (2026-10-26): la reemplaza la conversación.
+
+### Conversación (tanda 6a, RF-MIA-02) ✅
+
+- `POST /vehiculos/{id}/conversaciones` → **201** `{ "id", "creada" }`.
+- `GET /vehiculos/{id}/conversaciones` → las de ese vehículo, la más reciente primero: `[{ "id", "actualizada", "primerMensaje" }]`.
+- `GET /vehiculos/{id}/conversaciones/{conversacionId}` → `{ "id", "mensajes": [{ "rol": "PERSONA" | "MECANICO", "texto", "tarjeta", "creado" }] }`.
+- `POST /vehiculos/{id}/conversaciones/{conversacionId}/mensajes`:
+
+```json
+{ "texto": "suena un chillido al frenar" }
+```
+
+Respuesta **200**:
+
+```json
+{
+  "respuesta": "Ese chillido podría venir de las pastillas de freno gastadas…",
+  "tarjeta": {
+    "posibleFalla": "Pastillas de freno gastadas",
+    "nivel": "CRITICO",
+    "gravedad": "Crítico",
+    "plazo": "NO_MANEJAR",
+    "textoPlazo": "No manejes; llévalo hoy al mecánico",
+    "porQueImporta": "…",
+    "pasos": ["…"],
+    "piezasRelacionadas": ["pastillas_freno"],
+    "datosFaltantes": [],
+    "respuestaSegura": false,
+    "aviso": "Orientación, no reemplaza al mecánico"
+  }
+}
+```
+
+`tarjeta` es `null` cuando el mensaje no describe un síntoma. El plazo lo fija el código (RF-MIA-08), nunca el modelo; si el texto tiene una señal crítica y el modelo no mandó tarjeta, el backend la crea igual. Sin precios (RF-MIA-01b salió del MVP). Errores: 400 (texto de menos de 3 o más de 1.000 caracteres), 404, 429 `limite-diario` ("Por hoy llegaste al máximo de mensajes", 100 al día por cuenta, RF-MIA-07), 503 `mucha-demanda`.
+
+### `POST /transcripciones` (tanda 6a, RF-MIA-11, ADR 0018) ✅
+
+`multipart/form-data` con `audio` (máximo 60 s y 2 MB). Respuesta **200** `{ "texto": "…" }`. El audio vive solo en memoria y no se guarda ni se registra (RF-DAT-09); cuenta en el mismo tope diario. Errores: 400 (sin audio o muy largo), 429 `limite-diario`, 503 `no-disponible` ("No pude entender el audio, escríbelo"); con Groq caído el cortacircuitos responde al instante (ADR 0010).
 
 ## Cuentas y datos ✅ (ADR 0005, RF-CTA, RF-DAT)
 

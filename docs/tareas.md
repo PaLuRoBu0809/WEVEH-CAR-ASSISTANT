@@ -83,17 +83,28 @@ Tercera capa del SDD: **qué falta construir, en qué orden y cómo se verifica 
 
 ## Etapa 6 · Mecánico IA conversacional (ADR 0004, RF-MIA)
 
+Decisiones del 2026-10-26 (Pablo): conversación continua con tarjeta cuando hay un síntoma, voz en la primera tanda, sin "¿Cuánto podría costar?" (RF-MIA-01b) y sin balde: solo un tope de 100 mensajes al día por cuenta (RF-MIA-07).
+
+### Tanda 6a · Conversación, seguridad, plazo y voz ✅ 2026-10-26
+- [x] Prompt `mecanico-v2`: estructura de 3 pasos, sin precios, siempre en español; evals (`evals/results.md`, 2026-10-16).
+- [x] Acotar `ValidadorSeguridadDiagnostico`: "aceite", "fren*", "volante" y "batería" solos no bastan; exige un síntoma (testigo, presión, ruido, falla, humo, recalentamiento) (RF-MIA-03).
+- [x] Plazo estricto de la app (`NO_MANEJAR`, `HOY`, `ESTA_SEMANA`, `PROXIMO_SERVICIO`) con `contracts/vectores-plazo.json` en Java y TypeScript (RF-MIA-08, RNF-35).
+- [x] Conversación continua con memoria (últimos 12 mensajes) y orden estable para caché; tarjeta solo con síntoma; V12 `conversacion_mecanico`, `mensaje_mecanico` y `uso_ia` (RF-MIA-02, RF-MIA-06).
+- [x] Prompt `mecanico-v3`: conversacional, neutro, pide datos en síntomas ambiguos; evals nuevos (mantenimiento sin síntoma, repregunta, inyección) y fila en `evals/results.md`.
+- [x] Tope de 100 mensajes o audios al día por cuenta (RF-MIA-07).
+- [x] Puerto `Transcriptor` con Whisper de Groq, audio solo en memoria, cortacircuitos, permiso del micrófono con aviso y máximo 60 s (RF-MIA-11, RF-DAT-09, ADR 0018, RNF-31, RNF-33, RNF-36).
+- [x] Pantalla de chat con "Nueva conversación", aviso "No escribas datos personales" y micrófono (RF-DAT-08).
+- [x] (Probado por Pablo el 2026-10-26) Probar en el emulador: chillido al frenar → tarjeta Crítica con "No manejes", repregunta con contexto, "¿cada cuánto cambio el aceite?" sin tarjeta y el micrófono con Groq.
+- [ ] Pablo: `GROQ_API_KEY` en Render y revisar que `WEVEH_IA_MODELO` en Render no tenga `nemotron-3-super` (ya no existe).
+
+### Tanda 6b
+- [ ] Compactación: resumir los mensajes viejos de una conversación larga (RF-MIA-02).
 - [ ] Evaluador por modelo: evals contra cada modelo, filtro de críticos, ranking por calidad, velocidad y estabilidad, propuesta de lista en `evals/results.md`.
-- [x] Prompt `mecanico-v2`: estructura de 3 pasos, sin precios, siempre en español; evals (`evals/results.md`, 2026-10-16). Pendiente: que pida datos en síntomas ambiguos.
-- [ ] Botón "¿Cuánto podría costar?" (RF-MIA-01b).
-- [ ] Conversación con memoria, compactación y orden para caché (RF-MIA-02).
-- [ ] Balde de consultas por cuenta, anti-abuso, cobro justo y freno global; cupo en Perfil (RF-MIA-07).
-- [ ] Aviso "No escribas datos personales" (RF-DAT-08).
-- [ ] Acotar `ValidadorSeguridadDiagnostico`: "aceite", "fren*" y "volante" solos no bastan; exige un síntoma (testigo, presión, ruido, falla, humo, recalentamiento). Casos nuevos en `evals/` para preguntas de mantenimiento sin síntoma; correr evals (RF-MIA-03).
-- [ ] Plazo y recomendación estrictos de la app (`NO_MANEJAR`, `HOY`, `ESTA_SEMANA`, `PROXIMO_SERVICIO`) con vectores compartidos y `ValidadorSeguridadDiagnostico`; cambia el esquema: correr `evals/` (RF-MIA-08, RNF-35).
-- [ ] Contexto completo del vehículo para el agente, sin datos personales (RF-MIA-10).
+
+### Después de la etapa 7 (necesitan plan, servicios y fichas)
+- [ ] Ficha de falla automática (RF-MIA-01c).
 - [ ] Botón "¿Tu mecánico te dijo otra cosa?" como información (RF-MIA-09).
-- [ ] Puerto `Transcriptor` con Whisper de Groq, audio borrado al transcribir, permiso del micrófono y límite diario (RF-MIA-11, RF-DAT-09, ADR 0018, RNF-31, RNF-33, RNF-36).
+- [ ] Contexto completo del vehículo para el agente: plan, servicios, fallas (RF-MIA-10); el estado real de la pieza sube el plazo (RF-MIA-08).
 
 ## Etapa 7 · Fase 2: mantenimiento y documentos (RF-MAN, RF-DOC; el plan escucha `KilometrajeActualizado`)
 

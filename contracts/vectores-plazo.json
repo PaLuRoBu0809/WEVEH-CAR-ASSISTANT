@@ -1,0 +1,19 @@
+{
+  "descripcion": "Plazo del Mecánico IA (RF-MIA-08). Lo fija el código, nunca el modelo. Base por gravedad: LEVE → PROXIMO_SERVICIO; MODERADO → ESTA_SEMANA; CRITICO → NO_MANEJAR si la causa de la regla de seguridad impide manejar (FRENOS, DIRECCION, TESTIGO_ROJO, TEMPERATURA, ACEITE, HUMO), si no (BATERIA o causa null porque solo el modelo lo vio crítico) → HOY. Si piezaVencida (la pieza relacionada está VENCIDO o SIN_DATO_REVISAR_YA) sube un nivel en el orden PROXIMO_SERVICIO < ESTA_SEMANA < HOY < NO_MANEJAR, con NO_MANEJAR como tope. causa es null cuando la regla no se disparó.",
+  "vectores": [
+    { "caso": "leve sin regla", "entrada": { "gravedad": "LEVE", "causa": null, "piezaVencida": false }, "esperado": { "plazo": "PROXIMO_SERVICIO" } },
+    { "caso": "moderado sin regla", "entrada": { "gravedad": "MODERADO", "causa": null, "piezaVencida": false }, "esperado": { "plazo": "ESTA_SEMANA" } },
+    { "caso": "crítico por frenos", "entrada": { "gravedad": "CRITICO", "causa": "FRENOS", "piezaVencida": false }, "esperado": { "plazo": "NO_MANEJAR" } },
+    { "caso": "crítico por dirección", "entrada": { "gravedad": "CRITICO", "causa": "DIRECCION", "piezaVencida": false }, "esperado": { "plazo": "NO_MANEJAR" } },
+    { "caso": "crítico por testigo rojo", "entrada": { "gravedad": "CRITICO", "causa": "TESTIGO_ROJO", "piezaVencida": false }, "esperado": { "plazo": "NO_MANEJAR" } },
+    { "caso": "crítico por temperatura", "entrada": { "gravedad": "CRITICO", "causa": "TEMPERATURA", "piezaVencida": false }, "esperado": { "plazo": "NO_MANEJAR" } },
+    { "caso": "crítico por aceite", "entrada": { "gravedad": "CRITICO", "causa": "ACEITE", "piezaVencida": false }, "esperado": { "plazo": "NO_MANEJAR" } },
+    { "caso": "crítico por humo", "entrada": { "gravedad": "CRITICO", "causa": "HUMO", "piezaVencida": false }, "esperado": { "plazo": "NO_MANEJAR" } },
+    { "caso": "crítico por batería", "entrada": { "gravedad": "CRITICO", "causa": "BATERIA", "piezaVencida": false }, "esperado": { "plazo": "HOY" } },
+    { "caso": "crítico solo por el modelo", "entrada": { "gravedad": "CRITICO", "causa": null, "piezaVencida": false }, "esperado": { "plazo": "HOY" } },
+    { "caso": "leve con pieza vencida sube a esta semana", "entrada": { "gravedad": "LEVE", "causa": null, "piezaVencida": true }, "esperado": { "plazo": "ESTA_SEMANA" } },
+    { "caso": "moderado con pieza vencida sube a hoy", "entrada": { "gravedad": "MODERADO", "causa": null, "piezaVencida": true }, "esperado": { "plazo": "HOY" } },
+    { "caso": "batería con pieza vencida sube a no manejar", "entrada": { "gravedad": "CRITICO", "causa": "BATERIA", "piezaVencida": true }, "esperado": { "plazo": "NO_MANEJAR" } },
+    { "caso": "no manejar es el tope", "entrada": { "gravedad": "CRITICO", "causa": "FRENOS", "piezaVencida": true }, "esperado": { "plazo": "NO_MANEJAR" } }
+  ]
+}
